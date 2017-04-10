@@ -1,0 +1,42 @@
+     0     0
+H2CO           2
+H2CO         + hv           = CO           + H2           +              +               9.000E-05                              
+H2CO         + hv           = HCO          + H            +              +               9.000E-05                              
+HCO            1
+HCO          + hv           = CO           + H            +              +               9.000E-05                              
+CH2NH          1
+CH2NH        + hv           = HCN          + H            + H            +               1.000E-06                              
+C2H3           1
+C2H3         + hv           = C2H2         + H            +              +               1.660E-03                              
+C2H5           1
+C2H5         + hv           = C2H4         + H            +              +               3.470E-04                              
+C3H3           2
+C3H3         + hv           = C3H2         + H            +              +               1.300E-02                              
+C3H3         + hv           = C3H          + H2           +              +               3.500E-04                              
+C3H5           2
+C3H5         + hv           = CH3CCH       + H            +              +               2.550E-03                              
+C3H5         + hv           = C2H2         + CH3          +              +               1.090E-03                              
+C3H7           1
+C3H7         + hv           = C3H6         + H            +              +               7.770E-04                              
+H2CN           1
+H2CN         + hv           = HCN          + H            +              +               8.000E-03                              
+C2HM           1
+C2HM         + hv           = C2H          + E            +              +               7.762E-04                              
+C4HM           1
+C4HM         + hv           = C4H          + E            +              +               1.485E-04                              
+C6HM           1
+C6HM         + hv           = C6H          + E            +              +               5.741E-05                              
+CNM            1
+CNM          + hv           = C3N          + E            +              +               5.741E-05                              
+C3NM           1
+C3NM         + hv           = C3N          + E            +              +               5.741E-05                              
+HM             1
+HM           + hv           = H            + E            +              +               3.686E-02                              
+CH2M           1
+CH2M         + hv           = CH2          + E            +              +               4.183E-02                              
+OM             1
+OM           + hv           = O            + E            +              +               1.339E-02                              
+OHM            1
+OHM          + hv           = OH           + E            +              +               8.517E-03                              
+CH3M           1
+CH3M         + hv           = CH3          + E            +              +               7.486E-02                              

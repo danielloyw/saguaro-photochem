@@ -1,0 +1,100 @@
+  FUNCTION VAPOR( NAME, T)
+    USE PRECISION
+    IMPLICIT none
+    REAL(RP), INTENT(IN) :: T
+    CHARACTER(LEN=*), INTENT(IN) :: NAME
+    REAL(RP) :: VAPOR
+
+    IF(TRIM(NAME) == 'C2H2') THEN
+!  based on Tickner & Losing 1951 data
+       VAPOR = 1.333_RP*10._RP**(9.25_RP-1201.75_RP/T)
+       RETURN
+    ELSE IF(TRIM(NAME) == 'C2H4') THEN
+       IF (T < 104._RP) THEN
+       VAPOR = 1333._RP*10._RP**(8.724_RP - 901.6_RP/(T-2.555_RP))
+       ELSE IF ((T >= 104._RP) .AND. (T < 120._RP)) THEN
+       VAPOR = 1333._RP*10._RP**(50.79_RP - 1703._RP/T - 17.141_RP*LOG10(T))
+       ELSE IF (T >= 120._RP) THEN
+       VAPOR = 1333._RP*10._RP**(6.74756_RP-585._RP/(T-18.16_RP))
+       END IF
+       RETURN
+    ELSE IF(TRIM(NAME) == 'C2H6') THEN
+       IF (T < 90._RP) THEN
+       VAPOR = 1333._RP*10._RP**(10.01_RP - 1085._RP/(T-0.561_RP))
+       ELSE IF (T > 90.) THEN
+       VAPOR = 1333._RP*10._RP**(5.9366_RP-1086.17_RP/T+3.83464_RP*LOG10(1000._RP/T))
+       END IF
+       RETURN
+    ELSE IF(TRIM(NAME) == 'C3H8') THEN
+!  based on Tickner & Losing 1951 data
+       VAPOR = 1333._RP*10._RP**(8.16173_RP-1176._RP/T)
+       RETURN
+    ELSE IF(TRIM(NAME) == 'C4H2') THEN
+!  from Moses 1992
+       VAPOR = 1333._RP*10._RP**(5.3817_RP-3300.5_RP/T + 16.63415_RP*LOG10(1000._RP/T))
+       RETURN
+    ELSE IF(TRIM(NAME) == 'C4H6') THEN
+!  from Moses 1992
+!       WRITE(*,*) ' CALCULATE C4H10 VP, T = ',T
+!       WRITE(*,*) ' CALCULATE C4H10 VP, ARG = ',8.446_RP-1461.2_RP/T
+       VAPOR = 1333._RP*10._RP**(8.032581_RP-1441.42_RP/T)
+       RETURN
+    ELSE IF(TRIM(NAME) == 'C4H10') THEN
+!  from Moses 1992
+       VAPOR = 1333._RP*10._RP**(8.446_RP-1461.2_RP/T)
+       RETURN
+    ELSE IF(TRIM(NAME) == 'C6H6') THEN
+       VAPOR = 10._RP*EXP(26._RP-7640._RP/(T+30._RP))
+       RETURN
+    ELSE IF(TRIM(NAME) == 'C7H8') THEN
+       VAPOR = 10._RP*EXP(26._RP-7640._RP/(T+30._RP))
+       RETURN
+    ELSE IF(TRIM(NAME) == 'C8H10') THEN
+       VAPOR = 10._RP*EXP(26._RP-7640._RP/(T+30._RP))
+       RETURN
+    ELSE IF(TRIM(NAME) == 'RING') THEN
+       VAPOR = 10._RP*EXP(26._RP-7640._RP/(T+30._RP))
+       RETURN
+    ELSE IF(TRIM(NAME) == 'H2O') THEN
+!  from Moses 1992
+       VAPOR = 1333._RP*10._RP**(9.184_RP-0.2185*10999.398_RP/T)
+       RETURN
+    ELSE IF(TRIM(NAME) == 'CO2') THEN
+!  from Moses 1992
+       VAPOR = 1333._RP*EXP(2.13807649E+01_RP-2.57064700E+03_RP/T-7.78129489E+04_RP/T**2  &
+            +4.32506256E+06_RP/T**3-1.20671368E+08_RP/T**4+1.34966306E+09_RP/T**5)
+       RETURN
+    ELSE IF(TRIM(NAME) == 'HCN') THEN
+       VAPOR = 10._RP**(12.54747_RP-(1893.068_RP/(T+0.309_RP)))
+       RETURN
+    ELSE IF(TRIM(NAME) == 'HNC') THEN
+       VAPOR = 10._RP**(12.54747_RP-(1893.068_RP/(T+0.309_RP)))
+       RETURN
+    ELSE IF(TRIM(NAME) == 'HC3N') THEN
+       VAPOR =10._RP**(13.305_RP-(2210._RP/(T)))
+       RETURN
+    ELSE IF(TRIM(NAME) == 'HC5N') THEN
+       VAPOR = 10._RP**(13.305_RP-(2210._RP/(T)))  ! assumed same as HC3N
+       RETURN
+    ELSE IF(TRIM(NAME) == 'CH3CN') THEN
+       VAPOR = 10._RP**(10.52111_RP-(1492.375_RP/(T-24.208_RP)))
+       RETURN
+    ELSE IF(TRIM(NAME) == 'C3H3N') THEN
+       VAPOR = 10._RP**(8.9178_RP-(706.474_RP/(T-109.392_RP)))
+       RETURN
+    ELSE IF(TRIM(NAME) == 'C4H3N') THEN
+       VAPOR = 10._RP**(8.9178_RP-(706.474_RP/(T-109.392_RP)))  !  assumed same as C3H3N
+       RETURN
+    ELSE IF(TRIM(NAME) == 'C5H5N') THEN
+       VAPOR = 10._RP**(8.9178_RP-(706.474_RP/(T-109.392_RP)))  !  assumed same as C3H3N
+       RETURN
+    ELSE IF(TRIM(NAME) == 'C2N2') THEN
+       VAPOR = 10._RP**(12.53784_RP-(1566.647_RP/(T-10.461_RP)))
+       RETURN
+    ELSE IF(TRIM(NAME) == 'C4N2') THEN
+       VAPOR = 10._RP**(14.73702_RP-(3722.003_RP/(T+3.036_RP)))
+       RETURN
+    ELSE
+       VAPOR = 1.0E30_RP
+    END IF
+  END FUNCTION VAPOR

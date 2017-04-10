@@ -1,0 +1,21 @@
+MODULE SUBS_COMPO
+
+INTERFACE
+   SUBROUTINE SOLVEIT (iopt,a, b, c, g, del)
+     USE PRECISION
+     USE CONSTANTS
+!!$     USE f95_precision, ONLY: WP => DP
+!!$     USE lapack95, ONLY:GETRF, GETRS
+     USE F95_Precision, ONLY: WP => DP
+     USE LAPACK95, ONLY:GETRF, GETRS
+     IMPLICIT none  
+     INTEGER, INTENT(IN) :: iopt
+     REAL(RP), INTENT(IN), DIMENSION(:,:,:) :: a
+     REAL(RP), INTENT(IN), DIMENSION(:,:,:) :: b
+     REAL(RP), INTENT(IN), DIMENSION(:,:,:) :: c
+     REAL(RP), INTENT(IN), DIMENSION(:,:) :: g
+     REAL(RP), INTENT(OUT), DIMENSION(:,:) :: del
+   END SUBROUTINE SOLVEIT
+END INTERFACE
+
+END MODULE SUBS_COMPO

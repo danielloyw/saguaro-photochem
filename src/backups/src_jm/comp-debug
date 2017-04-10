@@ -1,0 +1,186 @@
+ifort -O0 -g -check all -fpe0 -warn -traceback -debug extended -mkl=sequential -c -o precision.o precision.f90
+ifort -O0 -g -check all -fpe0 -warn -traceback -debug extended -mkl=sequential -c -o constants.o constants.f90
+ifort -O0 -g -check all -fpe0 -warn -traceback -debug extended -mkl=sequential -c -o global_variables.o global_variables.f90
+ifort -O0 -g -check all -fpe0 -warn -traceback -debug extended -mkl=sequential -c -o subs.o subs.f90
+ifort -O0 -g -check all -fpe0 -warn -traceback -debug extended -mkl=sequential -c -o find_name.o find_name.f90
+ifort -O0 -g -check all -fpe0 -warn -traceback -debug extended -mkl=sequential -c -o locate.o locate.f90
+ifort -O0 -g -check all -fpe0 -warn -traceback -debug extended -mkl=sequential -c -o intrp.o intrp.f90
+ifort -O0 -g -check all -fpe0 -warn -traceback -debug extended -mkl=sequential -c -o indexx.o indexx.f90
+ifort -O0 -g -check all -fpe0 -warn -traceback -debug extended -mkl=sequential -c -o read_molecules.o read_molecules.f90
+ifort -O0 -g -check all -fpe0 -warn -traceback -debug extended -mkl=sequential -c -o read_reactions.o read_reactions.f90
+ifort -O0 -g -check all -fpe0 -warn -traceback -debug extended -mkl=sequential -c -o read_atmos.o read_atmos.f90
+ifort -O0 -g -check all -fpe0 -warn -traceback -debug extended -mkl=sequential -c -o difco.o difco.f90
+ifort -O0 -g -check all -fpe0 -warn -traceback -debug extended -mkl=sequential -c -o read_photo.o read_photo.f90
+ifort -O0 -g -check all -fpe0 -warn -traceback -debug extended -mkl=sequential -c -o read_photoB.o read_photoB.f90
+ifort -O0 -g -check all -fpe0 -warn -traceback -debug extended -mkl=sequential -c -o read_jvals.o read_jvals.f90
+ifort -O0 -g -check all -fpe0 -warn -traceback -debug extended -mkl=sequential -c -o read_sol_ionz.o read_sol_ionz.f90
+read_sol_ionz.f90(10): remark #7712: This variable has not been used.   [F3]
+  REAL(RP) :: f1, f2, f3, f4, f5, eng
+----------------------^
+read_sol_ionz.f90(10): remark #7712: This variable has not been used.   [F4]
+  REAL(RP) :: f1, f2, f3, f4, f5, eng
+--------------------------^
+read_sol_ionz.f90(10): remark #7712: This variable has not been used.   [F5]
+  REAL(RP) :: f1, f2, f3, f4, f5, eng
+------------------------------^
+read_sol_ionz.f90(10): remark #7712: This variable has not been used.   [ENG]
+  REAL(RP) :: f1, f2, f3, f4, f5, eng
+----------------------------------^
+ifort -O0 -g -check all -fpe0 -warn -traceback -debug extended -mkl=sequential -c -o read_sol_bnd.o read_sol_bnd.f90
+read_sol_bnd.f90(10): remark #7712: This variable has not been used.   [F3]
+  REAL(RP) :: f1, f2, f3, f4, f5, eng
+----------------------^
+read_sol_bnd.f90(10): remark #7712: This variable has not been used.   [F4]
+  REAL(RP) :: f1, f2, f3, f4, f5, eng
+--------------------------^
+read_sol_bnd.f90(10): remark #7712: This variable has not been used.   [F5]
+  REAL(RP) :: f1, f2, f3, f4, f5, eng
+------------------------------^
+read_sol_bnd.f90(10): remark #7712: This variable has not been used.   [ENG]
+  REAL(RP) :: f1, f2, f3, f4, f5, eng
+----------------------------------^
+ifort -O0 -g -check all -fpe0 -warn -traceback -debug extended -mkl=sequential -c -o read_sol_hres.o read_sol_hres.f90
+ifort -O0 -g -check all -fpe0 -warn -traceback -debug extended -mkl=sequential -c -o norm_sol.o norm_sol.f90
+ifort -O0 -g -check all -fpe0 -warn -traceback -debug extended -mkl=sequential -c -o read_sol_uv.o read_sol_uv.f90
+read_sol_uv.f90(10): remark #7712: This variable has not been used.   [F3]
+  REAL(RP) :: f1, f2, f3, f4, f5, eng
+----------------------^
+read_sol_uv.f90(10): remark #7712: This variable has not been used.   [F4]
+  REAL(RP) :: f1, f2, f3, f4, f5, eng
+--------------------------^
+read_sol_uv.f90(10): remark #7712: This variable has not been used.   [F5]
+  REAL(RP) :: f1, f2, f3, f4, f5, eng
+------------------------------^
+read_sol_uv.f90(10): remark #7712: This variable has not been used.   [ENG]
+  REAL(RP) :: f1, f2, f3, f4, f5, eng
+----------------------------------^
+ifort -O0 -g -check all -fpe0 -warn -traceback -debug extended -mkl=sequential -c -o read_aerosol.o read_aerosol.f90
+read_aerosol.f90(27): warning #6717: This name has not been given an explicit type.   [N]
+        READ(64,*) (kaer_tab(n,nw),n=naer,1,-1)
+-----------------------------^
+read_aerosol.f90(38): warning #6717: This name has not been given an explicit type.   [NL]
+        DO nl = 1, nlev
+-----------^
+read_aerosol.f90(42): warning #6717: This name has not been given an explicit type.   [LW1]
+        lw1 = LOCATE(wvaer,wcrsC(nw))
+--------^
+read_aerosol.f90(43): warning #6717: This name has not been given an explicit type.   [LW2]
+        lw2 = lw1 + 1
+--------^
+read_aerosol.f90(44): warning #6717: This name has not been given an explicit type.   [RW]
+        rw = (wvaer(lw2)-wcrsC(nw))/(wvaer(lw2)-wvaer(lw1))
+--------^
+read_aerosol.f90(51): warning #6717: This name has not been given an explicit type.   [LZ1]
+              lz1 = LOCATE(zaer,z(nl))
+--------------^
+read_aerosol.f90(52): warning #6717: This name has not been given an explicit type.   [LZ2]
+              lz2 = lz1 + 1
+--------------^
+read_aerosol.f90(53): warning #6717: This name has not been given an explicit type.   [RX]
+              rx = (zaer(lz2)-z(nl))/(zaer(lz2)-zaer(lz1))
+--------------^
+read_aerosol.f90(65): warning #6717: This name has not been given an explicit type.   [NZ]
+     DO nz = nlev-1, 1, -1
+--------^
+read_aerosol.f90(79): warning #6717: This name has not been given an explicit type.   [HEADER]
+        READ(61,"(A)") header
+-----------------------^
+ifort -O0 -g -check all -fpe0 -warn -traceback -debug extended -mkl=sequential -c -o read_rayleigh.o read_rayleigh.f90
+read_rayleigh.f90(17): warning #6717: This name has not been given an explicit type.   [NRTAB]
+     READ(64,*) nrtab
+----------------^
+read_rayleigh.f90(19): warning #6717: This name has not been given an explicit type.   [N]
+     DO n = 1, nrtab
+--------^
+read_rayleigh.f90(27): warning #6717: This name has not been given an explicit type.   [NW]
+  DO nw = 1, ncrsC
+-----^
+read_rayleigh.f90(28): warning #6717: This name has not been given an explicit type.   [NL]
+     DO nl = 1, nlev
+--------^
+ifort -O0 -g -check all -fpe0 -warn -traceback -debug extended -mkl=sequential -c -o ext_prod.o ext_prod.f90
+ifort -O0 -g -check all -fpe0 -warn -traceback -debug extended -mkl=sequential -c -o subs_photo.o subs_photo.f90
+ifort -O0 -g -check all -fpe0 -warn -traceback -debug extended -mkl=sequential -c -o photo.o photo.f90
+photo.f90(22): remark #7712: This variable has not been used.   [L1]
+  INTEGER :: na, nb, nw, nph, l1, l2, nl
+------------------------------^
+photo.f90(22): remark #7712: This variable has not been used.   [L2]
+  INTEGER :: na, nb, nw, nph, l1, l2, nl
+----------------------------------^
+photo.f90(22): remark #7712: This variable has not been used.   [NL]
+  INTEGER :: na, nb, nw, nph, l1, l2, nl
+--------------------------------------^
+photo.f90(23): remark #7712: This variable has not been used.   [SM]
+  REAL(RP) :: sm, w1, w2
+--------------^
+photo.f90(23): remark #7712: This variable has not been used.   [W1]
+  REAL(RP) :: sm, w1, w2
+------------------^
+photo.f90(23): remark #7712: This variable has not been used.   [W2]
+  REAL(RP) :: sm, w1, w2
+----------------------^
+ifort -O0 -g -check all -fpe0 -warn -traceback -debug extended -mkl=sequential -c -o paths1D.o paths1D.f90
+ifort -O0 -g -check all -fpe0 -warn -traceback -debug extended -mkl=sequential -c -o rateco.o rateco.f90
+ifort -O0 -g -check all -fpe0 -warn -traceback -debug extended -mkl=sequential -c -o soldep1.o soldep1.f90
+ifort -O0 -g -check all -fpe0 -warn -traceback -debug extended -mkl=sequential -c -o subs_compo.o subs_compo.f90
+ifort -O0 -g -check all -fpe0 -warn -traceback -debug extended -mkl=sequential -c -o vapor.o vapor.f90
+ifort -O0 -g -check all -fpe0 -warn -traceback -debug extended -mkl=sequential -c -o compo.o compo.f90
+ifort -O0 -g -check all -fpe0 -warn -traceback -debug extended -mkl=sequential -c -o chemeq.o chemeq.f90
+chemeq.f90(24): remark #7712: This variable has not been used.   [NLN]
+  INTEGER :: nm, nx, nr, nl, nm1, nm2, nm3, nm4, nm5, nx1, nx2, nx3, nx4, nx5, nln, nmn
+-------------------------------------------------------------------------------^
+chemeq.f90(24): remark #7712: This variable has not been used.   [NMN]
+  INTEGER :: nm, nx, nr, nl, nm1, nm2, nm3, nm4, nm5, nx1, nx2, nx3, nx4, nx5, nln, nmn
+------------------------------------------------------------------------------------^
+chemeq.f90(25): remark #7712: This variable has not been used.   [DNM]
+  REAL(RP) :: rr, rta, r1, r2, d1, d2, sm, dnm, test_chem, tst1
+-------------------------------------------^
+chemeq.f90(25): remark #7712: This variable has not been used.   [TEST_CHEM]
+  REAL(RP) :: rr, rta, r1, r2, d1, d2, sm, dnm, test_chem, tst1
+------------------------------------------------^
+chemeq.f90(25): remark #7712: This variable has not been used.   [TST1]
+  REAL(RP) :: rr, rta, r1, r2, d1, d2, sm, dnm, test_chem, tst1
+-----------------------------------------------------------^
+ifort -O0 -g -check all -fpe0 -warn -traceback -debug extended -mkl=sequential -c -o compout1D.o compout1D.f90
+ifort -O0 -g -check all -fpe0 -warn -traceback -debug extended -mkl=sequential -c -o solveit.o solveit.f90
+ifort -O0 -g -check all -fpe0 -warn -traceback -debug extended -mkl=sequential -c -o find_bin.o find_bin.f90
+ifort -O0 -g -check all -fpe0 -warn -traceback -debug extended -mkl=sequential -c -o difcs_sec.o difcs_sec.f90
+ifort -O0 -g -check all -fpe0 -warn -traceback -debug extended -mkl=sequential -c -o loss.o loss.f90
+ifort -O0 -g -check all -fpe0 -warn -traceback -debug extended -mkl=sequential -c -o eldep1.o eldep1.f90
+ifort -O0 -g -check all -fpe0 -warn -traceback -debug extended -mkl=sequential -c -o elctrn.o elctrn.f90
+elctrn.f90(72): remark #8291: Recommended relationship between field width 'W' and the number of fractional digits 'D' in this edit descriptor is 'W>=D+7'.
+        READ (60,'(A10,E6.3)') yname, yenrg
+------------------------^
+elctrn.f90(79): remark #8291: Recommended relationship between field width 'W' and the number of fractional digits 'D' in this edit descriptor is 'W>=D+7'.
+        READ (60,"(A10,E6.3)") yname, yenrg
+------------------------^
+ifort -O0 -g -check all -fpe0 -warn -traceback -debug extended -mkl=sequential -c -o pchem1D.o pchem1D.f90
+pchem1D.f90(16): remark #7712: This variable has not been used.   [NE]
+  INTEGER :: nw, na, nm, nl, n, nz, nx, ne, np, nb, nln, nmn, imax(2), nm1, nm2, nm3, nm4, nm5
+----------------------------------------^
+pchem1D.f90(16): remark #7712: This variable has not been used.   [NW]
+  INTEGER :: nw, na, nm, nl, n, nz, nx, ne, np, nb, nln, nmn, imax(2), nm1, nm2, nm3, nm4, nm5
+-------------^
+pchem1D.f90(16): remark #7712: This variable has not been used.   [NA]
+  INTEGER :: nw, na, nm, nl, n, nz, nx, ne, np, nb, nln, nmn, imax(2), nm1, nm2, nm3, nm4, nm5
+-----------------^
+pchem1D.f90(16): remark #7712: This variable has not been used.   [N]
+  INTEGER :: nw, na, nm, nl, n, nz, nx, ne, np, nb, nln, nmn, imax(2), nm1, nm2, nm3, nm4, nm5
+-----------------------------^
+pchem1D.f90(16): remark #7712: This variable has not been used.   [NZ]
+  INTEGER :: nw, na, nm, nl, n, nz, nx, ne, np, nb, nln, nmn, imax(2), nm1, nm2, nm3, nm4, nm5
+--------------------------------^
+pchem1D.f90(16): remark #7712: This variable has not been used.   [NB]
+  INTEGER :: nw, na, nm, nl, n, nz, nx, ne, np, nb, nln, nmn, imax(2), nm1, nm2, nm3, nm4, nm5
+------------------------------------------------^
+pchem1D.f90(16): remark #7712: This variable has not been used.   [IMAX]
+  INTEGER :: nw, na, nm, nl, n, nz, nx, ne, np, nb, nln, nmn, imax(2), nm1, nm2, nm3, nm4, nm5
+--------------------------------------------------------------^
+pchem1D.f90(18): remark #7712: This variable has not been used.   [SM]
+  REAL(RP) :: dnm, sm, tst1
+-------------------^
+pchem1D.f90(19): remark #7712: This variable has not been used.   [IRET]
+  CHARACTER(len=1) :: iret
+----------------------^
+
+
