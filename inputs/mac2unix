@@ -1,2 +1,0 @@
-cat $1 | tr '\r' '\n' > temp.file 
-mv temp.file $1
