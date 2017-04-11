@@ -18,7 +18,7 @@ SUBROUTINE READ_RAYLEIGH
      READ(64,*) nrtab ! number of entries
      ALLOCATE(wrtab(nrtab),crtab(nrtab))
      DO n = 1, nrtab
-        READ(64,*) wrtab(n), crtab(n) ! wavelength, ?
+        READ(64,*) wrtab(n), crtab(n) ! wavelength, scattering cross section
      END DO
   CLOSE(unit=64)
      

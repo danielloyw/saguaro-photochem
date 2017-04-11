@@ -49,7 +49,6 @@
            ELSE
               FC = rck(10,nr)
               PFL = LOG10(rk0*den(nl,0)/rk1)
-!              WRITE (*,*) rk0, rk1
               FCL = LOG10(FC)
               NF = 0.75_RP - 1.27_RP*FCL
               CF = -0.4_RP-0.67_RP*FCL

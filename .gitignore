@@ -5,6 +5,7 @@
 runs/
 *.o
 *.mod
+.project
 
 #################
 ## Eclipse
