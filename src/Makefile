@@ -60,7 +60,7 @@ OBJS=$(FILES:%.f90=%.o)
 all: pchem.x
 
 pchem.x: $(OBJS)
-	$(FC) $(FCFLAGS) $(OBJS) -o pchem.x $(LDFLAGS); mv pchem.x ./wrk
+	$(FC) $(FCFLAGS) $(OBJS) -o pchem.x $(LDFLAGS); mv pchem.x ../wrk
 
 
 # make objects
