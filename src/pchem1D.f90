@@ -13,7 +13,7 @@ PROGRAM PCHEM1D
   IMPLICIT none 
 
   REAL(RP) :: tol_diff, tol_chem, test_chem, test_diff
-  INTEGER :: ntim_diff, ntim_chem, iter_chem, iter_diff ! max diffusion time steps, max reaction time steps, iteration count for reactions, iteration count for diffusion
+  INTEGER :: ntim_diff, ntim_chem, iter_chem, iter_diff ! max diffusion time steps (overall number of loops), max reaction time steps per diffusion step, iteration count for reactions, iteration count for diffusion
   INTEGER :: nm, nl, nx, np, nln, nmn, nm1, nm2, nm3, nm4, nm5
   INTEGER :: isol, iprnt
   REAL(RP) :: dnm, sm, tst1
@@ -45,7 +45,7 @@ PROGRAM PCHEM1D
 !  READ(*,*) tstep_diff, ntim_diff
 
   OPEN(unit=21,file='tctl.out',status='old',action='read')
-     READ(21,*) tstep_diff, ntim_diff, tstep_chem, ntim_chem
+     READ(21,*) tstep_diff, ntim_diff, tstep_chem, ntim_chem ! 1, 1000, 1, 5
   CLOSE(unit=21)
 
 
@@ -59,18 +59,18 @@ PROGRAM PCHEM1D
   !   .. Read in parameters for run
 
   OPEN(unit=60,file='pchem1D.ctl',status='old',action='read')
-     READ(60,*) ed1,ed0,pk0,gek
-     READ(60,*) ascl
-     READ(60,*) ihetero
-     READ(60,*) next
+     READ(60,*) ed1,ed0,pk0,gek !3e7, 3e7, 1e5, 0
+     READ(60,*) ascl ! 1
+     READ(60,*) ihetero ! 0
+     READ(60,*) next ! 0
      IF(next > 0) THEN
      ALLOCATE(name_ext(next),fext(next),zext(next),hext(next))
      DO nm = 1, next
         READ(60,'(A12,3ES11.3)') name_ext(nm), fext(nm), zext(nm), hext(nm)
      END DO
      END IF
-     READ(60,*) iaer
-     READ(60,*) iprnt, isol
+     READ(60,*) iaer ! 0
+     READ(60,*) iprnt, isol ! 100, 100
   CLOSE(unit=60)
 
   
@@ -148,7 +148,7 @@ PROGRAM PCHEM1D
 
      !  .. Photon production and loss
      
-     pr_ph =zero
+     pr_ph = zero
      ls_ph = zero
      rpt = zero
      DO np = 1, nphrt
@@ -167,18 +167,6 @@ PROGRAM PCHEM1D
         END DO
      END DO
 
-!     np = 1
-!     nm1=irpt(1,np)
-!     nm2=irpt(2,np)
-!     nm3=irpt(3,np)
-!     nm4=irpt(4,np)
-!     nm5=irpt(5,np)
-!     DO nl = 1, nlev
-!        WRITE(*,"(F10.1,3(2X,ES11.3))") 1.E-5_RP*z(nl), rpt(np,nl), den(nl,nm1), ls_ph(nl,nm1)
-!     END DO
-!     WRITE(*,"(6I5)") np, nm1, nm2, nm3, nm4, nm5
-!     READ(*,"(A)") iret
-     
      !  .. Suprathermal electron production and loss
       
      pr_pe = zero
@@ -212,7 +200,7 @@ PROGRAM PCHEM1D
      CHEM: DO
      
         iter_chem = iter_chem + 1
-        IF((iter_chem > ntim_chem) .or. (test_chem < tol_chem)) EXIT
+        IF((iter_chem > ntim_chem) .or. (test_chem < tol_chem)) EXIT ! why would second condition occur?
 
         den_old = den
      

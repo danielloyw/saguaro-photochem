@@ -1,3 +1,5 @@
+! Calculates the vapor pressure of NAME at temperature T.
+
   FUNCTION VAPOR( NAME, T)
     USE PRECISION
     IMPLICIT none

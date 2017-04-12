@@ -22,7 +22,7 @@ SUBROUTINE CHEMEQ
   REAL(RP), ALLOCATABLE, DIMENSION(:) :: fd, del
   INTEGER, DIMENSION(1) :: imax
   INTEGER :: nm, nx, nr, nl, nm1, nm2, nm3, nm4, nm5, nx1, nx2, nx3, nx4, nx5
-  REAL(RP) :: rr, rta, r1, r2, d1, d2, sm
+  REAL(RP) :: r1, r2, sm
 !  INTEGER :: nln, nmn
 !  REAL(RP) :: dnm, test_chem, tst1
   
@@ -57,23 +57,19 @@ SUBROUTINE CHEMEQ
      DO nr = 1, nrct
 
         IF((itype(nr) == 1) .or. (itype(nr) == 7)) THEN
-
            nm1=irct(1,nr)
            nm3=irct(3,nr)
            nm4=irct(4,nr)
            nm5=irct(5,nr)
            DO nl = 1, nlev
-              rr = rt(nr,nl); rta = rr*den(nl,nm1)
-              rct(nr,nl) = rta
-              ls_chem(nl,nm1) = ls_chem(nl,nm1) + rta
-              pr_chem(nl,nm3) = pr_chem(nl,nm3) + rta
-              pr_chem(nl,nm4) = pr_chem(nl,nm4) + rta
-              pr_chem(nl,nm5) = pr_chem(nl,nm5) + rta              
+              rct(nr,nl) = rt(nr,nl)*den(nl,nm1)
+              ls_chem(nl,nm1) = ls_chem(nl,nm1) + rct(nr,nl)
+              pr_chem(nl,nm3) = pr_chem(nl,nm3) + rct(nr,nl)
+              pr_chem(nl,nm4) = pr_chem(nl,nm4) + rct(nr,nl)
+              pr_chem(nl,nm5) = pr_chem(nl,nm5) + rct(nr,nl)
            END DO
 
         ELSE
-
-
            nm1=irct(1,nr)
            nm2=irct(2,nr)
            nm3=irct(3,nr)
@@ -90,20 +86,18 @@ SUBROUTINE CHEMEQ
 !              pr_chem(nl,nm4) = pr_chem(nl,nm4) + half*rta
 !           END DO
 !           ELSE
-           DO nl = 1, nlev            
-              rr = rt(nr,nl); d1 = den(nl,nm1); d2 = den(nl,nm2)
-              r1 = rr*d1; r2 = rr*d2; rta = rr*d1*d2
-              rct(nr,nl) = rta
-              ls_chem(nl,nm1) = ls_chem(nl,nm1) + rta
-              ls_chem(nl,nm2) = ls_chem(nl,nm2) + rta
-              pr_chem(nl,nm3) = pr_chem(nl,nm3) + rta
-              pr_chem(nl,nm4) = pr_chem(nl,nm4) + rta
-              pr_chem(nl,nm5) = pr_chem(nl,nm5) + rta
+           DO nl = 1, nlev
+              r1 = rt(nr,nl)*den(nl,nm1); r2 = rt(nr,nl)*den(nl,nm2)
+              rct(nr,nl) = rt(nr,nl)*den(nl,nm1)*den(nl,nm2)
+              ls_chem(nl,nm1) = ls_chem(nl,nm1) + rct(nr,nl)
+              ls_chem(nl,nm2) = ls_chem(nl,nm2) + rct(nr,nl)
+              pr_chem(nl,nm3) = pr_chem(nl,nm3) + rct(nr,nl)
+              pr_chem(nl,nm4) = pr_chem(nl,nm4) + rct(nr,nl)
+              pr_chem(nl,nm5) = pr_chem(nl,nm5) + rct(nr,nl)
            END DO
-
+!     END IF
         END IF
      END DO
-!     END IF
 
      DO nl = 1, nlev
         DO nm = 1, nsp
@@ -149,62 +143,56 @@ SUBROUTINE CHEMEQ
         ls_chem(nl,0:nsp) = zero
         DO nr = 1, nrct
 
-        IF((itype(nr) == 1) .or. (itype(nr) == 7)) THEN
+            IF((itype(nr) == 1) .or. (itype(nr) == 7)) THEN
 
-           nm1=irct(1,nr); nx1 = lopc(nm1)
-           nm3=irct(3,nr); nx3 = lopc(nm3)
-           nm4=irct(4,nr); nx4 = lopc(nm4)
-           nm5=irct(5,nr); nx5 = lopc(nm5)
-           rr = rt(nr,nl); d1 = den(nl,nm1)
-           rta = rr*d1; rct(nr,nl) = rta
-           ls_chem(nl,nm1) = ls_chem(nl,nm1) + rta
-           pr_chem(nl,nm3) = pr_chem(nl,nm3) + rta
-           pr_chem(nl,nm4) = pr_chem(nl,nm4) + rta
-           pr_chem(nl,nm5) = pr_chem(nl,nm5) + rta
-           rjac(nx3,nx1) = rjac(nx3,nx1) + rr
-           rjac(nx4,nx1) = rjac(nx4,nx1) + rr
-           rjac(nx5,nx1) = rjac(nx5,nx1) + rr
-           rjac(nx1,nx1) = rjac(nx1,nx1) - rr
+               nm1=irct(1,nr); nx1 = lopc(nm1)
+               nm3=irct(3,nr); nx3 = lopc(nm3)
+               nm4=irct(4,nr); nx4 = lopc(nm4)
+               nm5=irct(5,nr); nx5 = lopc(nm5)
+               rct(nr,nl) = rt(nr,nl)*den(nl,nm1)
 
-        ELSE
+               ls_chem(nl,nm1) = ls_chem(nl,nm1) + rct(nr,nl)
+               pr_chem(nl,nm3) = pr_chem(nl,nm3) + rct(nr,nl)
+               pr_chem(nl,nm4) = pr_chem(nl,nm4) + rct(nr,nl)
+               pr_chem(nl,nm5) = pr_chem(nl,nm5) + rct(nr,nl)
 
-           nm1=irct(1,nr); nx1 = lopc(nm1)
-           nm2=irct(2,nr); nx2 = lopc(nm2)
-           nm3=irct(3,nr); nx3 = lopc(nm3)
-           nm4=irct(4,nr); nx4 = lopc(nm4)
-           nm5=irct(5,nr); nx5 = lopc(nm5)
-           rr = rt(nr,nl); d1 = den(nl,nm1); d2 = den(nl,nm2)
-           r1 = rr*d1; r2 = rr*d2; rta = rr*d1*d2
-           rct(nr,nl) = rta
-           
-           ! .. Loss rates                                       
-           
-           ls_chem(nl,nm1) = ls_chem(nl,nm1) + rta
-           ls_chem(nl,nm2) = ls_chem(nl,nm2) + rta
+               ! .. Terms in Jacobian
 
-!           IF(nr == 2563) THEN
-!              WRITE(*,"(' CHECK: ',A12,F9.0,2ES11.3)") name(nm1),1.E-5_RP*z(nl),rta,ls_chem(nl,nm1)
-!           END IF
-        
-           ! .. Production rates                                 
-        
-           pr_chem(nl,nm3) = pr_chem(nl,nm3) + rta
-           pr_chem(nl,nm4) = pr_chem(nl,nm4) + rta
-           pr_chem(nl,nm5) = pr_chem(nl,nm5) + rta
-           
-           ! .. Terms in Jacobian
-        
-           rjac(nx3,nx1) = rjac(nx3,nx1) + r2
-           rjac(nx3,nx2) = rjac(nx3,nx2) + r1
-           rjac(nx4,nx1) = rjac(nx4,nx1) + r2
-           rjac(nx4,nx2) = rjac(nx4,nx2) + r1
-           rjac(nx5,nx1) = rjac(nx5,nx1) + r2
-           rjac(nx5,nx2) = rjac(nx5,nx2) + r1
-           rjac(nx1,nx2) = rjac(nx1,nx2) - r1
-           rjac(nx1,nx1) = rjac(nx1,nx1) - r2
-           rjac(nx2,nx2) = rjac(nx2,nx2) - r1
-           rjac(nx2,nx1) = rjac(nx2,nx1) - r2
-        END IF
+               rjac(nx1,nx1) = rjac(nx1,nx1) - rt(nr,nl)
+               rjac(nx3,nx1) = rjac(nx3,nx1) + rt(nr,nl)
+               rjac(nx4,nx1) = rjac(nx4,nx1) + rt(nr,nl)
+               rjac(nx5,nx1) = rjac(nx5,nx1) + rt(nr,nl)
+
+            ELSE
+
+               nm1=irct(1,nr); nx1 = lopc(nm1)
+               nm2=irct(2,nr); nx2 = lopc(nm2)
+               nm3=irct(3,nr); nx3 = lopc(nm3)
+               nm4=irct(4,nr); nx4 = lopc(nm4)
+               nm5=irct(5,nr); nx5 = lopc(nm5)
+               r1 = rt(nr,nl)*den(nl,nm1); r2 = rt(nr,nl)*den(nl,nm2)
+               rct(nr,nl) = rt(nr,nl)*den(nl,nm1)*den(nl,nm2)
+
+               ls_chem(nl,nm1) = ls_chem(nl,nm1) + rct(nr,nl)
+               ls_chem(nl,nm2) = ls_chem(nl,nm2) + rct(nr,nl)
+               pr_chem(nl,nm3) = pr_chem(nl,nm3) + rct(nr,nl)
+               pr_chem(nl,nm4) = pr_chem(nl,nm4) + rct(nr,nl)
+               pr_chem(nl,nm5) = pr_chem(nl,nm5) + rct(nr,nl)
+
+               ! .. Terms in Jacobian
+
+               rjac(nx1,nx2) = rjac(nx1,nx2) - r1
+               rjac(nx1,nx1) = rjac(nx1,nx1) - r2
+               rjac(nx2,nx2) = rjac(nx2,nx2) - r1
+               rjac(nx2,nx1) = rjac(nx2,nx1) - r2
+               rjac(nx3,nx1) = rjac(nx3,nx1) + r2
+               rjac(nx3,nx2) = rjac(nx3,nx2) + r1
+               rjac(nx4,nx1) = rjac(nx4,nx1) + r2
+               rjac(nx4,nx2) = rjac(nx4,nx2) + r1
+               rjac(nx5,nx1) = rjac(nx5,nx1) + r2
+               rjac(nx5,nx2) = rjac(nx5,nx2) + r1
+
+            END IF
 
         END DO
 

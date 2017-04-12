@@ -29,7 +29,7 @@ SUBROUTINE COMPO
 
   INTEGER :: nl, nm, nx, nr, nm1, nm2, nm3, nm4, nm5, nx1, nx2, nx3, nx4, nx5, np,  &
        imxdnx, imxdnl, imxbnx, imxbnl
-  REAL(RP) :: rr, rta, r1, r2, d1, d2, pvap, pprs
+  REAL(RP) :: rr, rta, r1, r2, pvap, pprs
   INTEGER :: nz
   CHARACTER(len=1) :: iret
 
@@ -56,12 +56,11 @@ SUBROUTINE COMPO
            nm4=irct(4,nr)
            nm5=irct(5,nr)
            DO nl = 1, nlev
-              rr = rt(nr,nl); rta = rr*den(nl,nm1)
-              rct(nr,nl) = rta
-              ls_chem(nl,nm1) = ls_chem(nl,nm1) + rta
-              pr_chem(nl,nm3) = pr_chem(nl,nm3) + rta
-              pr_chem(nl,nm4) = pr_chem(nl,nm4) + rta
-              pr_chem(nl,nm5) = pr_chem(nl,nm5) + rta              
+              rct(nr,nl) = rt(nr,nl)*den(nl,nm1)
+              ls_chem(nl,nm1) = ls_chem(nl,nm1) + rct(nr,nl)
+              pr_chem(nl,nm3) = pr_chem(nl,nm3) + rct(nr,nl)
+              pr_chem(nl,nm4) = pr_chem(nl,nm4) + rct(nr,nl)
+              pr_chem(nl,nm5) = pr_chem(nl,nm5) + rct(nr,nl)
            END DO
 
         ELSE
@@ -71,15 +70,14 @@ SUBROUTINE COMPO
            nm3=irct(3,nr)
            nm4=irct(4,nr)
            nm5=irct(5,nr)
-           DO nl = 1, nlev            
-              rr = rt(nr,nl); d1 = den(nl,nm1); d2 = den(nl,nm2)
-              r1 = rr*d1; r2 = rr*d2; rta = rr*d1*d2
-              rct(nr,nl) = rta
-              ls_chem(nl,nm1) = ls_chem(nl,nm1) + rta
-              ls_chem(nl,nm2) = ls_chem(nl,nm2) + rta
-              pr_chem(nl,nm3) = pr_chem(nl,nm3) + rta
-              pr_chem(nl,nm4) = pr_chem(nl,nm4) + rta
-              pr_chem(nl,nm5) = pr_chem(nl,nm5) + rta
+           DO nl = 1, nlev
+              r1 = rt(nr,nl)*den(nl,nm1); r2 = rt(nr,nl)*den(nl,nm2)
+              rct(nr,nl) = rt(nr,nl)*den(nl,nm1)*den(nl,nm2)
+              ls_chem(nl,nm1) = ls_chem(nl,nm1) + rct(nr,nl)
+              ls_chem(nl,nm2) = ls_chem(nl,nm2) + rct(nr,nl)
+              pr_chem(nl,nm3) = pr_chem(nl,nm3) + rct(nr,nl)
+              pr_chem(nl,nm4) = pr_chem(nl,nm4) + rct(nr,nl)
+              pr_chem(nl,nm5) = pr_chem(nl,nm5) + rct(nr,nl)
            END DO
 
         END IF
@@ -131,18 +129,17 @@ SUBROUTINE COMPO
         nm4=irpt(4,np); nx4 = ldpc(nm4) 
         nm5=irpt(5,np); nx5 = ldpc(nm5) 
         DO nl = 1, nlev
-           rr = rph(np,nl)           
            rpt(np,nl) = rph(np,nl)*den(nl,nm1)
            ls_ph(nl,nm1) = ls_ph(nl,nm1) + rpt(np,nl)
            pr_ph(nl,nm2) = pr_ph(nl,nm2) + rpt(np,nl)
            pr_ph(nl,nm3) = pr_ph(nl,nm3) + rpt(np,nl)
            pr_ph(nl,nm4) = pr_ph(nl,nm4) + rpt(np,nl)
            pr_ph(nl,nm5) = pr_ph(nl,nm5) + rpt(np,nl)     
-           rjac(nx1,nx1,nl) = rjac(nx1,nx1,nl) - rr
-           rjac(nx2,nx1,nl) = rjac(nx2,nx1,nl) + rr
-           rjac(nx3,nx1,nl) = rjac(nx3,nx1,nl) + rr
-           rjac(nx4,nx1,nl) = rjac(nx4,nx1,nl) + rr
-           rjac(nx5,nx1,nl) = rjac(nx5,nx1,nl) + rr
+           rjac(nx1,nx1,nl) = rjac(nx1,nx1,nl) - rph(np,nl)
+           rjac(nx2,nx1,nl) = rjac(nx2,nx1,nl) + rph(np,nl)
+           rjac(nx3,nx1,nl) = rjac(nx3,nx1,nl) + rph(np,nl)
+           rjac(nx4,nx1,nl) = rjac(nx4,nx1,nl) + rph(np,nl)
+           rjac(nx5,nx1,nl) = rjac(nx5,nx1,nl) + rph(np,nl)
 
 !     IF(rjac(nx1,nx1,nl) .ne. rjac(nx1,nx1,nl)) THEN
 !        WRITE(*,"(' COMPO1: ',11I4,10(2X,ES11.3))") np, nx1,nx2,nx3,nx4,nx5,nm1,nm2,nm3,nm4,nm5,d1,d2,rr,r1,r2,rjac(nx1,nx1,nl)
@@ -201,32 +198,30 @@ SUBROUTINE COMPO
            nm5=irct(5,nr); nx5 = ldpc(nm5) 
            DO nl = 1, nlev
            
-              rr = rt(nr,nl); rta = rr*den(nl,nm1)
-              rct(nr,nl) = rta
+              rct(nr,nl) = rt(nr,nl)*den(nl,nm1)
            
               ! .. Loss rates        
                                
-              ls_chem(nl,nm1) = ls_chem(nl,nm1) + rta
+              ls_chem(nl,nm1) = ls_chem(nl,nm1) + rct(nr,nl)
 
               ! .. Production rates                                 
            
-              pr_chem(nl,nm3) = pr_chem(nl,nm3) + rta
-              pr_chem(nl,nm4) = pr_chem(nl,nm4) + rta
-              pr_chem(nl,nm5) = pr_chem(nl,nm5) + rta
+              pr_chem(nl,nm3) = pr_chem(nl,nm3) + rct(nr,nl)
+              pr_chem(nl,nm4) = pr_chem(nl,nm4) + rct(nr,nl)
+              pr_chem(nl,nm5) = pr_chem(nl,nm5) + rct(nr,nl)
               
               ! .. Terms in Jacobian
            
-              rjac(nx3,nx1,nl) = rjac(nx3,nx1,nl) + rr
-              rjac(nx4,nx1,nl) = rjac(nx4,nx1,nl) + rr
-              rjac(nx5,nx1,nl) = rjac(nx5,nx1,nl) + rr
-              rjac(nx1,nx1,nl) = rjac(nx1,nx1,nl) - rr
+              rjac(nx3,nx1,nl) = rjac(nx3,nx1,nl) + rt(nr,nl)
+              rjac(nx4,nx1,nl) = rjac(nx4,nx1,nl) + rt(nr,nl)
+              rjac(nx5,nx1,nl) = rjac(nx5,nx1,nl) + rt(nr,nl)
+              rjac(nx1,nx1,nl) = rjac(nx1,nx1,nl) - rt(nr,nl)
 
 !     IF(rjac(nx1,nx1,nl) .ne. rjac(nx1,nx1,nl)) THEN
 !        WRITE(*,"(' COMPO2: ',11I4,10(2X,ES11.3))") nr, nx1,nx2,nx3,nx4,nx5,nm1,nm2,nm3,nm4,nm5,d1,d2,rr,r1,r2,rjac(nx1,nx1,nl)
 !        STOP
 !     END IF
 
-              
            END DO
 
         ELSE
@@ -238,20 +233,19 @@ SUBROUTINE COMPO
            nm5=irct(5,nr); nx5 = ldpc(nm5) 
            DO nl = 1, nlev
               
-              rr = rt(nr,nl); d1 = den(nl,nm1); d2 = den(nl,nm2)
-              r1 = rr*d1; r2 = rr*d2; rta = rr*d1*d2
-              rct(nr,nl) = rta
+              r1 = rt(nr,nl)*den(nl,nm1); r2 = rt(nr,nl)*den(nl,nm2);
+              rct(nr,nl) = rt(nr,nl)*den(nl,nm1)*den(nl,nm2)
               
               ! .. Loss rates        
               
-              ls_chem(nl,nm1) = ls_chem(nl,nm1) + rta
-              ls_chem(nl,nm2) = ls_chem(nl,nm2) + rta
+              ls_chem(nl,nm1) = ls_chem(nl,nm1) + rct(nr,nl)
+              ls_chem(nl,nm2) = ls_chem(nl,nm2) + rct(nr,nl)
               
               ! .. Production rates                                 
               
-              pr_chem(nl,nm3) = pr_chem(nl,nm3) + rta
-              pr_chem(nl,nm4) = pr_chem(nl,nm4) + rta
-              pr_chem(nl,nm5) = pr_chem(nl,nm5) + rta
+              pr_chem(nl,nm3) = pr_chem(nl,nm3) + rct(nr,nl)
+              pr_chem(nl,nm4) = pr_chem(nl,nm4) + rct(nr,nl)
+              pr_chem(nl,nm5) = pr_chem(nl,nm5) + rct(nr,nl)
               
               ! .. Terms in Jacobian
               
@@ -298,7 +292,7 @@ SUBROUTINE COMPO
               rta = 1.E+12_RP*(pprs - pvap)
               rcdn(nl,nm) = rta
               rjac(nx,nx,nl) = rjac(nx,nx,nl) - 1.0E+012_RP*rkb*tn(nl)
-              IF(rjac(nx,nx,nl) .ne. rjac(nx,nx,nl)) THEN
+              IF(rjac(nx,nx,nl) .ne. rjac(nx,nx,nl)) THEN !?
                  WRITE(*,"(' VAPOR PROBLEM: pvap = ',ES11.3)") rjac(nx,nx,nl)
                  STOP
               END IF

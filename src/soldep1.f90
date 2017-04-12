@@ -41,7 +41,7 @@ SUBROUTINE SOLDEP1
   DO na = 1, nabsA
      DO nb = 1, nbrnchA(na)
         DO nw = 1, ncrsA
-        prtA(nw,nb,na) = bratA(nw,nb,na)*xcrsA(nw,na)*fsolA(nw)
+        prtA(nw,nb,na) = bratA(nw,nb,na)*xcrsA(nw,na)*fsolA(nw) ! photolysis rate with nominal flux
         END DO
      END DO
   END DO
@@ -76,7 +76,7 @@ SUBROUTINE SOLDEP1
   IF (illum == 1) THEN             !  .. dayside
      DO nm = 1, nsp-1
         DO nz = 1, nlev
-           sa = rz(nz)*sin_sza/rz(nlev)    !  .. Above top layer
+           sa = rz(nz)*sin_sza/rz(nlev)    !  .. Above top layer?
            ca = SQRT(one-sa*sa)
            IF( ht(nlev,nm) > 1.E-10_RP) THEN
               xp = rz(nlev)/ht(nlev,nm)
@@ -144,7 +144,7 @@ SUBROUTINE SOLDEP1
            nm = loabA(na)
            sm = sm + xcrsA(nw,na) * clm(nz,nm)
         END DO
-        trnA(nw,nz) = EXP(-sm)
+        trnA(nw,nz) = EXP(-sm) ! transmission of solar flux
      END DO
   END DO
   END IF
@@ -170,7 +170,7 @@ SUBROUTINE SOLDEP1
            nm = loabC(na)
            sm = sm + xcrsC(nw,na) * clm(nz,nm)
         END DO
-        trnC(nw,nz) = EXP(-(sm + (tau_aer(nz,nw) + tau_ray(nz,nw))/cos_sza)) 
+        trnC(nw,nz) = EXP(-(sm + (tau_aer(nz,nw) + tau_ray(nz,nw))/cos_sza)) ! why is there an additional term?
      END DO
   END DO
   END IF
@@ -190,12 +190,12 @@ SUBROUTINE SOLDEP1
               DO nw = 1, ncrsA
                  sm = sm + prtA(nw,nb,na)*trnA(nw,nz)
               END DO
-              rph(nph,nz) = diurnal_average*sm      
+              rph(nph,nz) = diurnal_average*sm      ! absorption rate
            END DO
      END DO
   END DO
   ELSE
-  nph = 0
+  nph = 0   ! what does this section do?
   DO na = 1, nabsA
      DO nb = 1, nbrnchA(na)
         nph = nph + 1
@@ -281,7 +281,7 @@ SUBROUTINE SOLDEP1
               Eel = (Ehv - Eion)/charge_stateA(nb,na)
               IF (Eel > zero) THEN                     
                  ne = FIND_BIN(elctreV,elctDeV,Eel)
-                 fac = (Eel/elctreV(ne)/elctDeV(ne))*prtA(nw,nb,na)*charge_stateA(nb,na)
+                 fac = (Eel/elctreV(ne)/elctDeV(ne))*prtA(nw,nb,na)*charge_stateA(nb,na) ! why divide by elctreV?
                 DO nz = nibot, nlev
                     esrc(nph,nz,ne)=esrc(nph,nz,ne)+fac*den(nz,nm)*trnA(nw,nz)
                  END DO
@@ -331,7 +331,7 @@ SUBROUTINE SOLDEP1
                  ne = FIND_BIN(elctreV,elctDeV,Eel)
                  fac = Eel/elctreV(ne)/elctDeV(ne)
 !                 DO nz = nibot, nlev
-!                    esrc(nph,nz,ne)=esrc(nph,nz,ne)+charge_stateC(nb,na)*fac*prtC(nw,nb,na)*den(nz,nm)*trnC(nw,nz)
+!                    esrc(nph,nz,ne)=esrc(nph,nz,ne)+charge_stateC(nb,na)*fac*prtC(nw,nb,na)*den(nz,nm)*trnC(nw,nz) ! why commented out?
 !                 END DO
               END IF
            END DO
@@ -349,7 +349,7 @@ SUBROUTINE SOLDEP1
      END DO
   END DO
 
-  Selsum(:) = zero
+  Selsum(:) = zero ! total electrons produced in altitude bin
   DO nz = nibot, nlev
      sm = zero
      DO ne = 1, nelb

@@ -132,11 +132,11 @@ MODULE GLOBAL_VARIABLES
   INTEGER :: next
   CHARACTER(len=12), ALLOCATABLE, DIMENSION(:) :: name_ext
   REAL(RP), ALLOCATABLE, DIMENSION(:) :: zext, hext, fext
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: prext
+  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: prext ! external production
    
   !  .. PHOTO
 
-  LOGICAL :: lcrsA, lcrsB, lcrsC, lcrsJ                 ! ?
+  LOGICAL :: lcrsA, lcrsB, lcrsC, lcrsJ                 ! calculate photolysis?
   INTEGER :: nphrt                                      ! total number of photolysis reactions
   INTEGER :: ncrsA, ncrsB, ncrsC                        ! number of wavelength bins for spectral ranges A, B and C
   INTEGER :: nabsA, nabsB, nabsC, nabsJ                 ! number of species for spectral ranges A, B and C
@@ -148,7 +148,7 @@ MODULE GLOBAL_VARIABLES
   REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: xcrsA, xcrsB, xcrsC                          ! total absorption cross sections (wavelength, species #)
   REAL(RP), ALLOCATABLE, DIMENSION(:,:,:) :: bratA, bratB, bratC                        ! branch ratio (wavelength, branch #, species #)
   LOGICAL, ALLOCATABLE, DIMENSION(:,:) :: ionizeA, ionizeB, ionizeC                     ! are there any ions?
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: enrgIA, enrgIB, enrgIC                       ! energy released (branch #, species #)
+  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: enrgIA, enrgIB, enrgIC                       ! ionization energy (branch #, species #)
   REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: charge_stateA, charge_stateB, charge_stateC  ! number of ions (branch #, species #)
   REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: srateJ                                       ! specified optically thin photolysis rates
   CHARACTER(len=87), ALLOCATABLE, DIMENSION(:) :: ptitle                                ! formula for each photolysis reaction
@@ -164,8 +164,8 @@ MODULE GLOBAL_VARIABLES
   REAL(RP), ALLOCATABLE, DIMENSION(:,:,:) :: eCS ! cross-sections (energy bin, species, state)
   CHARACTER(len=10), ALLOCATABLE, DIMENSION(:,:) :: state ! name of excited state (species, state)
   REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: enrgE ! energy level of excited state (species, state)
-  INTEGER, ALLOCATABLE, DIMENSION(:,:) :: ipath ! number of states (excited, dissociation, ionization)
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: Sel ! 0?
+  INTEGER, ALLOCATABLE, DIMENSION(:,:) :: ipath ! number of states (species, excited/dissociation/ionization)
+  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: Sel ! electron production (altitude, bin)
   REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: eCS_exc ! total cross-section for excitation and dissociation
   REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: eCS_ion ! total cross-section for ionization
   REAL(RP), ALLOCATABLE, DIMENSION(:) :: pS ! 0?
@@ -174,13 +174,13 @@ MODULE GLOBAL_VARIABLES
   REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: crs_tot_inel ! total cross section for thin
   REAL(RP), ALLOCATABLE, DIMENSION(:,:,:) :: sum_cs_rees_ion
   REAL(RP), ALLOCATABLE, DIMENSION(:,:,:) :: sum_cs_rees_sec
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:,:) :: esrc
-  CHARACTER(len=87), ALLOCATABLE, DIMENSION(:) :: etitle ! equation (state, species)
-  INTEGER, ALLOCATABLE, DIMENSION(:,:) :: iert
+  REAL(RP), ALLOCATABLE, DIMENSION(:,:,:) :: esrc ! electron production rate (reaction, altitude, energy bin)
+  CHARACTER(len=87), ALLOCATABLE, DIMENSION(:) :: etitle ! equation (reaction)
+  INTEGER, ALLOCATABLE, DIMENSION(:,:) :: iert ! reactant/product index (reactant/product #, reaction)
   
   ! .. SOLDEP1
 
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: rph, rpt   
+  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: rph, rpt ! absorption rate per molecule (reaction, altitude), total absorption rate (reaction, altitude)
  
   !  .. ELDEP1
 
