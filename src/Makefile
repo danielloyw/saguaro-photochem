@@ -53,7 +53,7 @@ FILES = precision.f90 constants.f90 global_variables.f90 subs.f90 find_name.f90 
 	read_reactions.f90 read_atmos.f90 read_photo.f90 read_photoB.f90 read_jvals.f90 \
 	read_sol_bnd.f90 read_sol_hres.f90 read_sol_ionz.f90 read_sol_uv.f90 norm_sol.f90 \
 	read_aerosol.f90 read_rayleigh.f90 ext_prod.f90 subs_photo.f90 photo.f90 paths1D.f90 \
-	rateco.f90 difco.f90 soldep1.f90 subs_compo.f90 compo.f90 chemeq.f90 compout1D.f90 \
+	rateco.f90 difco.f90 soldep1.f90 subs_compo.f90 compo.f90 chemeq.f90 compout.f90 \
 	hydrost.f90 solveit.f90 find_bin.f90 difcs_sec.f90 difcs_rees.f90 eldep1.f90 elctrn.f90 pchem1D.f90
 OBJS=$(FILES:%.f90=%.o)
 
