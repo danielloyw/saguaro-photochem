@@ -11,7 +11,7 @@ HOSTNAME := $(shell hostname)
 #
 ifeq ($(UNAME), Linux)
 FC = ifort
-FCFLAGS = -O3 -mkl=sequential
+FCFLAGS = -O3 -lmkl:sequential
 LDFLAGS = -lmkl_lapack95_lp64
 # since hipas is missing this include folder for mkl
 ifeq ($(HOSTNAME), hipas.lpl.arizona.edu) 
