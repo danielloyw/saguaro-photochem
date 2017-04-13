@@ -3,6 +3,7 @@
 #################
 
 runs/
+inputs/
 *.o
 *.mod
 .project
