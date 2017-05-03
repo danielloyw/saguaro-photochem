@@ -1,4 +1,15 @@
-SUBROUTINE SOLVEIT (iopt, a, b, c, g, del, ierr)
+! Implements the tridiagonal matrix algorithm.
+! c'(1) = c(1)/b(1)
+! c'(i) = c(i)/(b(i) - a(i)*c'(i-1))
+! d'(1) = d(1)/b(1)
+! d'(i) = (d(i)-a(i)*d'(i-1))/(b(i) - a(i)*c'(i-1))
+! x(i) = d'(i) - c'(i)*x(i+1)
+! x(n) = d'(n)
+! dum is the "denominator": b(1) when i=1, b(i) - a(i)*c'(i-1) when i>1
+! del holds d' until it is converted to x at the last step
+! gam(n) is c'(n-1)
+
+SUBROUTINE SOLVEIT (iopt, a, b, c, d, del, ierr)
 
   USE PRECISION
   USE CONSTANTS
@@ -11,11 +22,11 @@ SUBROUTINE SOLVEIT (iopt, a, b, c, g, del, ierr)
   !  .. External Variables
   !
 
-  INTEGER, INTENT(IN) :: iopt
+  INTEGER, INTENT(IN) :: iopt ! optimization
   REAL(RP), INTENT(IN), DIMENSION(:,:,:) :: a
   REAL(RP), INTENT(IN), DIMENSION(:,:,:) :: b
   REAL(RP), INTENT(IN), DIMENSION(:,:,:) :: c
-  REAL(RP), INTENT(IN), DIMENSION(:,:) :: g
+  REAL(RP), INTENT(IN), DIMENSION(:,:) :: d
   REAL(RP), INTENT(OUT), DIMENSION(:,:) :: del
   INTEGER, INTENT(OUT) :: ierr
 
@@ -25,9 +36,9 @@ SUBROUTINE SOLVEIT (iopt, a, b, c, g, del, ierr)
 
   INTEGER :: nmol, nlev
   INTEGER, DIMENSION(SIZE(a,1)) :: indx
-  INTEGER :: k, j, i, m 
+  INTEGER :: nl, j, i, m
   REAL(RP), DIMENSION(SIZE(a,1),SIZE(a,1),SIZE(a,3)) :: gam
-  REAL(RP), DIMENSION(SIZE(a,1),SIZE(a,3)) :: gp, g_sav, delp
+  REAL(RP), DIMENSION(SIZE(a,1),SIZE(a,3)) :: dp, d_sav, delp
   REAL(RP), DIMENSION(SIZE(a,1),SIZE(a,1)) :: dum
   REAL(RP), DIMENSION(SIZE(a,1)) :: sav
   REAL(RP) :: sm
@@ -41,100 +52,91 @@ SUBROUTINE SOLVEIT (iopt, a, b, c, g, del, ierr)
   nlev=SIZE(a,3)
 
   ierr = 0
-  g_sav = g
+  d_sav = g
   dum = zero
   gam = zero
   del = zero
 
-  ! .. solve b*del=g                        
+  ! .. solve b(1)*del(1)=d(1)
 
-  k = 1
-  dum(1:nmol,1:nmol) = b(1:nmol,1:nmol,k)
-  sav(1:nmol) = g(1:nmol,k)
+  nl = 1
+  dum(1:nmol,1:nmol) = b(1:nmol,1:nmol,nl)
+  sav(1:nmol) = d(1:nmol,nl)
 
-  CALL GETRF ( dum(1:nmol,1:nmol), indx(1:nmol), info)
+  CALL GETRF ( dum(1:nmol,1:nmol), indx(1:nmol), info) ! A = P*L*U: A (replaced by LU), P
   IF(info /= 0) THEN
-     WRITE(*,"(' SOLVEIT, ERROR IN GETRF: info = ',I3,' nl = ',I4)") info, k
-     ierr = k
+     WRITE(*,"(' SOLVEIT, ERROR IN GETRF: info = ',I3,' nl = ',I4)") info, nl
+     ierr = nl
      RETURN
   END IF
-  CALL GETRS ( dum(1:nmol,1:nmol), indx(1:nmol), sav(1:nmol), 'N', info )
+  CALL GETRS ( dum(1:nmol,1:nmol), indx(1:nmol), sav(1:nmol), 'N', info ) ! A*X = B: A, P, B (replaced with X)
   IF(info /= 0) THEN
-     WRITE(*,"(' SOLVEIT, ERROR IN GETRS: info = ',I3,' nl = ',I4)") info, k
-     ierr = k
+     WRITE(*,"(' SOLVEIT, ERROR IN GETRS: info = ',I3,' nl = ',I4)") info, nl
+     ierr = nl
      RETURN
   END IF
 
-  del(1:nmol,k) = sav(1:nmol)
+  del(1:nmol,nl) = sav(1:nmol)
 
-  !                                                                        
-  !  ***** frontwards                                                      
-  !                                                                        
-
-  DO k = 2, nlev
+  DO nl = 2, nlev
 
      ! .. solve dum*gam=c                        
 
      DO j = 1, nmol
-        gam(j,j,k) = c(j,j,k-1)
-     END DO
-     
-     DO j = 1, nmol
-        sav(1:nmol) = gam(1:nmol,j,k)
+        gam(j,j,nl) = c(j,j,nl-1)
+        sav(1:nmol) = gam(1:nmol,j,nl)
         CALL GETRS ( dum(1:nmol,1:nmol), indx(1:nmol), sav(1:nmol), 'N', info )
         IF(info /= 0) THEN
-           WRITE(*,"(' SOLVEIT, ERROR IN GETRS: info = ',I3,' nl = ',I4)") info, k
-           ierr = k
+           WRITE(*,"(' SOLVEIT, ERROR IN GETRS: info = ',I3,' nl = ',I4)") info, nl
+           ierr = nl
            RETURN
         END IF
-        gam(1:nmol,j,k) = sav(1:nmol)
+        gam(1:nmol,j,nl) = sav(1:nmol)
      END DO
      
-     ! .. dum = b(k)-a(k)*gam(k)               
+     ! .. update dum = b(nl)-a(nl)*gam(nl) for i>1
      
      DO j = 1, nmol
         DO i = 1, nmol
-           dum(i,j) = b(i,j,k) - a(i,i,k) * gam(i,j,k)
+           dum(i,j) = b(i,j,nl) - a(i,i,nl) * gam(i,j,nl)
         END DO
      END DO
 
-     ! .. solve dum*del(k)=g(k)-a(k)*del(k-1)   
+     ! .. solve dum*del(nl)=d(nl)-a(nl)*del(nl-1)
 
      DO i = 1, nmol
-        del(i,k) = g(i,k) - a(i,i,k) * del(i,k-1)
+        del(i,nl) = d(i,nl) - a(i,i,nl) * del(i,nl-1)
      END DO
      
      CALL GETRF (dum(1:nmol,1:nmol), indx(1:nmol), info )
      IF(info /= 0) THEN
-        WRITE(*,"(' SOLVEIT, ERROR IN GETRF: info = ',I3,' nl = ',I4)") info, k
-        ierr = k
+        WRITE(*,"(' SOLVEIT, ERROR IN GETRF: info = ',I3,' nl = ',I4)") info, nl
+        ierr = nl
         RETURN
      END IF
-     sav(1:nmol) = del(1:nmol,k)
+     sav(1:nmol) = del(1:nmol,nl)
      CALL GETRS (dum(1:nmol,1:nmol), indx(1:nmol), sav(1:nmol), 'N', info )
      IF(info /= 0) THEN
-        WRITE(*,"(' SOLVEIT, ERROR IN GETRS: info = ',I3,' nl = ',I4)") info, k
-        ierr = k
+        WRITE(*,"(' SOLVEIT, ERROR IN GETRS: info = ',I3,' nl = ',I4)") info, nl
+        ierr = nl
         RETURN
      END IF
-     del(1:nmol,k) = sav(1:nmol)
+     del(1:nmol,nl) = sav(1:nmol)
      
   END DO
-  
-  !                                                                        
-  !  ***** backwards                                                      
-  !                                                                        
-  
-  DO k = nlev-1, 1, -1
+
+! Convert d' to x
+
+  DO nl = nlev-1, 1, -1
      
-     ! .. del(k) = del(k) - gam(k+1)*del(k+1)   
+     ! .. del(nl) = del(nl) - gam(nl+1)*del(nl+1)
      
      DO i = 1, nmol
         sm = zero
         DO m = 1, nmol
-           sm = sm + gam(i,m,k+1) * del(m,k+1)
+           sm = sm + gam(i,m,nl+1) * del(m,nl+1)
         END DO
-        del(i,k) = del(i,k) - sm
+        del(i,nl) = del(i,nl) - sm
      END DO
      
   END DO
@@ -147,86 +149,86 @@ SUBROUTINE SOLVEIT (iopt, a, b, c, g, del, ierr)
 
   IF(iopt >= 1) THEN
 
-  k = 1
+  nl = 1
   DO i = 1, nmol
      sm = zero
      DO j = 1, nmol
-        sm = sm + b(i,j,k)*del(j,k)+c(i,j,k)*del(j,k+1)
+        sm = sm + b(i,j,nl)*del(j,nl)+c(i,j,nl)*del(j,nl+1)
      END DO
-     gp(i,k)=sm
+     dp(i,nl)=sm
   END DO
 
-  DO k = 2, nlev-1
+  DO nl = 2, nlev-1
   DO i = 1, nmol
      sm = zero
      DO j = 1, nmol
-        sm = sm + a(i,j,k)*del(j,k-1)+b(i,j,k)*del(j,k)+c(i,j,k)*del(j,k+1)
+        sm = sm + a(i,j,nl)*del(j,nl-1)+b(i,j,nl)*del(j,nl)+c(i,j,nl)*del(j,nl+1)
      END DO
-     gp(i,k)=sm
+     dp(i,nl)=sm
   END DO
   END DO
 
-  k = nlev
+  nl = nlev
   DO i = 1, nmol
      sm = zero
      DO j = 1, nmol
-        sm = sm + a(i,j,k)*del(j,k-1)+b(i,j,k)*del(j,k)
+        sm = sm + a(i,j,nl)*del(j,nl-1)+b(i,j,nl)*del(j,nl)
      END DO
-     gp(i,k)=sm
+     dp(i,nl)=sm
   END DO
 
-  gp = gp - g_sav
+  dp = dp - d_sav
 
-  ! .. solve A*del=gp                        
+  ! .. solve A*del=dp
 
   dum = zero
   gam = zero
   delp = zero
 
-  k = 1
-  dum(1:nmol,1:nmol) = b(1:nmol,1:nmol,k)
-  sav(1:nmol) = gp(1:nmol,k)
+  nl = 1
+  dum(1:nmol,1:nmol) = b(1:nmol,1:nmol,nl)
+  sav(1:nmol) = dp(1:nmol,nl)
 
   CALL GETRF ( dum(1:nmol,1:nmol), indx(1:nmol))
   CALL GETRS ( dum(1:nmol,1:nmol), indx(1:nmol), sav(1:nmol) )
-  delp(1:nmol,k) = sav(1:nmol)
+  delp(1:nmol,nl) = sav(1:nmol)
 
   !                                                                        
   !  ***** frontwards                                                      
   !                                                                        
 
-  DO k = 2, nlev
+  DO nl = 2, nlev
 
      ! .. solve dum*gam=c                        
 
      DO j = 1, nmol
-        gam(j,j,k) = c(j,j,k-1)
+        gam(j,j,nl) = c(j,j,nl-1)
      END DO
      
      DO j = 1, nmol
-        sav(1:nmol) = gam(1:nmol,j,k)
+        sav(1:nmol) = gam(1:nmol,j,nl)
         CALL GETRS ( dum(1:nmol,1:nmol), indx(1:nmol), sav(1:nmol) )
-        gam(1:nmol,j,k) = sav(1:nmol)
+        gam(1:nmol,j,nl) = sav(1:nmol)
      END DO
      
-     ! .. dum = b(k)-a(k)*gam(k)               
+     ! .. dum = b(nl)-a(nl)*gam(nl)
      
      DO j = 1, nmol
         DO i = 1, nmol
-           dum(i,j) = b(i,j,k) - a(i,i,k) * gam(i,j,k)
+           dum(i,j) = b(i,j,nl) - a(i,i,nl) * gam(i,j,nl)
         END DO
      END DO
 
-     ! .. solve dum*del(k)=g(k)-a(k)*del(k-1)   
+     ! .. solve dum*del(nl)=d(nl)-a(nl)*del(nl-1)
 
      DO i = 1, nmol
-        delp(i,k) = gp(i,k) - a(i,i,k) * delp(i,k-1)
+        delp(i,nl) = dp(i,nl) - a(i,i,nl) * delp(i,nl-1)
      END DO
      
      CALL GETRF (dum(1:nmol,1:nmol), indx(1:nmol) )
-     sav(1:nmol) = delp(1:nmol,k)
+     sav(1:nmol) = delp(1:nmol,nl)
      CALL GETRS (dum(1:nmol,1:nmol), indx(1:nmol), sav(1:nmol) )
-     delp(1:nmol,k) = sav(1:nmol)
+     delp(1:nmol,nl) = sav(1:nmol)
      
   END DO
   
@@ -234,16 +236,16 @@ SUBROUTINE SOLVEIT (iopt, a, b, c, g, del, ierr)
   !  ***** backwards                                                      
   !                                                                        
   
-  DO k = nlev-1, 1, -1
+  DO nl = nlev-1, 1, -1
      
-     ! .. del(k) = del(k) - gam(k+1)*del(k+1)   
+     ! .. del(nl) = del(nl) - gam(nl+1)*del(nl+1)
      
      DO i = 1, nmol
         sm = zero
         DO m = 1, nmol
-           sm = sm + gam(i,m,k+1) * delp(m,k+1)
+           sm = sm + gam(i,m,nl+1) * delp(m,nl+1)
         END DO
-        delp(i,k) = delp(i,k) - sm
+        delp(i,nl) = delp(i,nl) - sm
      END DO
      
   END DO
