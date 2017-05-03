@@ -14,10 +14,10 @@ SUBROUTINE CHEMEQ
 
   INTEGER :: itermax = 10
   REAL(RP), PARAMETER :: tol = 1.0E-15_RP
-  REAL(RP), PARAMETER :: eps = 1.E-50_RP
+  REAL(RP), PARAMETER :: eps = 1.E-50_RP ! machine accuracy
   REAL(RP), PARAMETER :: ufac = 0.5_RP
   INTEGER :: neq, iter
-  REAL(RP) :: tinv, test, delmax, abserr
+  REAL(RP) :: tinv, delmax, abserr
   REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: rjac, fb
   REAL(RP), ALLOCATABLE, DIMENSION(:) :: fd, del
   INTEGER, DIMENSION(1) :: imax
@@ -129,8 +129,9 @@ SUBROUTINE CHEMEQ
 
   DO nl = 1, nlev
 
-     iter = 0; test = 10._RP*tol
-     delmax = one; abserr = 10._RP*tol
+     iter = 0
+     delmax = one; ! maximum change from iteration
+     abserr = 10._RP*tol ! how close F(N) is to 0
      NEWTON: DO
      
         iter = iter + 1
@@ -206,13 +207,13 @@ SUBROUTINE CHEMEQ
 
         DO nx = 1, nchem
            nm = locp(nx)
-           del(nx) = pr(nl,nm)-ls(nl,nm)-dNdt(nl,nm)
-           fd(nx) = del(nx)
-           fb(nx,nx) = tinv 
+           fd(nx) = pr(nl,nm)-ls(nl,nm)-dNdt(nl,nm)
+           del(nx) = fd(nx)
+           fb(nx,nx) = tinv
            DO nx1 = 1, nchem
               nm1 = locp(nx1)
               fb(nx,nx1) = fb(nx,nx1) - rjac(nx,nx1)
-           END DO             
+           END DO
         END DO        
      
         !  .. Jacobian for electrons
@@ -233,7 +234,7 @@ SUBROUTINE CHEMEQ
         
         !  .. Solve N' = N - (dF/dN)^-1 * F(N); fb*del = fd
         
-        CALL GESV(fb,del)
+        CALL GESV(fb,del) ! solves fb*x = del (or fd), overwrites del with x
            
         !  .. Update Densities
            

@@ -20,7 +20,7 @@ SUBROUTINE COMPO
   REAL(RP), PARAMETER :: den_tol = 1.0E-06_RP
   REAL(RP), PARAMETER :: bal_tol = 1.0E-06_RP
   REAL(RP), PARAMETER :: eps = 1.E-50_RP 
-  REAL(RP), PARAMETER :: ufac = 0.1_RP
+  REAL(RP), PARAMETER :: ufac = 0.1_RP ! damping factor
   INTEGER :: iter, iopt, ierr
   REAL(RP) :: tinv, denerr, balerr
   REAL(RP), ALLOCATABLE, DIMENSION(:,:,:) :: rjac, fa, fb, fc
@@ -29,7 +29,7 @@ SUBROUTINE COMPO
 
   INTEGER :: nl, nm, nx, nr, nm1, nm2, nm3, nm4, nm5, nx1, nx2, nx3, nx4, nx5, np,  &
        imxdnx, imxdnl, imxbnx, imxbnl
-  REAL(RP) :: rr, rta, r1, r2, pvap, pprs
+  REAL(RP) :: rr, r1, r2, pvap, pprs
   INTEGER :: nz
   CHARACTER(len=1) :: iret
 
@@ -89,7 +89,6 @@ SUBROUTINE COMPO
      RETURN
 
   END IF
-
   
   iopt = 0
 
@@ -147,7 +146,6 @@ SUBROUTINE COMPO
 !        STOP
 !     END IF
 
- 
         END DO
      END DO
 
@@ -163,7 +161,6 @@ SUBROUTINE COMPO
         nm4=iert(4,np)
         nm5=iert(5,np)
         DO nl = nibot, nlev
-           rr = eph(np,nl)
            rpe(np,nl) = eph(np,nl)*den(nl,nm1)
            ls_pe(nl,nm1) = ls_pe(nl,nm1) + rpe(np,nl)
            pr_pe(nl,nm2) = pr_pe(nl,nm2) + rpe(np,nl)
@@ -211,11 +208,11 @@ SUBROUTINE COMPO
               pr_chem(nl,nm5) = pr_chem(nl,nm5) + rct(nr,nl)
               
               ! .. Terms in Jacobian
-           
+
+              rjac(nx1,nx1,nl) = rjac(nx1,nx1,nl) - rt(nr,nl)
               rjac(nx3,nx1,nl) = rjac(nx3,nx1,nl) + rt(nr,nl)
               rjac(nx4,nx1,nl) = rjac(nx4,nx1,nl) + rt(nr,nl)
               rjac(nx5,nx1,nl) = rjac(nx5,nx1,nl) + rt(nr,nl)
-              rjac(nx1,nx1,nl) = rjac(nx1,nx1,nl) - rt(nr,nl)
 
 !     IF(rjac(nx1,nx1,nl) .ne. rjac(nx1,nx1,nl)) THEN
 !        WRITE(*,"(' COMPO2: ',11I4,10(2X,ES11.3))") nr, nx1,nx2,nx3,nx4,nx5,nm1,nm2,nm3,nm4,nm5,d1,d2,rr,r1,r2,rjac(nx1,nx1,nl)
@@ -249,16 +246,16 @@ SUBROUTINE COMPO
               
               ! .. Terms in Jacobian
               
+              rjac(nx1,nx2,nl) = rjac(nx1,nx2,nl) - r1
+              rjac(nx1,nx1,nl) = rjac(nx1,nx1,nl) - r2
+              rjac(nx2,nx2,nl) = rjac(nx2,nx2,nl) - r1
+              rjac(nx2,nx1,nl) = rjac(nx2,nx1,nl) - r2
               rjac(nx3,nx1,nl) = rjac(nx3,nx1,nl) + r2
               rjac(nx3,nx2,nl) = rjac(nx3,nx2,nl) + r1
               rjac(nx4,nx1,nl) = rjac(nx4,nx1,nl) + r2
               rjac(nx4,nx2,nl) = rjac(nx4,nx2,nl) + r1
               rjac(nx5,nx1,nl) = rjac(nx5,nx1,nl) + r2
               rjac(nx5,nx2,nl) = rjac(nx5,nx2,nl) + r1
-              rjac(nx1,nx2,nl) = rjac(nx1,nx2,nl) - r1
-              rjac(nx1,nx1,nl) = rjac(nx1,nx1,nl) - r2
-              rjac(nx2,nx2,nl) = rjac(nx2,nx2,nl) - r1
-              rjac(nx2,nx1,nl) = rjac(nx2,nx1,nl) - r2
 
 !     IF(rjac(nx1,nx1,nl) .ne. rjac(nx1,nx1,nl)) THEN
 !        WRITE(*,"(' COMPO3: ',11I4,10(2X,ES11.3))") nr, nx1,nx2,nx3,nx4,nx5,nm1,nm2,nm3,nm4,nm5,d1,d2,rr,r1,r2,rjac(nx1,nx1,nl)
@@ -289,10 +286,9 @@ SUBROUTINE COMPO
            pvap = VAPOR(name(nm),tn(nl))
            pprs = rkb*den(nl,nm)*tn(nl)
            IF(pprs > pvap) THEN
-              rta = 1.E+12_RP*(pprs - pvap)
-              rcdn(nl,nm) = rta
+              rcdn(nl,nm) = 1.E+12_RP*(pprs - pvap) ! what is 10^12?
               rjac(nx,nx,nl) = rjac(nx,nx,nl) - 1.0E+012_RP*rkb*tn(nl)
-              IF(rjac(nx,nx,nl) .ne. rjac(nx,nx,nl)) THEN !?
+              IF(rjac(nx,nx,nl) .ne. rjac(nx,nx,nl)) THEN       !if it is NaN
                  WRITE(*,"(' VAPOR PROBLEM: pvap = ',ES11.3)") rjac(nx,nx,nl)
                  STOP
               END IF
@@ -311,8 +307,8 @@ SUBROUTINE COMPO
         
         DO nl = 2, nlev-1
            
-           flx(nl,nm) = (alpha(nl,nx)-half*beta(nl,nx))*den(nl,nm)            & 
-                      - (alpha(nl,nx)+half*beta(nl,nx))*den(nl+1,nm)
+           flx(nl,nm) = (alpha(nl,nx)-beta(nl,nx))*den(nl,nm)            &
+                      - (alpha(nl,nx)+beta(nl,nx))*den(nl+1,nm)
 
            div_flx(nl,nm) = a(nl,nx)*den(nl-1,nm)                             &
                           + b(nl,nx)*den(nl,nm)                               &
@@ -346,7 +342,7 @@ SUBROUTINE COMPO
               fb(nx,nx1,nl) = fb(nx,nx1,nl)-rjac(nx,nx1,nl)
            END DO
         ELSE IF (ibnd(nm,1) == 2) THEN               !  .. Fixed Velocity
-           flx(nl,nm) = bval(nm,1)*half*(den(nl,nm)+den(nl+1,nm))
+           flx(nl,nm) = bval(nm,1)*half*(den(nl,nm)+den(nl+1,nm)) ! bval is velocity
            div_flx(nl,nm) = b(nl,nx)*den(nl,nm)+c(nl,nx)*den(nl+1,nm)
            dNdt(nl,nm) = (den(nl,nm)-den_old(nl,nm))*tinv
            fd(nx,nl) = pr(nl,nm)-rcdn(nl,nm)-ls(nl,nm)-div_flx(nl,nm) - dNdt(nl,nm)
@@ -359,9 +355,9 @@ SUBROUTINE COMPO
            END DO
 
         ELSE IF (ibnd(nm,1) == 3) THEN                !  .. Fixed density
-           flx(nl,nm) = (alpha(nl,nx)-half*beta(nl,nx))*den(nl,nm)            & 
-                      - (alpha(nl,nx)+half*beta(nl,nx))*den(nl+1,nm)
-           dNdt(nl,nm) = -tinv*(den(nl,nm)-bval(nm,1))
+           flx(nl,nm) = (alpha(nl,nx)-beta(nl,nx))*den(nl,nm)            &
+                      - (alpha(nl,nx)+beta(nl,nx))*den(nl+1,nm)
+           dNdt(nl,nm) = -tinv*(den(nl,nm)-bval(nm,1)) !?
            fb(nx,nx,nl) = tinv
            fd(nx,nl) = dNdt(nl,nm)
            fdmax(nx,nl) = ABS(dNdt(nl,nm))
@@ -407,7 +403,7 @@ SUBROUTINE COMPO
            END DO
         ELSE IF(ibnd(nm,2) == 4) THEN                 !  .. Specified Flux
            flx(nl,nm) = bval(nm,2)
-           div_flx(nl,nm) = flx(nl,nm)/rm2(nl)/drp(nl-1)+a(nl,nx)*den(nl-1,nm)+b(nl,nx)*den(nl,nm)
+           div_flx(nl,nm) = flx(nl,nm)/rm2(nl)/drp(nl-1)+a(nl,nx)*den(nl-1,nm)+b(nl,nx)*den(nl,nm) !?
            dNdt(nl,nm) = (den(nl,nm)-den_old(nl,nm))*tinv
            fd(nx,nl) = -div_flx(nl,nm) - dNdt(nl,nm)
            fdmax(nx,nl) = MAX(ABS(div_flx(nl,nm)),ABS(dNdt(nl,nm)))
@@ -466,12 +462,12 @@ SUBROUTINE COMPO
 
      !  .. Locate Max Change
 
-     denerr = zero
+     denerr = zero ! convergence by del->0
      DO nl = 1, nlev
      DO nx = 1, ndiff
         nm = ldcp(nx)
         IF((ABS(del(nx,nl)/den(nl,nm)) > denerr) .and. (den(nl,nm) > 1.0_RP)) THEN
-           denerr = ABS(del(nx,nl)/den(nl,nm))
+           denerr = ABS(del(nx,nl)/den(nl,nm)) ! why is denerr relative rather than absolute like in chemeq?
            imxdnx = nx
            imxdnl = nl
         END IF
@@ -513,7 +509,7 @@ SUBROUTINE COMPO
      END DO
      END DO
 
-     balerr = zero
+     balerr = zero ! convergence by F->0
      imxbnx = 1
      imxbnl = 1
      DO nl = 1, nlev

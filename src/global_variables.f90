@@ -19,7 +19,7 @@ MODULE GLOBAL_VARIABLES
   LOGICAL :: lprnt
   REAL(RP) :: ascl
   INTEGER :: iaer
-  REAL(RP) :: tstep_chem, tstep_diff
+  REAL(RP) :: tstep_chem, tstep_diff ! timesteps for reactions and diffusion
 
   ! .. Molecules
 
