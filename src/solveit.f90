@@ -26,7 +26,7 @@ SUBROUTINE SOLVEIT (iopt, a, b, c, d, del, ierr)
   REAL(RP), INTENT(IN), DIMENSION(:,:,:) :: a
   REAL(RP), INTENT(IN), DIMENSION(:,:,:) :: b
   REAL(RP), INTENT(IN), DIMENSION(:,:,:) :: c
-  REAL(RP), INTENT(IN), DIMENSION(:,:) :: d
+  REAL(RP), INTENT(IN), DIMENSION(:,:) :: g
   REAL(RP), INTENT(OUT), DIMENSION(:,:) :: del
   INTEGER, INTENT(OUT) :: ierr
 
