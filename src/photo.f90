@@ -69,7 +69,6 @@ SUBROUTINE PHOTO
   ncrsC = size(wcrsC)
   nabsC = size(xcrsC,2)
   nbrmaxC = SIZE(bratC,2)
-
   !
   !  .. Optically thin absorbers
   !
@@ -85,7 +84,7 @@ SUBROUTINE PHOTO
   !  .. Read solar spectra wav < 800 A
   !
 
-  CALL READ_SOL(file_sol_ionz,wav_sol_ionz,flx_sol_ionz)
+  CALL READ_SOL_IONZ(file_sol_ionz,wav_sol_ionz,flx_sol_ionz)
   
   DO nw = 1, ncrsA
      fsolA(nw) = flx_sol_ionz(nw)
@@ -93,7 +92,7 @@ SUBROUTINE PHOTO
 
   ! .. Band region 800 A < wav < 1000 A
 
-  CALL READ_SOL(file_sol_bnd,wav_sol_bnd,flx_sol_bnd)
+  CALL READ_SOL_BND(file_sol_bnd,wav_sol_bnd,flx_sol_bnd)
   flx_sol_bnd = 0.1_RP*flx_sol_bnd   ! convert from per bin to per A
 
   CALL READ_SOL_HRES(file_sol_hres,wav_sol_hres,flx_sol_hres)
@@ -120,7 +119,7 @@ SUBROUTINE PHOTO
 
   !  .. wav > 1000
 
-  CALL READ_SOL(file_sol_uv,wav_sol_uv,flx_sol_uv)
+  CALL READ_SOL_UV(file_sol_uv,wav_sol_uv,flx_sol_uv)
 
   DO nw = 1, ncrsC
      fsolC(nw) = flx_sol_uv(nw)

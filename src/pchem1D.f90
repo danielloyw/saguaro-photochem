@@ -80,7 +80,6 @@ PROGRAM PCHEM1D
   ! #                                                                                               #
   ! #################################################################################################
 
- 
   CALL READ_MOLECULES           !  Read in molecule data
   
   CALL READ_REACTIONS           !  Read in reaction rate data
@@ -102,9 +101,9 @@ PROGRAM PCHEM1D
   CALL RATECO                   !  Calculate reaction rate coeff
   
   CALL EXT_PROD                 !  Specified production rates
- 
 
   ALLOCATE(pr_ph(nlev,0:nsp),ls_ph(nlev,0:nsp),     & !  Production and Loss from photon processes   
+  
            pr_pe(nlev,0:nsp),ls_pe(nlev,0:nsp),     & !  Production and Loss from electron processes  
            pr_chem(nlev,0:nsp),ls_chem(nlev,0:nsp), & !  Production and Loss from chemical processes
            pr(nlev,0:nsp),ls(nlev,0:nsp),           & !  Net production and loss

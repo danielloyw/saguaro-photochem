@@ -1,4 +1,4 @@
-SUBROUTINE READ_SOL(file_sol,wav_sol,flx_sol)
+SUBROUTINE READ_SOL_BND(file_sol,wav_sol,flx_sol)
 
   USE PRECISION
   USE CONSTANTS
@@ -11,8 +11,9 @@ SUBROUTINE READ_SOL(file_sol,wav_sol,flx_sol)
   CHARACTER(len=128) :: header
 
   OPEN(unit=66,file=file_sol,status='old',action='read')
-     READ(66,"(A)") header
-     READ(66,"(A)") header
+     DO nl = 1, 2
+        READ(66,"(A)") header
+     END DO
      nw = 0
      DO
         nw = nw + 1
@@ -22,14 +23,15 @@ SUBROUTINE READ_SOL(file_sol,wav_sol,flx_sol)
     nwav_sol = nw-1
     ALLOCATE(wav_sol(nwav_sol),flx_sol(nwav_sol))
     REWIND(66)
-    READ(66,"(A)") header
-    READ(66,"(A)") header
-    DO nw = 1, nwav_sol
+    DO nl = 1, 2
+        READ(66,"(A)") header
+     END DO
+     DO nw = 1, nwav_sol
         READ(66,*) f1, f2
         wav_sol(nw) = f1                    
         flx_sol(nw) = f2             
-    END DO
+     END DO
   CLOSE(unit=66)
 
   RETURN
-END SUBROUTINE READ_SOL
+END SUBROUTINE READ_SOL_BND
