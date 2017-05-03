@@ -6,6 +6,13 @@
 echo $1 > runid.out
 echo $2 $3 $4 $5 > tctl.out
 
+#  create directories
+mkdir -p ../runs/$1
+mkdir -p ../runs/$1/input
+mkdir -p ../runs/$1/output
+mkdir -p ../runs/$1/plots
+mkdir -p ../runs/$1/output/molecules
+
 #
 #  move input files to storage
 #
