@@ -1,4 +1,4 @@
-SUBROUTINE READ_SOL_BND(file_sol,wav_sol,flx_sol)
+SUBROUTINE READ_SOL(file_sol,wav_sol,flx_sol)
 
   USE PRECISION
   USE CONSTANTS
@@ -34,4 +34,4 @@ SUBROUTINE READ_SOL_BND(file_sol,wav_sol,flx_sol)
   CLOSE(unit=66)
 
   RETURN
-END SUBROUTINE READ_SOL_BND
+END SUBROUTINE READ_SOL
