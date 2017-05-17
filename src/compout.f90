@@ -54,9 +54,9 @@ SUBROUTINE COMPOUT
      WRITE (61,"(2I6)") nlev, nsp
      WRITE (61,"(' MOLECULES')")
      WRITE (61,"(10(2X,A12,1X))") (name(nm),nm=1,nsp)
-     WRITE (61,"(' ALTITUDE (km)')") 
+     WRITE (61,"(' ALTITUDE (cm)')") 
      WRITE (61,"(10ES15.7)") (z(nz), nz=1, nlev)
-     WRITE (61,"(' RADIUS (km)')") 
+     WRITE (61,"(' RADIUS (cm)')") 
      WRITE (61,"(10ES15.7)") (rz(nz), nz=1, nlev)
      WRITE (61,"(' GRAVITY (cm s-2)')")
      WRITE (61,"(10ES15.7)") (grv(nz), nz=1, nlev)
