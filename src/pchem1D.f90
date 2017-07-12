@@ -45,7 +45,7 @@ PROGRAM PCHEM1D
 !  READ(*,*) tstep_diff, ntim_diff
 
   OPEN(unit=21,file='tctl.out',status='old',action='read')
-     READ(21,*) tstep_diff, ntim_diff, tstep_chem, ntim_chem ! 1, 1000, 1, 5
+     READ(21,*) tstep_diff, ntim_diff, tstep_chem, ntim_chem
   CLOSE(unit=21)
 
 
@@ -103,7 +103,6 @@ PROGRAM PCHEM1D
   CALL EXT_PROD                 !  Specified production rates
 
   ALLOCATE(pr_ph(nlev,0:nsp),ls_ph(nlev,0:nsp),     & !  Production and Loss from photon processes   
-  
            pr_pe(nlev,0:nsp),ls_pe(nlev,0:nsp),     & !  Production and Loss from electron processes  
            pr_chem(nlev,0:nsp),ls_chem(nlev,0:nsp), & !  Production and Loss from chemical processes
            pr(nlev,0:nsp),ls(nlev,0:nsp),           & !  Net production and loss
