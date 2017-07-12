@@ -81,38 +81,6 @@ SUBROUTINE COMPOUT
    
   CLOSE(unit=61)
 
-  OPEN (unit=61,file='atm1D.out',status='unknown',action='write')
-  
-     WRITE (61,"(2I6)") nlev, nsp
-     WRITE (61,"(' MOLECULES')")
-     WRITE (61,"(10(2X,A12,1X))") (name(nm),nm=1,nsp)
-     WRITE (61,"(' ALTITUDE (km)')") 
-     WRITE (61,"(10ES15.7)") (z(nz), nz=1, nlev)
-     WRITE (61,"(' RADIUS (km)')") 
-     WRITE (61,"(10ES15.7)") (rz(nz), nz=1, nlev)
-     WRITE (61,"(' GRAVITY (cm s-2)')")
-     WRITE (61,"(10ES15.7)") (grv(nz), nz=1, nlev)
-     WRITE (61,"(' NEUTRAL TEMPERATURE (Kelvins)')") 
-     WRITE (61,"(10ES15.7)") (tn(nz), nz=1, nlev)
-     WRITE (61,"(' ELECTRON TEMPERATURE (Kelvins)')") 
-     WRITE (61,"(10ES15.7)") (te(nz), nz=1, nlev)
-     WRITE (61,"(' PRESSURE (dyne/cm^2)')") 
-     WRITE (61,"(10ES15.7)") (prs(nz), nz=1, nlev)
-     WRITE (61,"(' MASS DENSITY (g cm^-3)')") 
-     WRITE (61,"(10ES15.7)") (rho(nz), nz=1, nlev)
-     WRITE (61,"(' MEAN MOLECULAR WEIGHT (amu)')") 
-     WRITE (61,"(10ES15.7)") (mass(nz), nz=1, nlev)
-     WRITE (61,"(' EDDY COEFFICIENT (cm^2s^-1)')") 
-     WRITE (61,"(10ES15.7)") (ek(nz), nz=1, nlev)
-     WRITE (61,"(' TOTAL DENSITY (cm^-3)')")
-     WRITE (61,"(10ES15.7)") (den(nz,0), nz=1, nlev) 
-     DO nm = 1, nsp
-        WRITE (61,"(A12,F5.2)") name(nm)
-        WRITE (61,"(10ES15.7)") (den(nz,nm), nz=1, nlev)
-     END DO
-   
-  CLOSE(unit=61)
-
   heads(1) = 'ALT (km)'
   heads(2) = 'RAD (km)'
   heads(3) = 'GRV (cm/s2)'
