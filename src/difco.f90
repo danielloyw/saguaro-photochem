@@ -86,7 +86,7 @@ SUBROUTINE DIFCO
      IF(ibnd(nm,2) == 1) THEN                           ! Chemical Eq.
         bval(nm,2) =    zero
      ELSE IF (ibnd(nm,2) == 2) THEN                     ! Jean's Velocity
-           bval(nm,2) = bval(nm,2)*WJEANS (mmw(nm), rz(nlev), tn(nlev)) ! what quantity is bval(nm,2)?
+           bval(nm,2) = bval(nm,2)*WJEANS (mmw(nm), rz(nlev), tn(nlev)) ! bval(nm,2) = 1: escaping at Jeans rate
      END IF
      
   END DO
@@ -123,9 +123,9 @@ SUBROUTINE DIFCO
         c(nl,nx) = zero
      ELSE IF (ibnd(nm,1) == 2) THEN              !  .. Fixed Velocity        
         b(nl,nx) = -(-alpha(nl,nx)+beta(nl,nx)                              &
-             +half*bval(nm,1))/drp(nl)! why divide by drp?
+             +half*bval(nm,1))/drp(nl)
         c(nl,nx) = -(alpha(nl,nx)+beta(nl,nx)                               &
-             +half*bval(nm,1))/drp(nl)!?
+             +half*bval(nm,1))/drp(nl)
      ELSE IF (ibnd(nm,1) == 3) THEN              !  .. Fixed Mole Fraction
         b(nl,nx) = zero           
         c(nl,nx) = zero
@@ -142,9 +142,9 @@ SUBROUTINE DIFCO
         b(nl,nx) = zero
      ELSE IF(ibnd(nm,2) == 2) THEN                !  .. Jeans Velocity
         a(nl,nx) = -(alpha(nl-1,nx)-beta(nl-1,nx)                           &
-             -half*bval(nm,2))*rm2(nl)/drp(nl-1)!?
+             -half*bval(nm,2))*rm2(nl)/drp(nl-1)
         b(nl,nx) = (alpha(nl-1,nx)+beta(nl-1,nx)                            &
-             +half*bval(nm,2))*rm2(nl)/drp(nl-1)!?
+             +half*bval(nm,2))*rm2(nl)/drp(nl-1)
      ELSE IF(ibnd(nm,2) == 3) THEN                !  .. Fixed Velocity
         a(nl,nx) = -(alpha(nl-1,nx)-beta(nl-1,nx)                           &
              -half*bval(nm,2))*rm2(nl)/drp(nl-1)

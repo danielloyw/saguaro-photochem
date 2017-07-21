@@ -403,7 +403,7 @@ SUBROUTINE COMPO
            END DO
         ELSE IF(ibnd(nm,2) == 4) THEN                 !  .. Specified Flux
            flx(nl,nm) = bval(nm,2)
-           div_flx(nl,nm) = flx(nl,nm)/rm2(nl)/drp(nl-1)+a(nl,nx)*den(nl-1,nm)+b(nl,nx)*den(nl,nm) !?
+           div_flx(nl,nm) = flx(nl,nm)/rm2(nl)/drp(nl-1)+a(nl,nx)*den(nl-1,nm)+b(nl,nx)*den(nl,nm)
            dNdt(nl,nm) = (den(nl,nm)-den_old(nl,nm))*tinv
            fd(nx,nl) = -div_flx(nl,nm) - dNdt(nl,nm)
            fdmax(nx,nl) = MAX(ABS(div_flx(nl,nm)),ABS(dNdt(nl,nm)))
