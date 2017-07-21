@@ -189,7 +189,8 @@ SUBROUTINE READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phr
      READ(67,"(A)") header
      READ(67,"(A)") header
      DO nf = 1, nwav_co
-        READ(67,*) wav_co(nf)*10._RP, crs_co(nf) ! wavelengths, cross sections
+        READ(67,*) wav_co(nf), crs_co(nf) ! wavelengths, cross sections
+		wav_co(nf) = wav_co(nf)*10._RP
      END DO
   CLOSE(unit=67)
 
