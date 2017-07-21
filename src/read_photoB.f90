@@ -13,7 +13,7 @@ SUBROUTINE READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phr
   CHARACTER(len=*), INTENT(IN), DIMENSION(0:) :: name
   INTEGER, INTENT(OUT), ALLOCATABLE, DIMENSION(:):: nbrnchB
   INTEGER, INTENT(OUT), ALLOCATABLE, DIMENSION(:):: loabB
-  INTEGER, INTENT(OUT), ALLOCATABLE, DIMENSION(:,:,:):: loprB
+  INTEGER, INTENT(OUT), ALLOCATABLE, DIMENSION(:,:,:):: loprB ! product index (product #, branch #, species #)
   LOGICAL, INTENT(OUT), ALLOCATABLE, DIMENSION(:,:) :: ionizeB
   REAL(RP), INTENT(OUT), ALLOCATABLE, DIMENSION(:,:) :: enrgIB
   REAL(RP), INTENT(OUT), ALLOCATABLE, DIMENSION(:,:) :: charge_stateB
@@ -28,14 +28,15 @@ SUBROUTINE READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phr
   !
 
   INTEGER, PARAMETER :: ncrsB = 540000 ! wavelengths
-  INTEGER, PARAMETER :: nabsB = 3
+  INTEGER, PARAMETER :: nabsB = 4
   INTEGER, PARAMETER :: nbrmaxB = 12
   INTEGER, PARAMETER :: nprmaxB =  4
+  INTEGER, PARAMETER :: nwav_co = 16001
 
   CHARACTER(len=128) :: header, cline
   CHARACTER(len=12), DIMENSION(6) :: fm
   INTEGER :: nwav_co2, nbrnch_co2, nsp
-  REAL(RP), ALLOCATABLE, DIMENSION(:) :: wav_co2, crs_co2_tot, crs_co2_ion
+  REAL(RP), ALLOCATABLE, DIMENSION(:) :: wav_co2, crs_co2_tot, crs_co2_ion, wav_co, crs_co
   REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: brat_co2
   REAL(RP) :: rdum
   INTEGER :: na, nf, nw, nb, nm, np, j
@@ -60,7 +61,7 @@ SUBROUTINE READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phr
   !
 
   na = 1
-  OPEN(Unit=64,file='../data/photons/A.14.e18h6.getlines.output.150K;type=i',status='old',action='read')
+  OPEN(Unit=64,file='../data/photons/photoB-28N2.dat',status='old',action='read')
      READ(64,"(A)") header
      READ(64,"(A)") header
      DO nf = 1, ncrsB
@@ -87,7 +88,7 @@ SUBROUTINE READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phr
   !
 
   na = 2
-  OPEN(Unit=65,file='../data/photons/A.1415.e18h6.getlines.output.150K;type=i',status='old',action='read')
+  OPEN(Unit=65,file='../data/photons/photoB-29N2.dat',status='old',action='read')
      READ(65,"(A)") header
      READ(65,"(A)") header
      DO nf = 1, ncrsB
@@ -139,7 +140,7 @@ SUBROUTINE READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phr
 
   na = 3
   loabB(na) = FIND_NAME('CO2         ',name)
-  OPEN(unit=66,file='../data/photons/PHOTO_CO2.DAT',status='unknown',action='read')
+  OPEN(unit=66,file='../data/photons/photoB-CO2.dat',status='unknown',action='read')
      READ(66,*) nwav_co2, nbrnch_co2 ! wavelengths, reactions
      ALLOCATE(wav_co2(nwav_co2),crs_co2_tot(nwav_co2),crs_co2_ion(nwav_co2),brat_co2(nwav_co2,nbrnch_co2))
      READ(66,'(A)') header
@@ -177,8 +178,36 @@ SUBROUTINE READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phr
   DO nb = 1, nbrnchB(na)
      CALL INTRP(wav_co2,brat_co2(1:nwav_co2,nb),wcrsB(1:ncrsB),bratB(1:ncrsB,nb,na))
   END DO
+  
+  !
+  !  .. Read CO cross section and interpolate to high res grid
+  !
 
-  DEALLOCATE(wav_co2,crs_co2_tot,crs_co2_ion,brat_co2)
+  na = 4  
+  ALLOCATE(wav_co(nwav_co),crs_co(nwav_co))
+  OPEN(Unit=67,file='../data/photons/photoB-12C16O.dat',status='old',action='read')
+     READ(67,"(A)") header
+     READ(67,"(A)") header
+     DO nf = 1, nwav_co
+        READ(67,*) wav_co(nf)*10._RP, crs_co(nf) ! wavelengths, cross sections
+     END DO
+  CLOSE(unit=67)
+
+  loabB(na) = FIND_NAME('CO          ',name)
+  nbrnchB(na) = 1
+  nb = 1
+  phrctB(nb,na) = 'CO           + hv           = C            + O            +              +             '
+  ionizeB(nb,na) = .false.
+  charge_stateB(nb,na) = zero
+  enrgIB(nb,na) = zero
+  bratB(1:ncrsB,nb,na) = one
+  loprB(1,nb,na) = FIND_NAME('C           ',name)
+  loprB(2,nb,na) = FIND_NAME('O           ',name)
+  loprB(3:4,nb,na) = 0
+
+  CALL INTRP(wav_co,crs_co(1:nwav_co),wcrsB(1:ncrsB),xcrsB(1:ncrsB,na))
+
+  DEALLOCATE(wav_co2,crs_co2_tot,crs_co2_ion,brat_co2, wav_co, crs_co)
 
   RETURN
 END SUBROUTINE READ_PHOTOB
