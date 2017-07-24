@@ -39,230 +39,67 @@ xmol = np.zeros((nalt,nmol))
 
 for m in range(1,nmol):
    xmol[:,m] = den[:,m]/den[:,0]
-   
 
 
 clrs = ['red','blue','green','magenta','cyan']
 ymin = 0
-ymax = 1500
+ymax = 250
+xmin = 1.E4
 
-npg=0
 l=0
-with PdfPages('density.pdf') as pdf:
+with PdfPages('../runs/'+srun+'/plots/density.pdf') as pdf:
     
-    while (l < nmol):
-        
-        npg = npg + 1
-        print npg
+    while (l < nmol-1):
         fig = plt.figure()  # create a figure object
         
-        # upper left
-        ax1 = fig.add_subplot(2, 2, 1)
-        l1 = l 
-        l2 = max([l1,min([l + 4,nmol-1])])
-        if (l1 == l2):
-            xmax = math.pow(10,int(math.log10(np.amax(den[1:nalt,l1])))+1)
-        else:    
-            xmax = math.pow(10,int(math.log10(np.amax(den[1:nalt,l1:l2])))+1)
-        xmin = xmax/1.E8
-        ax1.set_xlim(xmin,xmax)
-        ax1.set_ylim(ymin,ymax)
-        k = 0
-        while ((k<5) & (l<nmol-1)):
-            l = l + 1
-            ax1.semilogx(den[:,l],alt,color=clrs[k])
-            ax1.text(xmax/10,ymax-100-k*100,name[l],color=clrs[k],fontsize='8')
-            k = k + 1
-            
-        ax1.set_ylabel(r'Altitude (Km)')
-        if (l == nmol-1): 
-            pdf.savefig()
-            plt.close()            
-            break
-    
-        # upper right
-        ax2 = fig.add_subplot(2, 2, 2)
-        l1 = l 
-        l2 = max([l1,min([l + 4,nmol-1])])
-        if (l1 == l2):
-            xmax = math.pow(10,int(math.log10(np.amax(den[1:nalt,l1])))+1)
-        else:    
-            xmax = math.pow(10,int(math.log10(np.amax(den[1:nalt,l1:l2])))+1)
-        xmin = xmax/1.E8
-        ax2.set_xlim(xmin,xmax)
-        ax2.set_ylim(ymin,ymax)
-        k = 0
-        while ((k<5) & (l<nmol-1)):
-            l = l + 1
-            ax2.semilogx(den[:,l],alt,color=clrs[k])
-            ax2.text(xmax/10,ymax-100-k*100,name[l],color=clrs[k],fontsize='8')
-            k = k + 1
-            
-        if (l == nmol-1): 
-            pdf.savefig()
-            plt.close()            
-            break
-
-    
-        # lower left
-        ax3 = fig.add_subplot(2, 2, 3)
-        l1 = l + 1
-        l2 = max([l1,min([l + 4,nmol-1])])
-        if (l1 == l2):
-            xmax = math.pow(10,int(math.log10(np.amax(den[1:nalt,l1])))+1)
-        else:    
-            xmax = math.pow(10,int(math.log10(np.amax(den[1:nalt,l1:l2])))+1)
-        xmin = xmax/1.E8
-        ax3.set_xlim(xmin,xmax)
-        ax3.set_ylim(ymin,ymax)
-        k = 0
-        while ((k<=4) & (l<nmol-1)):
-            l = l + 1
-            ax3.semilogx(den[:,l],alt,color=clrs[k])
-            ax3.text(xmax/10,ymax-100-k*100,name[l],color=clrs[k],fontsize='8')
-            k = k + 1
-            
-        ax3.set_ylabel(r'Altitude (Km)')
-        ax3.set_xlabel(r'Density (cm$^{-3}$)')
-        if (l == nmol-1):
-            pdf.savefig()
-            plt.close()            
-            break
-        
-        # lower right
-        ax4 = fig.add_subplot(2, 2, 4)
-        l1 = l + 1
-        l2 = max([l1,min([l + 4,nmol-1])])
-        if (l1 == l2):
-            xmax = math.pow(10,int(math.log10(np.amax(den[1:nalt,l1])))+1)
-        else:    
-            xmax = math.pow(10,int(math.log10(np.amax(den[1:nalt,l1:l2])))+1)
-        xmin = xmax/1.E8
-        ax4.set_xlim(xmin,xmax)
-        ax4.set_ylim(ymin,ymax)
-        k = 0
-        while ((k<=4) & (l<nmol-1)):
-            l = l + 1
-            ax4.semilogx(den[:,l],alt,color=clrs[k])
-            ax4.text(xmax/10,ymax-100-k*100,name[l],color=clrs[k],fontsize='8')
-            k = k + 1
-
-        ax4.set_xlabel(r'Density (cm$^{-3}$)')
+        for subplot_i in range(1,5):
+            ax = fig.add_subplot(2, 2, subplot_i)
+            l1 = l
+            l2 = max([l1,min([l + 5,nmol-1])])
+            xmax = math.pow(10,int(math.log10(np.amax(den[:,l1:l2+1])))+1)
+            xmin = min(xmin,xmax/1.E8)
+            ax.set_xlim(xmin,xmax)
+            ax.set_ylim(ymin,ymax)
+            k = 0
+            while ((k<5) and (l<nmol-1)):
+                l = l + 1
+                ax.semilogx(den[:,l],alt,color=clrs[k])
+                ax.text(xmax/100,ymax-20-k*20,name[l],color=clrs[k],fontsize='8')
+                k = k + 1
+            if (subplot_i == 1) or (subplot_i == 3):
+                ax.set_ylabel(r'Altitude (Km)')
+            if (subplot_i == 3) or (subplot_i == 4):
+                ax.set_xlabel(r'Density (cm$^{-3}$)')
+            if (l == nmol-1): 
+                break
         pdf.savefig()
         plt.close()
-        if (l == nmol-1):
-            pdf.savefig()
-            plt.close()
-            break
-         
-        pdf.savefig()  # or you can pass a Figure object to pdf.savefig
-        plt.close()    
 
-npg = 0
 l=0
-with PdfPages('moles.pdf') as pdf:
+with PdfPages('../runs/'+srun+'/plots/moles.pdf') as pdf:
     
-    while (l < nmol):
-        
-        npg = npg + 1
-        print npg
+    while (l < nmol-1):
         fig = plt.figure()  # create a figure object
         
-        # upper left
-        ax1 = fig.add_subplot(2, 2, 1)
-        l1 = l + 1
-        l2 = max([l1,min([l + 4,nmol-1])])
-        if (l1 == l2):
-            xmax = math.pow(10,int(math.log10(np.amax(den[1:nalt,l1])))+1)
-        else:    
-            xmax = math.pow(10,int(math.log10(np.amax(den[1:nalt,l1:l2])))+1)
-        xmin = xmax/1.E6
-        ax1.set_xlim(xmin,xmax)
-        ax1.set_ylim(ymin,ymax)
-        k=0
-        while ((k<=4) & (l<nmol-1)):
-            l = l + 1
-            ax1.semilogx(xmol[:,l],alt,color=clrs[k])
-            ax1.text(xmax/10,ymin+450-k*100,name[l],color=clrs[k],fontsize='8')
-            k=k+1
-
-        ax1.set_ylabel(r'Altitude (Km)')
-        if (l == nmol-1):
-            pdf.savefig()
-            plt.close()              
-            break
-    
-        # upper right
-        ax2 = fig.add_subplot(2, 2, 2)
-        l1 = l + 1
-        l2 = max([l1,min([l + 4,nmol-1])])
-        if (l1 == l2):
-            xmax = math.pow(10,int(math.log10(np.amax(den[1:nalt,l1])))+1)
-        else:    
-            xmax = math.pow(10,int(math.log10(np.amax(den[1:nalt,l1:l2])))+1)
-        xmin = xmax/1.E6
-        ax2.set_xlim(xmin,xmax)
-        ax2.set_ylim(ymin,ymax)
-        k=0
-        while ((k<=4) & (l<nmol-1)):
-            l = l + 1
-            ax2.semilogx(xmol[:,l],alt,color=clrs[k])
-            ax2.text(xmax/10,ymin+450-k*100,name[l],color=clrs[k],fontsize='8')
-            k=k+1
-            
-        if (l == nmol-1):
-            pdf.savefig()
-            plt.close()              
-            break
-    
-        # lower left
-        ax3 = fig.add_subplot(2, 2, 3)
-        l1 = l + 1
-        l2 = max([l1,min([l + 4,nmol-1])])
-        if (l1 == l2):
-            xmax = math.pow(10,int(math.log10(np.amax(den[1:nalt,l1])))+1)
-        else:    
-            xmax = math.pow(10,int(math.log10(np.amax(den[1:nalt,l1:l2])))+1)
-        xmin = xmax/1.E6
-        ax3.set_xlim(xmin,xmax)
-        ax3.set_ylim(ymin,ymax)
-        k=0
-        while ((k<=4) & (l<nmol-1)):
-            l = l + 1
-            ax3.semilogx(xmol[:,l],alt,color=clrs[k])
-            ax3.text(xmax/10,ymin+450-k*100,name[l],color=clrs[k],fontsize='8')
-            k=k+1
-            
-        ax3.set_ylabel(r'Altitude (Km)')
-        ax3.set_xlabel(r'Mole Fraction (V/V)')
-        if (l == nmol-1):
-            pdf.savefig()
-            plt.close()              
-            break
-        
-        # lower right
-        ax4 = fig.add_subplot(2, 2, 4)
-        l1 = l + 1
-        l2 = max([l1,min([l + 4,nmol-1])])
-        if (l1 == l2):
-            xmax = math.pow(10,int(math.log10(np.amax(den[1:nalt,l1])))+1)
-        else:    
-            xmax = math.pow(10,int(math.log10(np.amax(den[1:nalt,l1:l2])))+1)
-        xmin = xmax/1.E6
-        ax4.set_xlim(xmin,xmax)
-        ax4.set_ylim(ymin,ymax)
-        k=0
-        while ((k<=4) & (l<nmol-1)):
-            l = l + 1
-            ax4.semilogx(xmol[:,l],alt,color=clrs[k])
-            ax4.text(xmax/10,ymin+450-k*100,name[l],color=clrs[k],fontsize='8')
-            k = k + 1
-            
-        ax4.set_xlabel(r'Mole Fraction (V/V)')       
-        if (l == nmol-1):
-            pdf.savefig()
-            plt.close()              
-            break
-        
-        pdf.savefig()  # or you can pass a Figure object to pdf.savefig
-        plt.close()    
+        for subplot_i in range(1,5):
+            ax = fig.add_subplot(2, 2, subplot_i)
+            l1 = l
+            l2 = max([l1,min([l + 5,nmol-1])])
+            xmax = math.pow(10,int(math.log10(np.amax(xmol[:,l1:l2+1])))+1)
+            xmin = min(xmin,xmax/1.E8)
+            ax.set_xlim(xmin,xmax)
+            ax.set_ylim(ymin,ymax)
+            k = 0
+            while ((k<5) and (l<nmol-1)):
+                l = l + 1
+                ax.semilogx(xmol[:,l],alt,color=clrs[k])
+                ax.text(xmax/100,ymax-20-k*20,name[l],color=clrs[k],fontsize='8')
+                k = k + 1
+            if (subplot_i == 1) or (subplot_i == 3):
+                ax.set_ylabel(r'Altitude (Km)')
+            if (subplot_i == 3) or (subplot_i == 4):
+                ax.set_xlabel(r'Mole Fraction (V/V)')
+            if (l == nmol-1): 
+                break
+        pdf.savefig()
+        plt.close()
