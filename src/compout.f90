@@ -86,9 +86,9 @@ SUBROUTINE COMPOUT
      WRITE (61,"(2I6)") nlev, nsp
      WRITE (61,"(' MOLECULES')")
      WRITE (61,"(10(2X,A12,1X))") (name(nm),nm=1,nsp)
-     WRITE (61,"(' ALTITUDE (km)')") 
+     WRITE (61,"(' ALTITUDE (cm)')") 
      WRITE (61,"(10ES15.7)") (z(nz), nz=1, nlev)
-     WRITE (61,"(' RADIUS (km)')") 
+     WRITE (61,"(' RADIUS (cm)')") 
      WRITE (61,"(10ES15.7)") (rz(nz), nz=1, nlev)
      WRITE (61,"(' GRAVITY (cm s-2)')")
      WRITE (61,"(10ES15.7)") (grv(nz), nz=1, nlev)
@@ -151,7 +151,7 @@ SUBROUTINE COMPOUT
   OPEN (unit=61,file='../runs/'//trim(runID)//'/output/diff.csv',status='unknown',action='write')
      WRITE (61,"(A12,500(',',A12))") (dheads(nm),nm=1,2*nsp+3)
      DO nz = 1, nlev
-        WRITE (61,"(ES15.7,500(',',ES15.7))") z(nz),ek(nz),(df(nz,nm),nm=1,nsp),(1.E-5_RP*ht(nz,nm),nm=0,nsp)
+        WRITE (61,"(ES15.7,500(',',ES15.7))") 1.E-5*z(nz),ek(nz),(df(nz,nm),nm=1,nsp),(1.E-5_RP*ht(nz,nm),nm=0,nsp)
      END DO
   CLOSE(unit=61)
 
@@ -168,7 +168,7 @@ SUBROUTINE COMPOUT
   OPEN(unit=62,file='../runs/'//TRIM(runID)//'/output/photorates.out',status='unknown')
      WRITE (62,"(2I6)") nphrt, nlev
      WRITE (62,"(' ALTITUDE (km)')") 
-     WRITE (62,"(10ES11.3)") (z(nz), nz=1, nlev)
+     WRITE (62,"(10ES11.3)") (1.E-5*z(nz), nz=1, nlev)
      DO np = 1, nphrt
         WRITE(62,"(A)") ptitle(np)
         WRITE(62,"(10ES11.3)") (rpt(np,nz),nz=1,nlev)
@@ -197,7 +197,7 @@ SUBROUTINE COMPOUT
   OPEN(unit=62,file='../runs/'//TRIM(runID)//'/output/elerates.out',status='unknown')
      WRITE (62,"(3I6)") nert, nlev
      WRITE (62,"(' ALTITUDE (km)')") 
-     WRITE (62,"(10ES11.3)") (z(nz), nz=1, nlev)
+     WRITE (62,"(10ES11.3)") (1.E-5*z(nz), nz=1, nlev)
      DO np = 1, nert
         WRITE(62,"(A)") etitle(np)
         WRITE(62,"(10ES11.3)") (rpe(np,nz),nz=1,nlev)
@@ -217,7 +217,7 @@ SUBROUTINE COMPOUT
   OPEN(unit=63,file='../runs/'//TRIM(runID)//'/output/ratecoeff.out',status='unknown')
      WRITE (63,"(2I6)") nrct, nlev
      WRITE (63,"(' ALTITUDE (km)')") 
-     WRITE (63,"(10ES11.3)") (z(nz), nz=1, nlev)
+     WRITE (63,"(10ES11.3)") (1.E-5*z(nz), nz=1, nlev)
      DO nr = 1, nrct
 !        IF(itype(nr) /= 1) THEN
         WRITE(63,"(A)") ctitle(nr)
@@ -230,7 +230,7 @@ SUBROUTINE COMPOUT
   OPEN(unit=63,file='../runs/'//TRIM(runID)//'/output/chemrates.out',status='unknown')
      WRITE (63,"(2I6)") nrct, nlev
      WRITE (63,"(' ALTITUDE (km)')") 
-     WRITE (63,"(10ES11.3)") (z(nz), nz=1, nlev)
+     WRITE (63,"(10ES11.3)") (1.E-5*z(nz), nz=1, nlev)
      DO nr = 1, nrct
         WRITE(63,"(A)") ctitle(nr)
         WRITE(63,"(10ES11.3)") (rct(nr,nz),nz=1,nlev)
