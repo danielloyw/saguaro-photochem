@@ -40,7 +40,7 @@ SUBROUTINE PATHS1D
            rtan = rz(nz) * sin_sza
            ntn = LOCATE(rz, rtan) + 1
            ntan(nz) = ntn 
-           rtn2 = rtan * rtan	
+           rtn2 = rtan * rtan
            ds(ntn,nz) = SQRT(rz(ntn+1)*rz(ntn+1) - rtn2) 
            DO mz = ntn+1, nlev-1   
               ds(mz,nz)=SQRT(rz(mz+1)*rz(mz+1)-rtn2)-SQRT(rz(mz)*rz(mz)-rtn2)

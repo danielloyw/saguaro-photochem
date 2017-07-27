@@ -54,7 +54,7 @@ SUBROUTINE PHOTO
  
   CALL READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phrctB,wcrsB,delwB,xcrsB,  &
        bratB)
-                                                                                  
+
   ncrsB = SIZE(wcrsB)
   nabsB = SIZE(xcrsB,2)
   nbrmaxB = SIZE(bratB,2)
@@ -148,8 +148,7 @@ SUBROUTINE PHOTO
   ! #                                                                                              #
   !#################################################################################################
 
-!  nph = SUM(nbrnchA(1:nabsA)) + SUM(nbrnchB(1:nabsB)) + SUM(nbrnchC(1:nabsC)) + SUM(nbrnchJ(1:nabsJ))
-  nph = 0 ! why not simple multiplication and addition?
+  nph = 0
   DO na = 1, nabsA
      DO nb = 1, nbrnchA(na)
         nph = nph + 1

@@ -81,7 +81,7 @@ SUBROUTINE SOLDEP1
            IF( ht(nlev,nm) > 1.E-10_RP) THEN
               xp = rz(nlev)/ht(nlev,nm)
            ELSE
-	      xp = zero
+              xp = zero
            END IF
            IF (xp < 100._RP) THEN
               yv = SQRT(half*xp) * ABS(ca)
@@ -170,7 +170,7 @@ SUBROUTINE SOLDEP1
            nm = loabC(na)
            sm = sm + xcrsC(nw,na) * clm(nz,nm)
         END DO
-        trnC(nw,nz) = EXP(-(sm + (tau_aer(nz,nw) + tau_ray(nz,nw))/cos_sza)) ! why is there an additional term?
+        trnC(nw,nz) = EXP(-(sm + (tau_aer(nz,nw) + tau_ray(nz,nw))/cos_sza))
      END DO
   END DO
   END IF

@@ -45,7 +45,7 @@ PROGRAM PCHEM1D
 !  READ(*,*) tstep_diff, ntim_diff
 
   OPEN(unit=21,file='tctl.out',status='old',action='read')
-     READ(21,*) tstep_diff, ntim_diff, tstep_chem, ntim_chem ! 1, 1000, 1, 5
+     READ(21,*) tstep_diff, ntim_diff, tstep_chem, ntim_chem
   CLOSE(unit=21)
 
 

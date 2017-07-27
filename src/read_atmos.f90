@@ -162,8 +162,6 @@ SUBROUTINE READ_ATMOS
 
   CALL HYDROST
 
-  nibot = LOCATE(z,zbot)
-
   ! ############################################################################
   ! #                                                                          #
   ! #          AUXILIARY ALTITUDE ARRAYS                                       #
