@@ -2,7 +2,7 @@ SUBROUTINE READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phr
      
   USE PRECISION
   USE CONSTANTS
-  USE SUBS, ONLY : FIND_NAME, INTRP
+  USE SUBS, ONLY : FIND_NAME, INTRP, LOCATE
 
   IMPLICIT NONE
 
@@ -23,21 +23,24 @@ SUBROUTINE READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phr
   REAL(RP), INTENT(OUT), ALLOCATABLE, DIMENSION(:,:) :: xcrsB
   REAL(RP), INTENT(OUT), ALLOCATABLE, DIMENSION(:,:,:) :: bratB
 
+  
   !
   !  .. Internal Variables
   !
 
-  INTEGER, PARAMETER :: ncrsB = 540000 ! wavelengths
+  INTEGER, PARAMETER :: ncrsB = 1463000 ! wavelengths
   INTEGER, PARAMETER :: nabsB = 4
   INTEGER, PARAMETER :: nbrmaxB = 12
   INTEGER, PARAMETER :: nprmaxB =  4
-  INTEGER, PARAMETER :: nwav_co = 16001
+  INTEGER, PARAMETER :: nwav_n2 = 540000
+  INTEGER, PARAMETER :: nwav_coA = 16000
+  INTEGER, PARAMETER :: nwav_coB = 840000
 
   CHARACTER(len=128) :: header, cline
   CHARACTER(len=12), DIMENSION(6) :: fm
   INTEGER :: nwav_co2, nbrnch_co2, nsp
-  REAL(RP), ALLOCATABLE, DIMENSION(:) :: wav_co2, crs_co2_tot, crs_co2_ion, wav_co, crs_co
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: brat_co2
+  REAL(RP), ALLOCATABLE, DIMENSION(:) :: wav_co2, crs_co2_tot, crs_co2_ion, wav_co, crs_co, crs_co_tot, wav_n2, crs_14n2, crs_15n2
+  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: brat_co2, brat_co
   REAL(RP) :: rdum
   INTEGER :: na, nf, nw, nb, nm, np, j
 !  CHARACTER(len=1) :: iret
@@ -56,18 +59,26 @@ SUBROUTINE READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phr
   enrgIB(:,:) = 0
   charge_stateB(:,:) = 0
 
+  !  Create wavelength scale
+  
+  delwB(:) = 2.E-4_RP
+  DO nw = 1, ncrsB
+     wcrsB(nw) = 787.4_RP + nw * delwB(nw)
+  END DO
+  
+  
   !
   !  .. N2 High Resolution Lewis et al. Cross Section for 800-1000 Angstroms
   !
-
+  ALLOCATE(wav_n2(nwav_n2),crs_14n2(nwav_n2),crs_15n2(nwav_n2))
   na = 1
   OPEN(Unit=64,file='../data/photons/photoB-28N2.dat',status='old',action='read')
      READ(64,"(A)") header
      READ(64,"(A)") header
-     DO nf = 1, ncrsB
-        nw = ncrsB-nf+1
-        READ(64,*) wcrsB(nw), xcrsB(nw,na) ! wavelengths, cross sections
-        wcrsB(nw) = 1.E8_RP/wcrsB(nw) ! wavelengths
+     DO nf = 1, nwav_n2
+        nw = nwav_n2-nf+1
+        READ(64,*) wav_n2(nw), crs_14n2(nw) ! wavelengths, cross sections
+        wav_n2(nw) = 1.E8_RP/wav_n2(nw) ! convert cm-1 to angstrom
      END DO
   CLOSE(unit=64)
 
@@ -83,6 +94,14 @@ SUBROUTINE READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phr
   loprB(2,nb,na) = FIND_NAME('N           ',name)
   loprB(3:4,nb,na) = 0
 
+  CALL INTRP(wav_n2,crs_14n2,wcrsB(1:ncrsB),xcrsB(1:ncrsB,na))
+  
+  ! zero values out of wavelength range
+  nw = LOCATE(wcrsB,wav_n2(1))
+  xcrsB(1:nw,na) = zero
+  nw = LOCATE(wcrsB,wav_n2(nwav_n2))
+  xcrsB(nw+1:ncrsB,na) = zero
+  
   !
   !  .. 29N2 High Resolution Cross Section in Band Region
   !
@@ -91,13 +110,12 @@ SUBROUTINE READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phr
   OPEN(Unit=65,file='../data/photons/photoB-29N2.dat',status='old',action='read')
      READ(65,"(A)") header
      READ(65,"(A)") header
-     DO nf = 1, ncrsB
-        nw = ncrsB-nf+1
-        READ(65,*) wcrsB(nw), xcrsB(nw,na)
-        wcrsB(nw) = 1.E8_RP/wcrsB(nw)
+     DO nf = 1, nwav_n2
+        nw = nwav_n2-nf+1
+        READ(64,*) wav_n2(nw), crs_15n2(nw)
+        wav_n2(nw) = 1.E8_RP/wav_n2(nw)
      END DO
   CLOSE(unit=65)
-
 
   loabB(na) = FIND_NAME('N2I         ',name)
   nbrnchB(na) = 2
@@ -122,16 +140,14 @@ SUBROUTINE READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phr
   loprB(2,nb,na) = FIND_NAME('NI          ',name)
   loprB(3:4,nb,na) = 0
 
-  !
-  !  .. Wavelength intervals for cross section grid
-  !
-
-  DO nf = 2, ncrsB-1                               ! Need this to integrate over wavelength
-     delwB(nf) = half*(wcrsB(nf+1)-wcrsB(nf-1))
-  END DO
-  delwB(1) = delwB(2)
-  delwB(ncrsB) = delwB(ncrsB-1)
+  CALL INTRP(wav_n2,crs_15n2,wcrsB(1:ncrsB),xcrsB(1:ncrsB,na))
   
+  ! zero values out of wavelength range
+  nw = LOCATE(wcrsB,wav_n2(1))
+  xcrsB(1:nw,na) = zero
+  nw = LOCATE(wcrsB,wav_n2(nwav_n2))
+  xcrsB(nw+1:ncrsB,na) = zero
+
   !
   !  .. Read CO2 cross section and interpolate to high res grid
   !
@@ -174,41 +190,83 @@ SUBROUTINE READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phr
   nbrnchB(na) = nbrnch_co2
 
 
-  CALL INTRP(wav_co2,crs_co2_tot(1:nwav_co2),wcrsB(1:ncrsB),xcrsB(1:ncrsB,na))
+  CALL INTRP(wav_co2,crs_co2_tot,wcrsB(1:ncrsB),xcrsB(1:ncrsB,na))
   DO nb = 1, nbrnchB(na)
      CALL INTRP(wav_co2,brat_co2(1:nwav_co2,nb),wcrsB(1:ncrsB),bratB(1:ncrsB,nb,na))
   END DO
+  
+  ! zero values out of wavelength range
+  nw = LOCATE(wcrsB,wav_co2(1))
+  xcrsB(1:nw,na) = zero
+  nw = LOCATE(wcrsB,wav_co2(nwav_co2))
+  xcrsB(nw+1:ncrsB,na) = zero
+
   
   !
   !  .. Read CO cross section and interpolate to high res grid
   !
 
-  na = 4  
-  ALLOCATE(wav_co(nwav_co),crs_co(nwav_co))
-  OPEN(Unit=67,file='../data/photons/photoB-12C16O.dat',status='old',action='read')
+  na = 4
+  nbrnchB(na) = 2
+  ALLOCATE(wav_co(nwav_coA+nwav_coB),crs_co(nwav_coA+nwav_coB),crs_co_tot(nwav_coA+nwav_coB),brat_co(nwav_coA+nwav_coB,nbrnchB(na)))
+  OPEN(Unit=67,file='../data/photons/photoB-12C16O_300K_89.6-91.2.dat',status='old',action='read')
      READ(67,"(A)") header
      READ(67,"(A)") header
-     DO nf = 1, nwav_co
+     DO nf = 1, nwav_coA
         READ(67,*) wav_co(nf), crs_co(nf) ! wavelengths, cross sections
-		wav_co(nf) = wav_co(nf)*10._RP
+        wav_coA(nf) = wav_coA(nf)*10._RP
+        crs_co_tot(nf) = crs_co(nf)
      END DO
   CLOSE(unit=67)
+  OPEN(Unit=68,file='../data/photons/photoB-12C16O_300K_91.2-108.dat',status='old',action='read')
+     READ(68,"(A)") header
+     READ(68,"(A)") header
+     READ(68,"(A)") header
+     READ(68,"(A)") header
+     DO nf = nwav_coA+1, nwav_coA+nwav_coB
+        READ(68,*) wav_co(nf), crs_co_tot(nf), crs_co(nf) ! wavelengths, cross sections
+        wav_co(nf) = wav_co(nf)*10._RP
+     END DO
+  CLOSE(unit=68)
 
   loabB(na) = FIND_NAME('CO          ',name)
-  nbrnchB(na) = 1
+
   nb = 1
   phrctB(nb,na) = 'CO           + hv           = C            + O            +              +             '
   ionizeB(nb,na) = .false.
   charge_stateB(nb,na) = zero
   enrgIB(nb,na) = zero
-  bratB(1:ncrsB,nb,na) = one
+  DO nf = 1, nwav_coA+nwav_coB
+     bratB_co(nf,nb) = crs_co(nf)/crs_co_tot(nf)
+  END DO
   loprB(1,nb,na) = FIND_NAME('C           ',name)
   loprB(2,nb,na) = FIND_NAME('O           ',name)
   loprB(3:4,nb,na) = 0
 
-  CALL INTRP(wav_co,crs_co(1:nwav_co),wcrsB(1:ncrsB),xcrsB(1:ncrsB,na))
+  nb = 2
+  phrctB(nb,na) = 'CO           + hv           = CO           +              +              +             '
+  ionizeB(nb,na) = .false.
+  charge_stateB(nb,na) = zero
+  enrgIB(nb,na) = zero
+  DO nf = 1, nwav_coA+nwav_coB
+     bratB_co(nf,nb) = one - brat(nf,1,na)
+  END DO
+  loprB(1,nb,na) = FIND_NAME('CO          ',name)
+  loprB(2:4,nb,na) = 0
 
-  DEALLOCATE(wav_co2,crs_co2_tot,crs_co2_ion,brat_co2, wav_co, crs_co)
+  CALL INTRP(wav_co,crs_co_tot,wcrsB(1:ncrsB),xcrsB(1:ncrsB,na))
+  DO nb = 1, nbrnchB(na)
+     CALL INTRP(wav_co,brat_co(1:nwav_co2,nb),wcrsB(1:ncrsB),bratB(1:ncrsB,nb,na))
+  END DO
+  
+  ! zero values out of wavelength range
+  nw = LOCATE(wcrsB,wav_co(1))
+  xcrsB(1:nw,na) = zero
+  nw = LOCATE(wcrsB,wav_co(nwav_coA+nwav_coB))
+  xcrsB(nw+1:ncrsB,na) = zero
+
+  
+  DEALLOCATE(wav_co2,crs_co2_tot,crs_co2_ion,brat_co2, wav_co, crs_co, crs_co_tot, brat_co, wav_n2, crs_14n2, crs_15n2)
 
   RETURN
 END SUBROUTINE READ_PHOTOB
