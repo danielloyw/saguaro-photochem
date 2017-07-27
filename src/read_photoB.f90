@@ -112,7 +112,7 @@ SUBROUTINE READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phr
      READ(65,"(A)") header
      DO nf = 1, nwav_n2
         nw = nwav_n2-nf+1
-        READ(64,*) wav_n2(nw), crs_15n2(nw)
+        READ(65,*) wav_n2(nw), crs_15n2(nw)
         wav_n2(nw) = 1.E8_RP/wav_n2(nw)
      END DO
   CLOSE(unit=65)
@@ -214,7 +214,7 @@ SUBROUTINE READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phr
      READ(67,"(A)") header
      DO nf = 1, nwav_coA
         READ(67,*) wav_co(nf), crs_co(nf) ! wavelengths, cross sections
-        wav_coA(nf) = wav_coA(nf)*10._RP
+        wav_co(nf) = wav_co(nf)*10._RP
         crs_co_tot(nf) = crs_co(nf)
      END DO
   CLOSE(unit=67)
@@ -237,7 +237,7 @@ SUBROUTINE READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phr
   charge_stateB(nb,na) = zero
   enrgIB(nb,na) = zero
   DO nf = 1, nwav_coA+nwav_coB
-     bratB_co(nf,nb) = crs_co(nf)/crs_co_tot(nf)
+     brat_co(nf,nb) = crs_co(nf)/crs_co_tot(nf)
   END DO
   loprB(1,nb,na) = FIND_NAME('C           ',name)
   loprB(2,nb,na) = FIND_NAME('O           ',name)
@@ -249,14 +249,14 @@ SUBROUTINE READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phr
   charge_stateB(nb,na) = zero
   enrgIB(nb,na) = zero
   DO nf = 1, nwav_coA+nwav_coB
-     bratB_co(nf,nb) = one - brat(nf,1,na)
+     brat_co(nf,nb) = one - brat_co(nf,1)
   END DO
   loprB(1,nb,na) = FIND_NAME('CO          ',name)
   loprB(2:4,nb,na) = 0
 
   CALL INTRP(wav_co,crs_co_tot,wcrsB(1:ncrsB),xcrsB(1:ncrsB,na))
   DO nb = 1, nbrnchB(na)
-     CALL INTRP(wav_co,brat_co(1:nwav_co2,nb),wcrsB(1:ncrsB),bratB(1:ncrsB,nb,na))
+     CALL INTRP(wav_co,brat_co(:,nb),wcrsB(1:ncrsB),bratB(1:ncrsB,nb,na))
   END DO
   
   ! zero values out of wavelength range
