@@ -13,12 +13,14 @@ from read_molecules import read_molecules
 from read_rates import read_rates
 from read_summary import read_summary
 
-RT = 2575.E5
-colrates_lim = 1.E3
+R = 3390
+colrates_lim = 1.E-3
 
 plt.rcParams['xtick.labelsize'] = 8 
 plt.rcParams['ytick.labelsize'] = 8 
-
+plt.rcParams['axes.labelsize'] = 8
+plt.rcParams['figure.titlesize'] = 10
+plt.rcParams['font.size'] = 4
 
 srun = raw_input(' Enter run id > ')
 srun.strip()
@@ -39,36 +41,31 @@ molec = [nmolec,imolec]
 crates = read_rates('../runs/'+srun+'/output/chemrates.out')
 prates = read_rates('../runs/'+srun+'/output/photorates.out')
 erates = read_rates('../runs/'+srun+'/output/elerates.out')
-grates = read_rates('../runs/'+srun+'/output/grates.out')
 alt = crates["alt"]
 nalt = size(alt)
 
-title = prates["title"] + erates["title"] + grates["title"] + crates["title"] 
+title = prates["title"] + erates["title"] + crates["title"] 
 nrct = size(title)
 
 crct = np.asarray(crates["rct"], dtype=np.float)
 prct = np.asarray(prates["rct"], dtype=np.float)
 erct = np.asarray(erates["rct"], dtype=np.float)
-grct = np.asarray(grates["rct"], dtype=np.float)
 
-rct = np.concatenate((prct,erct,grct,crct),axis=1)
+rct = np.concatenate((prct,erct,crct),axis=1)
 
 # calculate column integrated rates
 
-rz = RT + alt
-rz2 = np.power(rz/RT,2)
+alt = alt/1.E5
+rz = R + alt
+rz2 = np.power(rz/R,2)
 colrates = np.zeros(nrct, dtype=float)
-nr = 0
-for x in xrange(0,nrct):
+for nr in xrange(0,nrct):
    sm = 0.
-   nz = 1
-   for z in xrange(1,nalt):
+   for nz in xrange(1,nalt):
        sm = sm + 0.5*(rct[nz,nr]*rz2[nz]+ \
        rct[nz-1,nr]*rz2[nz-1])*(rz[nz]-rz[nz-1])
-       nz += 1
    colrates[nr] = sm
-   nr += 1
-   
+
 # read molecule summary files
 
 molsum = read_summary('../runs/'+srun+'/output/molecules/'+smolec+'.OUT')   
@@ -80,8 +77,7 @@ sr2=[]
 sp1=[]
 sp2=[]
 sp3=[]
-nr=0
-for x in title:
+for nr in range(0,nrct):
     stmp = title[nr].split() 
     sr1.append(stmp[0])
     sr2.append(stmp[2])
@@ -91,12 +87,10 @@ for x in title:
         sp3.append('')
     else:
         sp3.append(stmp[8])
-    nr += 1      
 
 nlss_list = []
 nprd_list = []
-nr = 0
-for x in title:
+for nr in range(0,nrct):
 
    if(colrates[nr]>colrates_lim):
        
@@ -107,10 +101,9 @@ for x in title:
 
        # find reactions with molecule as a product
 
-       if((smolec== sp1[nr]) or (smolec==sp2[nr]) or (smolec==sp3[nr])):
+       if((smolec==sp1[nr]) or (smolec==sp2[nr]) or (smolec==sp3[nr])):
            nprd_list.append(nr)
-      
-   nr += 1
+
 
 nprd = size(nprd_list)
 nlss = size(nlss_list)
@@ -165,23 +158,23 @@ if (nprd > 0):
   sp3_new = sp3_prd  
   rates_new = rates_prd
   colrates_new = colrates_prd
-  k=0
+  k=0 # consolidated array index
   
-  for n in xrange(1, nprd):
-    lfind = np.bool_(1)
-    m = 0
-    while logical_and(np.less_equal(m,k),(lfind)):       
+  for n in range(1, nprd):
+    lfind = np.bool_(1) # new reaction?
+    m = 0 # reference reaction in consolidated array
+    while logical_and(np.less_equal(m,k),(lfind)):
       l1 = (sr1_prd[n] == sr1_new[m])
       l2 = (sr2_prd[n] == sr2_new[m])
       l3 = (sp1_prd[n] == sp1_new[m])
       l4 = (sp2_prd[n] == sp2_new[m])
-      l5 = (sp3_prd[n] == sp3_new[m])      
+      l5 = (sp3_prd[n] == sp3_new[m])
       lchk = np.logical_and(l1,l2)
       lchk = np.logical_and(lchk,l3)
-      if logical_and((sp2[n] != ''),(sp3[m] != '-')):
+      if logical_and((sp2[n] != ''),(sp2[m] != '-')):
           lchk = logical_and(lchk,l4)
       if logical_and((sp3[n] != ''),(sp3[m] != '-')):
-          lchk = logical_and(lchk,l5)        
+          lchk = logical_and(lchk,l5)
       if(lchk):
           lfind = np.bool_(0)
           rates_new[:,m] = rates_new[:,m] + rates_prd[:,n]
@@ -200,13 +193,13 @@ if (nprd > 0):
         rates_new[:,k] = rates_prd[:,n]
         colrates_new[k] = colrates_prd[n]
 
-  nprd = k + 1
+  nprd = k + 1 # size is k+1 because python starts at 0
   title_prd = title_new[0:nprd]
   rates_prd = rates_new[0:nalt,0:nprd]
   colrates_prd = colrates_new[0:nprd]
   
   print 'Production Reactions'
-  for n in xrange(0,min([5,nprd])):
+  for n in range(0,min([5,nprd])):
      print("{0:10.2e}:  {1:s}".format(colrates_prd[n],title_prd[n]))
 
 if (nlss > 0):
@@ -231,7 +224,7 @@ if (nlss > 0):
   sp2_lss = stmp_p2[sort_indx_lss]
   sp3_lss = stmp_p3[sort_indx_lss]
     
-  #  consolidate similar reactions 
+  #  consolidate similar reactions
     
   lchk = np.bool_(1)
   title_new = title_lss
@@ -242,12 +235,13 @@ if (nlss > 0):
   sp3_new = sp3_lss  
   rates_new = rates_lss
   colrates_new = colrates_lss
-  k=0  
+  k=0
+  
   for n in xrange(1, nlss):
       
     lfind = np.bool_(1)
     m = 0
-    while logical_and(np.less_equal(m,k),(lfind)):       
+    while logical_and(np.less_equal(m,k),(lfind)):
       l1 = (sr1_lss[n] == sr1_new[m])
       l2 = (sr2_lss[n] == sr2_new[m])
       l3 = (sp1_lss[n] == sp1_new[m])
@@ -255,7 +249,7 @@ if (nlss > 0):
       l5 = (sp3_lss[n] == sp3_new[m])      
       lchk = np.logical_and(l1,l2)
       lchk = np.logical_and(lchk,l3)
-      if logical_and((sp2[n] != ''),(sp3[m] != '-')):
+      if logical_and((sp2[n] != ''),(sp2[m] != '-')):
           lchk = logical_and(lchk,l4)
       if logical_and((sp3[n] != ''),(sp3[m] != '-')):
           lchk = logical_and(lchk,l5)        
@@ -263,7 +257,7 @@ if (nlss > 0):
           lfind = np.bool_(0)
           rates_new[:,m] = rates_new[:,m] + rates_lss[:,n]
           colrates_new[m] = colrates_new[m] + colrates_lss[n] 
-      m += 1   
+      m += 1
           
     if(lfind):
         k += 1
@@ -276,7 +270,7 @@ if (nlss > 0):
         rates_new[:,k] = rates_lss[:,n]
         colrates_new[k] = colrates_lss[n]
 
-  nlss = k + 1  
+  nlss = k + 1
   title_lss = title_new[0:nlss]
   rates_lss = rates_new[0:nalt,0:nlss]
   colrates_lss = colrates_new[0:nlss]
@@ -284,21 +278,23 @@ if (nlss > 0):
   for n in xrange(0,min([5,nlss])):
      print("{0:10.2e}:  {1:s}".format(colrates_lss[n],title_lss[n]))
 
+fo = open('../runs/'+srun+'/plots/test.txt', "wb")
+fo.write(str(rates_lss[:,0]));
+fo.close()
+
 ##
 ##               Make Plots
 ##
 
-alt = 1.E-5*alt
-
 clrs = ['red','blue','green','magenta','cyan']
 ymin = 0
-ymax = 1500
+ymax = 250
 
 #  Open PDF file
 
 pdf = PdfPages(sfileplot)
 
-fig = plt.figure()    
+fig = plt.figure()
 
 # plot density upper left
 
@@ -308,21 +304,22 @@ xmin = xmax/1.E10
 ax1.set_xlim(xmin,xmax)
 ax1.set_ylim(ymin,ymax)
 ax1.semilogx(molsum["den"],molsum["alt"])
-ax1.set_ylabel(r'Altitude (Km)',fontsize='8')
-ax1.set_xlabel(r'Density (cm$^{-3}$)',fontsize='8')                          
-    
+ax1.set_ylabel(r'Altitude (km)')
+ax1.set_xlabel(r'Density (cm$^{-3}$)')
+ax1.xaxis.set_label_position('top')
+
 # plot mole fraction upper right
 
 ax2 = fig.add_subplot(2, 2, 2)
 xmax = math.pow(10,int(math.log10(np.amax(molsum["mol"])))+1)
-xmin = xmax/1.E10
+xmin = xmax/1.E8
 ax2.set_xlim(xmin,xmax)
 ax2.set_ylim(ymin,ymax)
 ax2.semilogx(molsum["mol"],molsum["alt"])
-ax2.set_ylabel(r'Altitude (Km)',fontsize='8')
-ax2.set_xlabel(r'Mole Fraction (V/V)',fontsize='8')                          
+ax2.set_xlabel(r'Mole Fraction (V/V)')
+ax2.xaxis.set_label_position('top')
 
-# plot prouction and loss, Lower left
+# plot production and loss, Lower left
 
 ax3 = fig.add_subplot(2, 2, 3)
 pmax = np.amax(molsum["pr_net"])
@@ -331,15 +328,19 @@ cmax = np.amax(molsum["cvg_flx"])
 dmax = np.amax(-1*molsum["cvg_flx"])
 xmax = np.amax([pmax,lmax,cmax,dmax])
 xmax = math.pow(10,int(math.log10(xmax))+1)
-xmin = xmax/1.E10
+xmin = 1.
 ax3.set_xlim(xmin,xmax)
 ax3.set_ylim(ymin,ymax)
 ax3.semilogx(molsum["pr_net"],molsum["alt"],color=clrs[0])
 ax3.semilogx(molsum["ls_net"],molsum["alt"],color=clrs[1])
 ax3.semilogx(molsum["cvg_flx"],molsum["alt"],color=clrs[2])
 ax3.semilogx(-1*molsum["cvg_flx"],molsum["alt"],color=clrs[3])
-ax3.set_ylabel(r'Altitude (Km)',fontsize='8')
-ax3.set_xlabel(r'Rate (cm$^{-3}$s$^{-1}$',fontsize='8')                          
+ax3.set_ylabel(r'Altitude (Km)')
+ax3.set_xlabel(r'Rate (cm$^{-3}$s$^{-1}$)')
+ax3.text(0.8,0.95-0.08,"Net Prod",color=clrs[0],transform=ax3.transAxes)
+ax3.text(0.8,0.95-0.16,"Net Loss",color=clrs[1],transform=ax3.transAxes)
+ax3.text(0.8,0.95-0.24,"del flx",color=clrs[2],transform=ax3.transAxes)
+ax3.text(0.8,0.95-0.32,"-del flx",color=clrs[3],transform=ax3.transAxes)
 
 # plot Fluxes, Lower right
 
@@ -360,272 +361,68 @@ if(np.amax(abs(flx))>1.E-10):
     ax4.set_ylim(ymin,ymax)
     ax4.semilogx(upflx,upalt,color=clrs[0])
     ax4.semilogx(dnflx,dnalt,color=clrs[1])
-    ax4.set_ylabel(r'Altitude (Km)',fontsize='8')
-    ax4.set_xlabel(r'Flux (cm$^{-2}$s$^{-1}$',fontsize='8')                          
+    ax4.set_xlabel(r'Flux (cm$^{-2}$s$^{-1}$)')
 
 pdf.savefig(fig)
 plt.close()
 
 # plot production reactions
 
-fig = plt.figure()  
-
-# upper left
-
-l = 0
-if(nprd>0):
-    ax1 = fig.add_subplot(2, 2, 1)
-    l1 = l 
-    l2 = max([l1,min([l + 5,nprd-1])])
-    if (l1 == l2):
-        xmax = math.pow(10,int(math.log10(np.amax(rates_prd[:,l1])))+1)
-    else:    
+l=0
+xmin = 1.E-6
+while (l < nprd-1):
+    fig = plt.figure()  # create a figure object
+    fig.suptitle('Production Rates')
+    for subplot_i in range(1,5):
+        ax = fig.add_subplot(2, 2, subplot_i)
+        l1 = l
+        l2 = max([l1,min([l + 5,nprd-1])])
         xmax = math.pow(10,int(math.log10(np.amax(rates_prd[:,l1:l2+1])))+1)
-    xmin = xmax/1.E10
-    ax1.set_xlim(xmin,xmax)
-    ax1.set_ylim(ymin,ymax)
-    k = 0
-    while ((k<5) & (l<nprd)):
-        ax1.semilogx(rates_prd[:,l],alt,color=clrs[k])
-    #        print title_prd[l]
-        ax1.text(3*xmin,ymax-100-k*60,title_prd[l],color=clrs[k],fontsize='6')
-        l = l + 1
-        k = k + 1
-        
-    ax1.set_ylabel(r'Altitude (Km)',fontsize='8')
-    if (l == nprd): 
-        ax1.set_xlabel(r'Rate (cm$^{-3}$s$^{-1}$)',fontsize='8')                          
-#    pdf.savefig(fig)
-#    plt.close()
-#    break
+        xmin = min(xmin,xmax/1.E10)
+        ax.set_xlim(xmin,xmax)
+        ax.set_ylim(ymin,ymax)
+        k = 0
+        while ((k<5) and (l<nprd-1)):
+            ax.semilogx(rates_prd[:,l],alt,color=clrs[k])
+            ax.text(0.1,0.02+k*0.05,title_prd[l],color=clrs[k],transform=ax.transAxes)
+            l = l + 1
+            k = k + 1
+        if (subplot_i == 1) or (subplot_i == 3):
+            ax.set_ylabel(r'Altitude (Km)')
+        if (subplot_i == 3) or (subplot_i == 4):
+            ax.set_xlabel(r'Rate (cm$^{-3}$s$^{-1}$)')
+        if (l == nprd-1): 
+            break
+    pdf.savefig()
+    plt.close()
 
-# upper right
+    # plot loss reactions
 
-if(l<nprd):
-    ax2 = fig.add_subplot(2, 2, 2)
-    l1 = l 
-    l2 = max([l1,min([l + 5,nprd-1])])
-    if (l1 == l2):
-        xmax = math.pow(10,int(math.log10(np.amax(rates_prd[:,l1])))+1)
-    else:    
-        xmax = np.power(10,int(np.log10(np.amax(rates_prd[:,l1:l2+1])))+1)
-    xmin = xmax/1.E10
-    ax2.set_xlim(xmin,xmax)
-    ax2.set_ylim(ymin,ymax)
-    k = 0
-    while ((k<5) & (l<nprd)):
-        ax2.semilogx(rates_prd[:,l],alt,color=clrs[k])
-    #        print title_prd[l]
-        ax2.text(3*xmin,ymax-100-k*60,title_prd[l],color=clrs[k],fontsize='6')
-        l = l + 1
-        k = k + 1
-        
-    if (l == nprd): 
-        ax1.set_xlabel(r'Rate (cm$^{-3}$s$^{-1}$)',fontsize='8')                 
-        ax2.set_xlabel(r'Rate (cm$^{-3}$s$^{-1}$)',fontsize='8')                      
-#        pdf.savefig(fig)
-#        plt.close()
-#        break
+l=0
+while (l < nlss-1):
+    fig = plt.figure()  # create a figure object
+    fig.suptitle('Loss Rates')
+    for subplot_i in range(1,5):
+        ax = fig.add_subplot(2, 2, subplot_i)
+        l1 = l
+        l2 = max([l1,min([l + 5,nprd-1])])
+        xmax = math.pow(10,int(math.log10(np.amax(rates_lss[:,l1:l2+1])))+1)
+        xmin = min(xmin,xmax/1.E10)
+        ax.set_xlim(xmin,xmax)
+        ax.set_ylim(ymin,ymax)
+        k = 0
+        while ((k<5) and (l<nlss-1)):
+            l = l + 1
+            ax.semilogx(rates_lss[:,l],alt,color=clrs[k])
+            ax.text(0.1,0.02+k*0.05,title_lss[l],color=clrs[k],transform=ax.transAxes)
+            k = k + 1
+        if (subplot_i == 1) or (subplot_i == 3):
+            ax.set_ylabel(r'Altitude (Km)')
+        if (subplot_i == 3) or (subplot_i == 4):
+            ax.set_xlabel(r'Rate (cm$^{-3}$s$^{-1}$)')
+        if (l == nlss-1): 
+            break
+    pdf.savefig()
+    plt.close()
 
-# lower left
-
-if(l<nprd):
-    ax3 = fig.add_subplot(2, 2, 3)
-    l1 = l 
-    l2 = max([l1,min([l + 5,nprd-1])])
-    if (l1 == l2):
-        xmax = math.pow(10,int(math.log10(np.amax(rates_prd[:,l1])))+1)
-    else:    
-        xmax = math.pow(10,int(math.log10(np.amax(rates_prd[:,l1:l2+1])))+1)
-    xmin = xmax/1.E10
-    ax3.set_xlim(xmin,xmax)
-    ax3.set_ylim(ymin,ymax)
-    k = 0
-    while ((k<5) & (l<nprd)):
-        ax3.semilogx(rates_prd[:,l],alt,color=clrs[k])
-    #        print title_prd[l]
-        ax3.text(3*xmin,ymax-100-k*60,title_prd[l],color=clrs[k],fontsize='6')
-        l = l + 1
-        k = k + 1
-        
-    ax3.set_ylabel(r'Altitude (Km)',fontsize='8')
-    ax3.set_xlabel(r'Rate (cm$^{-3}$s$^{-1}$)',fontsize='8')
-    if (l == nprd):
-        ax2.set_xlabel(r'Rate (cm$^{-3}$s$^{-1}$)',fontsize='8')            
-#    pdf.savefig(fig)
-#    plt.close()
-#    break
-
-# lower right
-
-if(l<nprd):
-    ax4 = fig.add_subplot(2, 2, 4)
-    l1 = l + 1
-    l2 = max([l1,min([l + 5,nprd-1])])
-    if (l1 == l2):
-        xmax = math.pow(10,int(math.log10(np.amax(rates_prd[:,l1])))+1)
-    else:    
-        xmax = math.pow(10,int(math.log10(np.amax(rates_prd[:,l1:l2+1])))+1)
-    xmin = xmax/1.E10
-    ax4.set_xlim(xmin,xmax)
-    ax4.set_ylim(ymin,ymax)
-    k = 0
-    while ((k<5) & (l<nprd)):
-        ax4.semilogx(rates_prd[:,l],alt,color=clrs[k])
-    #        print title_prd[l]
-        ax4.text(3*xmin,ymax-100-k*60,title_prd[l],color=clrs[k],fontsize='6')
-        l = l + 1
-        k = k + 1
-    
-    ax4.set_xlabel(r'Rate (cm$^{-3}$s$^{-1}$)',fontsize='8')
-#if (l == nprd):
-#    pdf.savefig(fig)
-#    plt.close()
-#    break          
-
-pdf.savefig(fig)
-plt.close()
-
-#pdf.close()
-
-
-#print " Plot Loss Rates"
-#pdf = PdfPages('loss.pdf')
-npg = 0
-l = 0
-#while (l < nlss):
-
-npg = npg + 1
-#print npg
-fig = plt.figure()  # create a figure object
-
-# upper left
-
-#print(" Upper Left, Page = {0:d}".format(npg))
-
-ax1 = fig.add_subplot(2, 2, 1)
-l1 = l 
-l2 = max([l1,min([l + 5,nlss-1])])
-if (l1 == l2):
-    xmax = math.pow(10,int(math.log10(np.amax(rates_lss[:,l1])))+1)
-else:    
-    xmax = math.pow(10,int(math.log10(np.amax(rates_lss[:,l1:l2+1])))+1)
-xmin = xmax/1.E10
-ax1.set_xlim(xmin,xmax)
-ax1.set_ylim(ymin,ymax)
-k = 0
-while ((k<5) & (l<nlss)):
-    ax1.semilogx(rates_lss[:,l],alt,color=clrs[k])
-#    print("{0:4d}, {1:s}".format(l,title_lss[l]))
-    ax1.text(3*xmin,ymax-100-k*60,title_lss[l],color=clrs[k],fontsize='6')
-    l = l + 1
-    k = k + 1
-    
-ax1.set_ylabel(r'Altitude (Km)',fontsize='8')
-if (l == nlss): 
-    ax1.set_xlabel(r'Rate (cm$^{-3}$s$^{-1}$)',fontsize='8')                 
-#        pdf.savefig(fig)
-#        plt.close()            
-#        break
-
-# upper right
-
-#print(" Upper Right, Page = {0:d}".format(npg))
-ax2 = fig.add_subplot(2, 2, 2)
-l1 = l 
-l2 = max([l1,min([l + 5,nlss-1])])
-if (l1 == l2):
-    xmax = math.pow(10,int(math.log10(np.amax(rates_lss[:,l1])))+1)
-else:    
-    xmax = np.power(10,int(np.log10(np.amax(rates_lss[:,l1:l2+1])))+1)
-
-xmin = xmax/1.E10
-ax2.set_xlim(xmin,xmax)
-ax2.set_ylim(ymin,ymax)
-k = 0
-while ((k<5) & (l<nlss)):
-    ax2.semilogx(rates_lss[:,l],alt,color=clrs[k])
-#    print("{0:4d}, {1:s}".format(l,title_lss[l]))
-    ax2.text(3*xmin,ymax-100-k*60,title_lss[l],color=clrs[k],fontsize='6')
-    l = l + 1
-    k = k + 1
-    
-if (l == nlss): 
-    ax1.set_xlabel(r'Rate (cm$^{-3}$s$^{-1}$)',fontsize='8')                 
-    ax2.set_xlabel(r'Rate (cm$^{-3}$s$^{-1}$)',fontsize='8')            
-#        pdf.savefig(fig)
-#        plt.close()            
-#        break
-
-
-# lower left
-
-#print(" Lower Left, Page = {0:d}".format(npg))
-ax3 = fig.add_subplot(2, 2, 3)
-l1 = l 
-l2 = max([l1,min([l + 5,nlss-1])])
-if (l1 == l2):
-    xmax = math.pow(10,int(math.log10(np.amax(rates_lss[:,l1])))+1)
-else:    
-    xmax = math.pow(10,int(math.log10(np.amax(rates_lss[:,l1:l2+1])))+1)
-xmin = xmax/1.E10
-ax3.set_xlim(xmin,xmax)
-ax3.set_ylim(ymin,ymax)
-k = 0
-while ((k<5) & (l<nlss)):
-    ax3.semilogx(rates_lss[:,l],alt,color=clrs[k])
-#    print("{0:4d}, {1:s}".format(l,title_lss[l]))
-    ax3.text(3*xmin,ymax-100-k*60,title_lss[l],color=clrs[k],fontsize='6')
-    l = l + 1
-    k = k + 1
-    
-ax3.set_ylabel(r'Altitude (Km)',fontsize='8')
-ax3.set_xlabel(r'Rate (cm$^{-3}$s$^{-1}$)',fontsize='8')
-if (l == nlss):
-    ax2.set_xlabel(r'Rate (cm$^{-3}$s$^{-1}$)',fontsize='8') 
-#        plt.close() 
-#        print "call pdf.save"
-#        pdf.savefig(fig)
-#        print "after pdf.save"            
-#        break
-
-# lower right
-
-#print(" Lower Right, Page = {0:d}".format(npg))
-ax4 = fig.add_subplot(2, 2, 4)
-l1 = l + 1
-l2 = max([l1,min([l + 5,nlss-1])])
-if (l1 == l2):
-    xmax = math.pow(10,int(math.log10(np.amax(rates_lss[:,l1])))+1)
-else:    
-    xmax = math.pow(10,int(math.log10(np.amax(rates_lss[:,l1:l2+1])))+1)
-xmin = xmax/1.E10
-ax4.set_xlim(xmin,xmax)
-ax4.set_ylim(ymin,ymax)
-k = 0
-while ((k<5) & (l<nlss)):
-    ax4.semilogx(rates_lss[:,l],alt,color=clrs[k])
-#    print("{0:4d}, {1:s}".format(l,title_lss[l]))
-    ax4.text(3*xmin,ymax-100-k*60,title_lss[l],color=clrs[k],fontsize='6')
-    l = l + 1
-    k = k + 1
-
-ax4.set_xlabel(r'Rate (cm$^{-3}$s$^{-1}$)',fontsize='8')
-
-#    if (l == nlss):
-#        pdf.savefig(fig)
-#        plt.close()
-#        break          
-
-#print " Print metadata" 
-d = pdf.infodict()
-d['Title'] = 'Molecule Summary'
-d['Author'] = u'Roger Yelle'
-d['Subject'] = 'Titan Photochemistry'
-d['Keywords'] = 'Titan Photochemistry Composition Atmosphere'
-d['CreationDate'] = datetime.datetime(2015, 07, 21)
-d['ModDate'] = datetime.datetime.today()
-
-pdf.savefig(fig) 
-plt.close()   
-pdf.close()              
+pdf.close()
