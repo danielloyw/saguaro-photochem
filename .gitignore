@@ -7,6 +7,9 @@ inputs/
 *.o
 *.mod
 .project
+P.dat
+T.dat
+readT.m
 
 #################
 ## Eclipse
