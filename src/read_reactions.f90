@@ -24,7 +24,7 @@ SUBROUTINE READ_REACTIONS
   !  .. Read Tabulated Reaction Rate Coefficients
   !
 
-  OPEN(unit=40,file='nreactions.tab',status='old')
+  OPEN(unit=40,file='../data/reactions/nreactions.tab',status='old')
      READ(40,*) ntab_rct
      ALLOCATE(itab_rct(5,ntab_rct),nprs_rct(ntab_rct),ntmp_rct(ntab_rct),                           &
           plog_rct(nprs_tab_max,ntab_rct),tmp_rct(ntmp_tab_max,ntab_rct),                           &
@@ -48,8 +48,8 @@ SUBROUTINE READ_REACTIONS
   !  .. Reactions from formulae
   !
    
-  OPEN(unit=63,file='nreactions.csv',status='old',action='read')
-  OPEN(unit=64,file='ireactions.csv',status='old',action='read')
+  OPEN(unit=63,file='../data/reactions/nreactions.csv',status='old',action='read')
+  OPEN(unit=64,file='../data/reactions/ireactions.csv',status='old',action='read')
 
   READ (63,'(A)') cline
   READ (cline,*) nrctmax_neut, sdum

@@ -70,7 +70,7 @@ PROGRAM PCHEM1D
      END DO
      END IF
      READ(60,*) iaer ! 0
-     READ(60,*) iprnt, isol ! 100, 100
+     READ(60,*) iprnt, isol ! frequency to write results to disc, frequency to recalculate photolysis and photoelectrons
   CLOSE(unit=60)
 
   
