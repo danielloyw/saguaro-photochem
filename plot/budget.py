@@ -55,7 +55,7 @@ rct = np.concatenate((prct,erct,crct),axis=1)
 
 # calculate column integrated rates
 
-alt = alt/1.E5
+alt = alt
 rz = R + alt
 rz2 = np.power(rz/R,2)
 colrates = np.zeros(nrct, dtype=float)
@@ -351,8 +351,14 @@ if(np.amax(abs(flx))>1.E-10):
     upflx = flx[(flx>0)]
     dnalt = altflx[(flx<0)]
     dnflx = -1*flx[(flx<0)]
-    umax = np.amax(upflx)
-    dmax = np.amax(dnflx)
+    if len(upflx):
+        umax = np.amax(upflx)
+    else:
+        umax = 0
+    if len(dnflx):
+        dmax = np.amax(dnflx)
+    else:
+        dmax = 0
     xmax = np.amax([umax,dmax])
     xmax = math.pow(10,int(math.log10(xmax))+1)
     xmin = xmax/1.E10
