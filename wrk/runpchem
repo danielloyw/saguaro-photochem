@@ -19,13 +19,6 @@ mkdir -p ../runs/$1/output/molecules
 
 cp nmolecules.dat ../runs/$1/input/.
 cp imolecules.dat ../runs/$1/input/.
-cp nreactions.csv ../runs/$1/input/.
-cp ireactions.csv ../runs/$1/input/.
-cp nreactions.tab ../runs/$1/input/.
-cp ireactions.tab ../runs/$1/input/.
-cp ../data/photons/photoA.dat ../runs/$1/input/.
-cp ../data/photons/photoC.dat ../runs/$1/input/.
-cp ../data/photons/jvals.dat ../runs/$1/input/.
 cp pchem1D.ctl ../runs/$1/input/.
 cp pchem1D.sol ../runs/$1/input/.
 cp atm1D.in ../runs/$1/input/.
