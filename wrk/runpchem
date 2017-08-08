@@ -20,6 +20,10 @@ mkdir -p ../runs/$1/output/molecules
 
 cp nmolecules.dat ../runs/$1/input/.
 cp imolecules.dat ../runs/$1/input/.
+cp ../data/reactions/nreactions.csv ../runs/$1/input/.
+cp ../data/reactions/nreactions.tab ../runs/$1/input/.
+cp ../data/reactions/ireactions.csv ../runs/$1/input/.
+cp ../data/reactions/ireactions.tab ../runs/$1/input/.
 cp pchem1D.ctl ../runs/$1/input/.
 cp pchem1D.sol ../runs/$1/input/.
 cp atm1D.in ../runs/$1/input/.
