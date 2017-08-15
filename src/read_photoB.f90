@@ -95,13 +95,7 @@ SUBROUTINE READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phr
   loprB(3:4,nb,na) = 0
 
   CALL INTRP(wav_n2,crs_14n2,wcrsB(1:ncrsB),xcrsB(1:ncrsB,na))
-  
-  ! zero values out of wavelength range
-  nw = LOCATE(wcrsB,wav_n2(1))
-  xcrsB(1:nw,na) = zero
-  nw = LOCATE(wcrsB,wav_n2(nwav_n2))
-  xcrsB(nw+1:ncrsB,na) = zero
-  
+
   !
   !  .. 29N2 High Resolution Cross Section in Band Region
   !
@@ -141,7 +135,7 @@ SUBROUTINE READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phr
   loprB(3:4,nb,na) = 0
 
   CALL INTRP(wav_n2,crs_15n2,wcrsB(1:ncrsB),xcrsB(1:ncrsB,na))
-  
+
   !
   !  .. Read CO2 cross section and interpolate to high res grid
   !
@@ -202,7 +196,6 @@ SUBROUTINE READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phr
      DO nf = 1, nwav_coA
         READ(67,*) wav_co(nf), crs_co(nf) ! wavelengths, cross sections
         wav_co(nf) = wav_co(nf)*10._RP
-		crs_co(nf) = (crs_co(nf)+abs(crs_co(nf)))/2 ! zero negative entries
         crs_co_tot(nf) = crs_co(nf)
      END DO
   CLOSE(unit=67)
