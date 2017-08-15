@@ -28,7 +28,7 @@ SUBROUTINE READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phr
   !  .. Internal Variables
   !
 
-  INTEGER, PARAMETER :: ncrsB = 1463000 ! wavelengths
+  INTEGER, PARAMETER :: ncrsB = 1063000 ! wavelengths
   INTEGER, PARAMETER :: nabsB = 4
   INTEGER, PARAMETER :: nbrmaxB = 12
   INTEGER, PARAMETER :: nprmaxB =  4
@@ -142,12 +142,6 @@ SUBROUTINE READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phr
 
   CALL INTRP(wav_n2,crs_15n2,wcrsB(1:ncrsB),xcrsB(1:ncrsB,na))
   
-  ! zero values out of wavelength range
-  nw = LOCATE(wcrsB,wav_n2(1))
-  xcrsB(1:nw,na) = zero
-  nw = LOCATE(wcrsB,wav_n2(nwav_n2))
-  xcrsB(nw+1:ncrsB,na) = zero
-
   !
   !  .. Read CO2 cross section and interpolate to high res grid
   !
@@ -195,13 +189,6 @@ SUBROUTINE READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phr
      CALL INTRP(wav_co2,brat_co2(1:nwav_co2,nb),wcrsB(1:ncrsB),bratB(1:ncrsB,nb,na))
   END DO
   
-  ! zero values out of wavelength range
-  nw = LOCATE(wcrsB,wav_co2(1))
-  xcrsB(1:nw,na) = zero
-  nw = LOCATE(wcrsB,wav_co2(nwav_co2))
-  xcrsB(nw+1:ncrsB,na) = zero
-
-  
   !
   !  .. Read CO cross section and interpolate to high res grid
   !
@@ -215,6 +202,7 @@ SUBROUTINE READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phr
      DO nf = 1, nwav_coA
         READ(67,*) wav_co(nf), crs_co(nf) ! wavelengths, cross sections
         wav_co(nf) = wav_co(nf)*10._RP
+		crs_co(nf) = (crs_co(nf)+abs(crs_co(nf)))/2 ! zero negative entries
         crs_co_tot(nf) = crs_co(nf)
      END DO
   CLOSE(unit=67)
@@ -258,12 +246,6 @@ SUBROUTINE READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phr
   DO nb = 1, nbrnchB(na)
      CALL INTRP(wav_co,brat_co(:,nb),wcrsB(1:ncrsB),bratB(1:ncrsB,nb,na))
   END DO
-  
-  ! zero values out of wavelength range
-  nw = LOCATE(wcrsB,wav_co(1))
-  xcrsB(1:nw,na) = zero
-  nw = LOCATE(wcrsB,wav_co(nwav_coA+nwav_coB))
-  xcrsB(nw+1:ncrsB,na) = zero
 
   
   DEALLOCATE(wav_co2,crs_co2_tot,crs_co2_ion,brat_co2, wav_co, crs_co, crs_co_tot, brat_co, wav_n2, crs_14n2, crs_15n2)
