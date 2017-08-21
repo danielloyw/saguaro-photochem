@@ -14,7 +14,7 @@ from read_rates import read_rates
 from read_summary import read_summary
 
 R = 3390
-colrates_lim = 1.E-3
+colrates_lim = 0
 
 plt.rcParams['xtick.labelsize'] = 8 
 plt.rcParams['ytick.labelsize'] = 8 
@@ -278,10 +278,6 @@ if (nlss > 0):
   for n in xrange(0,min([5,nlss])):
      print("{0:10.2e}:  {1:s}".format(colrates_lss[n],title_lss[n]))
 
-fo = open('../runs/'+srun+'/plots/test.txt', "wb")
-fo.write(str(rates_lss[:,0]));
-fo.close()
-
 ##
 ##               Make Plots
 ##
@@ -376,7 +372,7 @@ plt.close()
 
 l=0
 xmin = 1.E-6
-while (l < nprd-1):
+while (l <= nprd-1):
     fig = plt.figure()  # create a figure object
     fig.suptitle('Production Rates')
     for subplot_i in range(1,5):
@@ -388,7 +384,7 @@ while (l < nprd-1):
         ax.set_xlim(xmin,xmax)
         ax.set_ylim(ymin,ymax)
         k = 0
-        while ((k<5) and (l<nprd-1)):
+        while ((k<5) and (l<=nprd-1)):
             ax.semilogx(rates_prd[:,l],alt,color=clrs[k])
             ax.text(0.1,0.02+k*0.05,title_prd[l],color=clrs[k],transform=ax.transAxes)
             l = l + 1
@@ -397,7 +393,7 @@ while (l < nprd-1):
             ax.set_ylabel(r'Altitude (Km)')
         if (subplot_i == 3) or (subplot_i == 4):
             ax.set_xlabel(r'Rate (cm$^{-3}$s$^{-1}$)')
-        if (l == nprd-1): 
+        if (l == nprd): 
             break
     pdf.savefig()
     plt.close()
@@ -405,7 +401,7 @@ while (l < nprd-1):
     # plot loss reactions
 
 l=0
-while (l < nlss-1):
+while (l <= nlss-1):
     fig = plt.figure()  # create a figure object
     fig.suptitle('Loss Rates')
     for subplot_i in range(1,5):
@@ -417,17 +413,18 @@ while (l < nlss-1):
         ax.set_xlim(xmin,xmax)
         ax.set_ylim(ymin,ymax)
         k = 0
-        while ((k<5) and (l<nlss-1)):
-            l = l + 1
+        while ((k<5) and (l<=nlss-1)):
             ax.semilogx(rates_lss[:,l],alt,color=clrs[k])
             ax.text(0.1,0.02+k*0.05,title_lss[l],color=clrs[k],transform=ax.transAxes)
+            l = l + 1
             k = k + 1
         if (subplot_i == 1) or (subplot_i == 3):
             ax.set_ylabel(r'Altitude (Km)')
         if (subplot_i == 3) or (subplot_i == 4):
             ax.set_xlabel(r'Rate (cm$^{-3}$s$^{-1}$)')
-        if (l == nlss-1): 
+        if (l == nlss): 
             break
+            l = l + 1
     pdf.savefig()
     plt.close()
 

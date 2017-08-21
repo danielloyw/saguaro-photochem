@@ -49,7 +49,7 @@ xmin = 1.E4
 l=0
 with PdfPages('../runs/'+srun+'/plots/density.pdf') as pdf:
     
-    while (l < nmol-1):
+    while (l <= nmol-1):
         fig = plt.figure()  # create a figure object
         
         for subplot_i in range(1,5):
@@ -61,16 +61,16 @@ with PdfPages('../runs/'+srun+'/plots/density.pdf') as pdf:
             ax.set_xlim(xmin,xmax)
             ax.set_ylim(ymin,ymax)
             k = 0
-            while ((k<5) and (l<nmol-1)):
-                l = l + 1
+            while ((k<5) and (l<=nmol-1)):
                 ax.semilogx(den[:,l],alt,color=clrs[k])
                 ax.text(xmax/100,ymax-20-k*20,name[l],color=clrs[k],fontsize='8')
+                l = l + 1
                 k = k + 1
             if (subplot_i == 1) or (subplot_i == 3):
                 ax.set_ylabel(r'Altitude (Km)')
             if (subplot_i == 3) or (subplot_i == 4):
                 ax.set_xlabel(r'Density (cm$^{-3}$)')
-            if (l == nmol-1): 
+            if (l == nmol): 
                 break
         pdf.savefig()
         plt.close()
@@ -78,7 +78,7 @@ with PdfPages('../runs/'+srun+'/plots/density.pdf') as pdf:
 l=0
 with PdfPages('../runs/'+srun+'/plots/moles.pdf') as pdf:
     
-    while (l < nmol-1):
+    while (l <= nmol-1):
         fig = plt.figure()  # create a figure object
         
         for subplot_i in range(1,5):
@@ -90,16 +90,16 @@ with PdfPages('../runs/'+srun+'/plots/moles.pdf') as pdf:
             ax.set_xlim(xmin,xmax)
             ax.set_ylim(ymin,ymax)
             k = 0
-            while ((k<5) and (l<nmol-1)):
-                l = l + 1
+            while ((k<5) and (l<=nmol-1)):
                 ax.semilogx(xmol[:,l],alt,color=clrs[k])
                 ax.text(xmax/100,ymax-20-k*20,name[l],color=clrs[k],fontsize='8')
+                l = l + 1
                 k = k + 1
             if (subplot_i == 1) or (subplot_i == 3):
                 ax.set_ylabel(r'Altitude (Km)')
             if (subplot_i == 3) or (subplot_i == 4):
                 ax.set_xlabel(r'Mole Fraction (V/V)')
-            if (l == nmol-1): 
+            if (l == nmol): 
                 break
         pdf.savefig()
         plt.close()
