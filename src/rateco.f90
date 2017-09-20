@@ -10,7 +10,7 @@
   !  .. Internal Variables
 
   REAL(RP) :: rk0, rk1, rk2
-  REAL(RP) :: FC, PFL, FCL, NF, CF, FF, XF
+  REAL(RP) :: FC, PFL, FCL, NF, CF, FF, XF, rexp
   REAL(RP) :: rtmp, rprs
   INTEGER :: nr, nl, nm, nt1, nt2, np1, np2, nt
 
