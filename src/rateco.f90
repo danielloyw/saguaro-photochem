@@ -53,7 +53,6 @@
               NF = 0.75_RP - 1.27_RP*FCL
               CF = -0.4_RP-0.67_RP*FCL
               FF =10._RP**(FCL/(one+((PFL+CF)/(NF-0.14_RP*(PFL+CF)))**2))
-!              rt(nr,nl) = FF*(rk0*rk1*den(nl,0)/(rk0*den(nl,0)+rk1))
               rt(nr,nl) = FF*(rk0*rk1/(rk0*den(nl,0)+rk1))
            END IF
         END DO
@@ -74,32 +73,17 @@
               CF = -0.4_RP-0.67_RP*FCL
               FF =10._RP**(FCL/(one+((PFL+CF)/(NF-0.14_RP*(PFL+CF)))**2))
               XF = FF/(one-FF)
-!              rt(nr,nl) = (rk0*den(nl,0)*XF+rk2)*rk1/(rk0*den(nl,0)*XF+rk1)
               rt(nr,nl) = MIN(rk1, rk2 + FF*(rk0*rk1*den(nl,0)/(rk0*den(nl,0)+rk1)))
-
-!              rk1p = rk1 - rk2
-!              rt(nr,nl) = rk2 + FF*(rk0*rk1p*den(nl,0)/(rk0*den(nl,0)+rk1p)))
-
-
            END IF
         END DO
 
-     ELSE IF (itype(nr) == 5) THEN                                           ! special for OH + CO 
+     ELSE IF (itype(nr) == 5) THEN                                           ! Association (Sander's Formula)
 
         DO nl = 1, nlev
            rk1 = rck(1,nr)*(tn(nl)**rck(2,nr))*EXP(rck(3,nr)/tn(nl))
            rk0 = rck(4,nr)*(tn(nl)**rck(5,nr))*EXP(rck(6,nr)/tn(nl))
-           IF(rck(10,nr)== zero) THEN
-              rt(nr,nl) = rk0*rk1/(rk0*den(nl,0)+rk1)
-           ELSE
-              FC = rck(10,nr)
-              PFL = LOG10(rk0*den(nl,0)/rk1)
-              FCL = LOG10(FC)
-              NF = 0.75_RP - 1.27_RP*FCL
-              CF = -0.4_RP-0.67_RP*FCL
-              FF =10._RP**(FCL/(one+((PFL+CF)/(NF-0.14_RP*(PFL+CF)))**2))
-              rt(nr,nl) = FF*(rk0*rk1/(rk0*den(nl,0)+rk1))
-           END IF
+           rexp = one/(one + (LOG10(rk0*den(nl,0)/rk1))**two)
+           rt(nr,nl)=(rk0*rk1*den(n1,0)/(rk1+rk0*den(nl,0)))*0.6_RP**rexp
         END DO
 
      ELSE IF(itype(nr) == 6) THEN                                                 !   Tabulated reactions
@@ -149,28 +133,28 @@
      ELSE IF (itype(nr) == -1) THEN                  ! Unimolecular Reaction
 
         DO nl = 1, nlev
-           rt(nr,nl)=rck(1,nr)*(300._RP/tn(nl))**rck(2,nr)                                          &
+           rt(nr,nl)=rck(1,nr)*(tn(nl)**rck(2,nr))                                                  &
              *two*EXP(rck(3,nr)/tn(nl))/(one+EXP(rck(4,nr)/tn(nl)))
         END DO
 
      ELSE IF (itype(nr) == -2) THEN                  ! normal two-body reaction
 
         DO nl = 1, nlev
-           rt(nr,nl)=rck(1,nr)*(300._RP/tn(nl))**rck(2,nr)                                          &
+           rt(nr,nl)=rck(1,nr)*(tn(nl)**rck(2,nr))                                                  &
                 *two*EXP(rck(3,nr)/tn(nl))/(one+EXP(rck(4,nr)/tn(nl)))
         END DO
 
      ELSE IF (itype(nr) == -3) THEN                  ! 3-body reaction
 
         DO nl = 1, nlev
-           rt(nr,nl)=rck(1,nr)*(300._RP/tn(nl))**rck(2,nr)                                          &
+           rt(nr,nl)=rck(1,nr)*(tn(nl)**rck(2,nr))                                                  &
                 *two*EXP(rck(3,nr)/tn(nl))/(one+EXP(rck(4,nr)/tn(nl))) 
         END DO
 
      ELSE IF (itype(nr) == -4) THEN                  ! electron recombination
 
         DO nl = 1, nlev
-           rt(nr,nl)=rck(1,nr)*(300._RP/te(nl))**rck(2,nr)                                          &
+           rt(nr,nl)=rck(1,nr)*(tn(nl)**rck(2,nr))                                                  &
                 *two*EXP(rck(3,nr)/te(nl))/(one+EXP(rck(4,nr)/te(nl)))
         END DO
 
