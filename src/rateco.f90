@@ -83,7 +83,7 @@
            rk1 = rck(1,nr)*(tn(nl)**rck(2,nr))*EXP(rck(3,nr)/tn(nl))
            rk0 = rck(4,nr)*(tn(nl)**rck(5,nr))*EXP(rck(6,nr)/tn(nl))
            rexp = one/(one + (LOG10(rk0*den(nl,0)/rk1))**two)
-           rt(nr,nl)=(rk0*rk1*den(n1,0)/(rk1+rk0*den(nl,0)))*0.6_RP**rexp
+           rt(nr,nl)=(rk0*rk1*den(nl,0)/(rk1+rk0*den(nl,0)))*0.6_RP**rexp
         END DO
 
      ELSE IF(itype(nr) == 6) THEN                                                 !   Tabulated reactions
