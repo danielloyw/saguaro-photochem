@@ -33,10 +33,10 @@ SUBROUTINE DIFCO
             mu = amu/(one/mmw(nm) + one/mmw(iCO2))
             df(nl,nm) = (three/eight*sqpi)*(one/sigma)*SQRT(rkb*tn(nl)/mu)/den(nl,0)
         ELSE IF (dtype(nm) == 1) THEN                                                  ! Mason & Morrero 1970 formula 136
-            df(nl,nm) = ad(nm)*(tn(nl)**sd(nm))*EXP(-sd_2(nm)/tn(nl))/den(nl,0)
+            df(nl,nm) = ad(nm)*(tn(nl)**sd(nm))*EXP(-sd_2(nm)/tn(nl))/prs(nl)
         ELSE IF (dtype(nm) == 2) THEN
             df(nl,nm) = (ad(nm)*(tn(nl)**sd(nm))*EXP(-sd_2(nm)/tn(nl))            &     ! Mason & Morrero 1970 formula 135
-                 *EXP(-sd_3(nm)/tn(nl)**2))/(den(nl,0)*(LOG(phi(nm)/tn(nl)))**2)
+                 *EXP(-sd_3(nm)/tn(nl)**2))/(prs(nl)*(LOG(phi(nm)/tn(nl)))**2)
         ELSE IF (dtype(nm) == 3) THEN                                                  !  Need to add Lennard-Jones approximation
             WRITE(*,"('Incorrect diffusion coefficient type, EXITING ... ')")
             STOP
