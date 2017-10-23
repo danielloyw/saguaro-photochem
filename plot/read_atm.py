@@ -7,6 +7,7 @@ Created on Wed Aug 27 11:25:28 2014
 
 
 import numpy as np
+import math
 
 def read_atm(filename):
     
@@ -15,8 +16,8 @@ def read_atm(filename):
     nalt, nmol = map(int,f.readline().split())
 #    cos_sza = np.float(f.readline().strip())
 
-    nmol_lines = nmol/10 + 1
-    nalt_lines = nalt/10 + 1
+    nmol_lines = int(math.ceil(float(nmol)/10.))
+    nalt_lines = int(math.ceil(float(nalt)/10.))
     
     line=f.readline()    
     sline='Ntot'
