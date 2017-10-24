@@ -28,7 +28,7 @@ def read_summary(filename):
     
     f=open(filename,'r')
     
-    for x in xrange(0,14):
+    for x in range(0,14):
         f.readline()
         
     n = 0

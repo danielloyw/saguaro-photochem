@@ -22,10 +22,10 @@ plt.rcParams['axes.labelsize'] = 8
 plt.rcParams['figure.titlesize'] = 10
 plt.rcParams['font.size'] = 4
 
-srun = raw_input(' Enter run id > ')
+srun = input(' Enter run id > ')
 srun.strip()
 
-smolec = raw_input(' Enter molecule > ')
+smolec = input(' Enter molecule > ')
 smolec.strip()
 
 sfileplot = '../runs/'+srun+'/plots/'+smolec+'.pdf'
@@ -59,9 +59,9 @@ alt = alt
 rz = R + alt
 rz2 = np.power(rz/R,2)
 colrates = np.zeros(nrct, dtype=float)
-for nr in xrange(0,nrct):
+for nr in range(0,nrct):
    sm = 0.
-   for nz in xrange(1,nalt):
+   for nz in range(1,nalt):
        sm = sm + 0.5*(rct[nz,nr]*rz2[nz]+ \
        rct[nz-1,nr]*rz2[nz-1])*(rz[nz]-rz[nz-1])
    colrates[nr] = sm
@@ -198,7 +198,7 @@ if (nprd > 0):
   rates_prd = rates_new[0:nalt,0:nprd]
   colrates_prd = colrates_new[0:nprd]
   
-  print 'Production Reactions'
+  print('Production Reactions')
   for n in range(0,min([5,nprd])):
      print("{0:10.2e}:  {1:s}".format(colrates_prd[n],title_prd[n]))
 
@@ -237,7 +237,7 @@ if (nlss > 0):
   colrates_new = colrates_lss
   k=0
   
-  for n in xrange(1, nlss):
+  for n in range(1, nlss):
       
     lfind = np.bool_(1)
     m = 0
@@ -274,8 +274,8 @@ if (nlss > 0):
   title_lss = title_new[0:nlss]
   rates_lss = rates_new[0:nalt,0:nlss]
   colrates_lss = colrates_new[0:nlss]
-  print 'Loss Reactions'
-  for n in xrange(0,min([5,nlss])):
+  print('Loss Reactions')
+  for n in range(0,min([5,nlss])):
      print("{0:10.2e}:  {1:s}".format(colrates_lss[n],title_lss[n]))
 
 ##
@@ -295,7 +295,7 @@ fig = plt.figure()
 # plot density upper left
 
 ax1 = fig.add_subplot(2, 2, 1)
-xmax = math.pow(10,int(math.log10(np.amax(molsum["den"])))+1)
+xmax = math.pow(10,int(math.log10(np.nanmax(molsum["den"])))+1)
 xmin = xmax/1.E10
 ax1.set_xlim(xmin,xmax)
 ax1.set_ylim(ymin,ymax)
@@ -307,7 +307,7 @@ ax1.xaxis.set_label_position('top')
 # plot mole fraction upper right
 
 ax2 = fig.add_subplot(2, 2, 2)
-xmax = math.pow(10,int(math.log10(np.amax(molsum["mol"])))+1)
+xmax = math.pow(10,int(math.log10(np.nanmax(molsum["mol"])))+1)
 xmin = xmax/1.E8
 ax2.set_xlim(xmin,xmax)
 ax2.set_ylim(ymin,ymax)
@@ -318,11 +318,11 @@ ax2.xaxis.set_label_position('top')
 # plot production and loss, Lower left
 
 ax3 = fig.add_subplot(2, 2, 3)
-pmax = np.amax(molsum["pr_net"])
-lmax = np.amax(molsum["ls_net"])
-cmax = np.amax(molsum["cvg_flx"])
-dmax = np.amax(-1*molsum["cvg_flx"])
-xmax = np.amax([pmax,lmax,cmax,dmax])
+pmax = np.nanmax(molsum["pr_net"])
+lmax = np.nanmax(molsum["ls_net"])
+cmax = np.nanmax(molsum["cvg_flx"])
+dmax = np.nanmax(-1*molsum["cvg_flx"])
+xmax = np.nanmax([pmax,lmax,cmax,dmax])
 xmax = math.pow(10,int(math.log10(xmax))+1)
 xmin = 1.
 ax3.set_xlim(xmin,xmax)
@@ -342,20 +342,20 @@ ax3.text(0.8,0.95-0.32,"-del flx",color=clrs[3],transform=ax3.transAxes)
 
 altflx = molsum["alt"]
 flx = molsum["flx"]
-if(np.amax(abs(flx))>1.E-10):
+if(np.nanmax(abs(flx))>1.E-10):
     upalt = altflx[(flx>0)]
     upflx = flx[(flx>0)]
     dnalt = altflx[(flx<0)]
     dnflx = -1*flx[(flx<0)]
     if len(upflx):
-        umax = np.amax(upflx)
+        umax = np.nanmax(upflx)
     else:
         umax = 0
     if len(dnflx):
-        dmax = np.amax(dnflx)
+        dmax = np.nanmax(dnflx)
     else:
         dmax = 0
-    xmax = np.amax([umax,dmax])
+    xmax = np.nanmax([umax,dmax])
     xmax = math.pow(10,int(math.log10(xmax))+1)
     xmin = xmax/1.E10
     ax4 = fig.add_subplot(2, 2, 4)
@@ -371,7 +371,7 @@ plt.close()
 # plot production reactions
 
 l=0
-xmin = 1.E-6
+xmin = 1.E-4
 while (l <= nprd-1):
     fig = plt.figure()  # create a figure object
     fig.suptitle('Production Rates')
@@ -379,8 +379,8 @@ while (l <= nprd-1):
         ax = fig.add_subplot(2, 2, subplot_i)
         l1 = l
         l2 = max([l1,min([l + 5,nprd-1])])
-        xmax = math.pow(10,int(math.log10(np.amax(rates_prd[:,l1:l2+1])))+1)
-        xmin = min(xmin,xmax/1.E10)
+        xmax = math.pow(10,int(math.log10(np.nanmax(rates_prd[:,l1:l2+1])))+1)
+        xmin = min(xmin,xmax/1.E6)
         ax.set_xlim(xmin,xmax)
         ax.set_ylim(ymin,ymax)
         k = 0
@@ -408,8 +408,8 @@ while (l <= nlss-1):
         ax = fig.add_subplot(2, 2, subplot_i)
         l1 = l
         l2 = max([l1,min([l + 5,nprd-1])])
-        xmax = math.pow(10,int(math.log10(np.amax(rates_lss[:,l1:l2+1])))+1)
-        xmin = min(xmin,xmax/1.E10)
+        xmax = math.pow(10,int(math.log10(np.nanmax(rates_lss[:,l1:l2+1])))+1)
+        xmin = min(xmin,xmax/1.E6)
         ax.set_xlim(xmin,xmax)
         ax.set_ylim(ymin,ymax)
         k = 0

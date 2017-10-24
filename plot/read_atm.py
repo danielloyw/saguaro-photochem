@@ -21,13 +21,13 @@ def read_atm(filename):
     
     line=f.readline()    
     sline='Ntot'
-    for x in xrange(0,nmol_lines):
+    for x in range(0,nmol_lines):
         sline=sline+f.readline()
     name=sline.split()
     
     line=f.readline()
     sline=''
-    for x in xrange(0,nalt_lines):
+    for x in range(0,nalt_lines):
         line=f.readline()
         sline=sline+line 
     sline=np.array(sline.split())
@@ -35,65 +35,65 @@ def read_atm(filename):
     
     line=f.readline()
     sline=''
-    for x in xrange(0,nalt_lines):
+    for x in range(0,nalt_lines):
         sline=sline+f.readline()
     sline=np.array(sline.split())
     rad=sline.astype(np.float)
     
     line=f.readline()
     sline=''
-    for x in xrange(0,nalt_lines):
+    for x in range(0,nalt_lines):
         sline=sline+f.readline() 
     sline=np.array(sline.split())
     grv=sline.astype(np.float)
     
     line=f.readline()
     sline=''
-    for x in xrange(0,nalt_lines):
+    for x in range(0,nalt_lines):
         sline=sline+f.readline() 
     sline=np.array(sline.split())
     Tn=sline.astype(np.float)
     
     line=f.readline()
     sline=''
-    for x in xrange(0,nalt_lines):
+    for x in range(0,nalt_lines):
         sline=sline+f.readline() 
     sline=np.array(sline.split())
     Te=sline.astype(np.float)
     
     line=f.readline()
     sline=''
-    for x in xrange(0,nalt_lines):
+    for x in range(0,nalt_lines):
         sline=sline+f.readline() 
     sline=np.array(sline.split())
     prs=sline.astype(np.float)
     
     line=f.readline()
     sline=''
-    for x in xrange(0,nalt_lines):
+    for x in range(0,nalt_lines):
         sline=sline+f.readline() 
     sline=np.array(sline.split())
     rho=sline.astype(np.float)
     
     line=f.readline()
     sline=''
-    for x in xrange(0,nalt_lines):
+    for x in range(0,nalt_lines):
         sline=sline+f.readline() 
     sline=np.array(sline.split())
     mmw=sline.astype(np.float)
     
     line=f.readline()
     sline=''
-    for x in xrange(0,nalt_lines):
+    for x in range(0,nalt_lines):
         sline=sline+f.readline() 
     sline=np.array(sline.split())
     Kzz=sline.astype(np.float)
       
     den=np.zeros((nalt,nmol+1), dtype=np.float)
-    for n in xrange(0,nmol+1):
+    for n in range(0,nmol+1):
         line=f.readline()
         sline=''
-        for x in xrange(0,nalt_lines):
+        for x in range(0,nalt_lines):
             sline=sline+f.readline() 
         sline=np.array(sline.split())
         den[:,n]=sline.astype(np.float)

@@ -15,7 +15,7 @@ from read_atm import read_atm
 
 
 
-srun = raw_input('Enter run id > ')
+srun = input('Enter run id > ')
 srun.strip()
 
 # smolfile = '../runs/'+srun+'/input/nmolecules.dat'
@@ -29,7 +29,7 @@ alt = 1.E-5*atm["alt"]
 name = atm["name"]
 map(str.strip, name)
 
-#xname = raw_input('Enter molecule name > ')
+#xname = input('Enter molecule name > ')
 #xname.strip()
 #imol=name.index(xname)
 
