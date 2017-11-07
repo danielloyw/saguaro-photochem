@@ -31,7 +31,7 @@ PROGRAM PCHEM1D
   tstep_chem = 1.E3_RP
   ntim_chem = 5
   lprnt = .true.
-  zbot = 80.E5_RP
+  zbot = 0.E5_RP
   RSHADOW = RPLANET + zbot
 
 !  WRITE(*,"(' Enter run ID ..........................  > ')",ADVANCE='NO')

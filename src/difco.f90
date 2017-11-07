@@ -174,19 +174,13 @@ SUBROUTINE DIFCO
   
   DO nl = 1, nlev
      dN2 = den(nl,iN2)
-!     dCH4 = den(nl,iCH4) 
      dCO2 = den(nl,iCO2)    
      mN2 = mmw(iN2)
-!     mCH4 = mmw(iCH4)
      mCO2 = mmw(iCO2)
      DO nm = neutrmax+1, nsp-1
         rmN2 = amu/(one/mN2 + one/mmw(nm))
         nuN2 = 3.33E-09_RP*SQRT(polN2/rmN2)*mN2*dN2/(mN2+mmw(nm))
         bN2 = rkb*ti(nl)/amu/mmw(nm)/nuN2
-!        rmCH4 = amu/(one/mCH4 + one/mmw(nm))
-!        nuCH4 = 3.33E-09_RP*SQRT(polCH4/rmCH4)*mCH4*dCH4/(mCH4+mmw(nm))
-!        bCH4 = rkb*ti(nl)/amu/mmw(nm)/nuCH4
-!        df(nl,nm) = one/(one/bN2+one/bCH4)
         rmCO2 = amu/(one/mCO2 + one/mmw(nm))
         nuCO2 = 3.33E-09_RP*SQRT(polCO2/rmCO2)*mCO2*dCO2/(mCO2+mmw(nm))
         bCO2 = rkb*ti(nl)/amu/mmw(nm)/nuCO2

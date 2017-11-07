@@ -68,9 +68,9 @@ MODULE GLOBAL_VARIABLES
 
   !  .. Atmosphere
 
-  INTEGER :: nlev, nibot, nzion     ! number of elevation bins, index of zbot, number of bins zbot and above
-  REAL(RP) :: zbot, prs_bot         ! lower altitude bound for model, ?
-  REAL(RP) :: ed1,ed0,pk0,gek		! coefficients for calculating eddy coefficient
+  INTEGER :: nlev, nibot            ! number of elevation bins, index of zbot
+  REAL(RP) :: zbot                  ! lower altitude bound for model
+  REAL(RP) :: ed1,ed0,pk0,gek       ! coefficients for calculating eddy coefficient
   REAL(RP), ALLOCATABLE, DIMENSION(:) :: z              ! altitude
   REAL(RP), ALLOCATABLE, DIMENSION(:) :: rz             ! radius
   REAL(RP), ALLOCATABLE, DIMENSION(:) :: grv            ! gravity

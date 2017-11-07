@@ -216,7 +216,6 @@ SUBROUTINE READ_ATMOS
 !  END DO
 
    nibot = LOCATE(z,zbot)
-   nzion = nlev-nibot+1
 
   DEALLOCATE(namex,found,indx_den)
   RETURN
