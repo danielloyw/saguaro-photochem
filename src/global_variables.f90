@@ -156,7 +156,7 @@ MODULE GLOBAL_VARIABLES
 
   !  .. Variables used in ELCTRN, ELDEP1
 
-  INTEGER :: nabs_el_thk, nabs_el_thn, nelb, nert ! number of species (thick), number of species (thin), number of bins,
+  INTEGER :: nabs_el_thk, nabs_el_thn, nelb, nert ! number of species (thick), number of species (thin), number of bins, number of electron impact reactions
   REAL(RP), ALLOCATABLE, DIMENSION(:) :: elctreV ! mean bin energy
   REAL(RP), ALLOCATABLE, DIMENSION(:) :: elctDeV ! bin width
   REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: eCS_tot_elast ! elastic cross section (energy bin, species)
@@ -165,15 +165,15 @@ MODULE GLOBAL_VARIABLES
   CHARACTER(len=10), ALLOCATABLE, DIMENSION(:,:) :: state ! name of excited state (species, state)
   REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: enrgE ! energy level of excited state (species, state)
   INTEGER, ALLOCATABLE, DIMENSION(:,:) :: ipath ! number of states (species, excited/dissociation/ionization)
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: Sel ! electron production (altitude, bin)
+  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: Sel ! electron production/source (altitude, bin)
   REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: eCS_exc ! total cross-section for excitation and dissociation
   REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: eCS_ion ! total cross-section for ionization
   REAL(RP), ALLOCATABLE, DIMENSION(:) :: pS ! 0?
   REAL(RP), ALLOCATABLE, DIMENSION(:,:,:) :: brat_el ! cross section for thin?
-  INTEGER, ALLOCATABLE, DIMENSION(:) :: nbrnch_el ! number of branches for thin
+  INTEGER, ALLOCATABLE, DIMENSION(:) :: nbrnch_el ! number of branches for dissociation + ionization (species)
   REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: crs_tot_inel ! total cross section for thin
   REAL(RP), ALLOCATABLE, DIMENSION(:,:,:) :: sum_cs_rees_ion
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:,:) :: sum_cs_rees_sec
+  REAL(RP), ALLOCATABLE, DIMENSION(:,:,:) :: sum_cs_rees_sec ! total cross-section for secondary electron production
   REAL(RP), ALLOCATABLE, DIMENSION(:,:,:) :: esrc ! electron production rate (reaction, altitude, energy bin)
   CHARACTER(len=87), ALLOCATABLE, DIMENSION(:) :: etitle ! equation (reaction)
   INTEGER, ALLOCATABLE, DIMENSION(:,:) :: iert ! reactant/product index (reactant/product #, reaction)

@@ -21,8 +21,8 @@ SUBROUTINE ELCTRN
   CHARACTER(len=12) :: xname
   CHARACTER(len=256) :: header, cline
   CHARACTER(len=12), DIMENSION(6) :: fm
-  INTEGER :: na, n,nm, nb, nx, np, ndum, i, ik, ni, ns, ne, j, npe, iflag, nstart, nend
-  REAL(RP) :: yenrg, rdum, E1, E2, E4, Eion, sumf_ion, sumf_sec, enge
+  INTEGER :: na, n,nm, nb, nx, np, ndum, ik, ni, ne, j, npe, iflag, nstart, nend
+  REAL(RP) :: yenrg, rdum, E1, E4, Eion, sumf_ion, sumf_sec, enge
   CHARACTER(len=1) :: iret
 
   iflag = 0
@@ -35,7 +35,7 @@ SUBROUTINE ELCTRN
 
   OPEN(unit=60, file='../data/electrons/eimpact.dat', status='old', action='read')
 
-  READ (60,*) nelb, nabs_el_thk, nabs_el_thn, nbrn_max, nprmax_el ! number of bins, number of species (thick), number of species (thin) , ,
+  READ (60,*) nelb, nabs_el_thk, nabs_el_thn, nbrn_max, nprmax_el ! number of bins, number of species (thick), number of species (thin), maximum number of states, 
 
   nabs_el = nabs_el_thk + nabs_el_thn ! number of species
 
@@ -63,15 +63,15 @@ SUBROUTINE ELCTRN
         STOP
      END IF
      na = na + 1
-     loab_el(na) = nm 
+     loab_el(na) = nm  ! electron active species index -> species index
      ipath(na,1) = nabs_excite
      ipath(na,2) = nabs_dissoc
      ipath(na,3) = nabs_ioniz
      nbrnch_el(na) = nabs_dissoc + nabs_ioniz
      READ(60,"(A)") header
-     READ(60,*) (eCS_tot_elast(i,na),i=1,nelb)
+     READ(60,*) (eCS_tot_elast(ne,na),ne=1,nelb)
      READ(60,"(A)") header
-     READ(60,*) (eCS_tot_inelast(i,na),i=1,nelb)
+     READ(60,*) (eCS_tot_inelast(ne,na),ne=1,nelb)
      ! .. read excited states
      DO nx = 1, nabs_excite
         READ (60,"(A12,F9.3)") yname, yenrg
@@ -97,7 +97,7 @@ SUBROUTINE ELCTRN
               lobr_el(np,na) = nb
            END IF
         END DO
-        nprdcts_el(nb,na) = np
+        nprdcts_el(nb,na) = np   ! total products
         READ(60,*) (eCS(ne,na,nabs_excite+nb),ne=1,nelb)
      END DO
   END DO
@@ -136,68 +136,54 @@ SUBROUTINE ELCTRN
   
   ALLOCATE(sum_cs_rees_ion(nelb,nabs_el,100),sum_cs_rees_sec(nelb,nabs_el,100))
   
-  !  .. Total cross sections for e-impact excitation and ionization of CO2 and N2
+  !  .. Total cross sections for e-impact excitation/dissociation and ionization of CO2 and N2
 
   DO na = 1, nabs_el_thk
      DO ne = 1, nelb
-!        eCS_exc(ne,na) = SUM(eCS(ne,na,1:(ipath(1,1)+ipath(1,2))))       
-!        eCS_ion(ne,na) = SUM(eCS(ne,na,1:ipath(1,3)))
         nstart = 1
         nend = ipath(na,1) + ipath(na,2)
-        eCS_exc(ne,na) = SUM(eCS(ne,na,nstart:nend))       
+        eCS_exc(ne,na) = SUM(eCS(ne,na,1:nend))       
         nstart = nend + 1
         nend = nend + ipath(na,3)
         eCS_ion(ne,na) = SUM(eCS(ne,na,nstart:nend))
      END DO
   END DO
   
-  !  .. Calculation of normalization factor for differential cross section
+  !  .. Calculation of normalization factor for differential cross section for ionization
   
   DO na = 1, nabs_el_thk
      DO ik = 1, ipath(na,3) 
-        DO i = 1, nelb
+        DO ne = 1, nelb
            enge = enrgE(na,ipath(na,1)+ipath(na,2)+ik)
-           if(elctreV(i) > enge) then
-              E1 = elctreV(i)-enge  
+           if(elctreV(ne) > enge) then    ! electron energy > ionization energy
+              E1 = elctreV(ne)-enge       ! total "after" energy
               ni = FIND_BIN(elctreV,elctDeV,E1)
-              if(elctreV(ni) > E1) then ! how is remaining energy higher?
-                 E4 = elctreV(ni)-half*elctDeV(ni)
+              if(elctreV(ni) > E1) then  ! total "after" energy < bin center
+                 E4 = elctreV(ni)-half*elctDeV(ni) ! "discretized" total "after" energy
                  ni = ni-1
-              else if(elctreV(ni) <= E1) then
+              else if(elctreV(ni) <= E1) then ! total "after" energy >= bin center
                  E4 = elctreV(ni)+half*elctDeV(ni)
               endif
-              Eion = elctreV(i) - E4
-              nm = ni 
-              ns = FIND_BIN(elctreV,elctDeV,enge)   !why is this here? Does nothing
+              Eion = elctreV(ne) - E4 ! "discretized" ionization energy
               sumf_ion = zero
               sumf_sec = zero
-              if(nm == 0) then
-                 sum_cs_rees_ion(i,na,ik) = one 
-                 sum_cs_rees_sec(i,na,ik) = one
+              if(ni == 0) then ! when exiting e energy < first bin center
+                 sum_cs_rees_ion(ne,na,ik) = one ! lowest bin accounts for entire cross-section
+                 sum_cs_rees_sec(ne,na,ik) = one
               else
-                 DO j = 1, nm
-                    E2 = elctreV(i)-elctreV(j) 
-                    sumf_ion = sumf_ion + DIFCS_SEC(E2-Eion,elctreV(i),Eion)*elctDeV(j)
-                    sumf_sec = sumf_sec + DIFCS_SEC(elctreV(j),elctreV(i),Eion)*elctDeV(j)
+                 DO j = 1, ni
+                    sumf_ion = sumf_ion + DIFCS_SEC(elctreV(ne)-elctreV(j)-Eion,elctreV(ne),Eion)*elctDeV(j) ! exiting electron cross-section
+                    sumf_sec = sumf_sec + DIFCS_SEC(elctreV(j),elctreV(ne),Eion)*elctDeV(j) ! secondary electron cross-section
                  ENDDO
-                 sum_cs_rees_ion(i,na,ik) = sumf_ion
-                 sum_cs_rees_sec(i,na,ik) = sumf_sec
-                 IF(ABS(sumf_sec) < 1.E-30_RP) THEN
-                    WRITE(*,"(' sumf_sec = ',ES11.3,' nm = ',I6)") sumf_sec,nm
-                    DO j = 1, nm
-                       WRITE(*,"(I6,2ES11.3)") j, elctDeV(j),  DIFCS_SEC(elctreV(j),elctreV(i),Eion)
-                    END DO
-                    READ(*,"(A)") iret
-                 END IF
+                 sum_cs_rees_ion(ne,na,ik) = sumf_ion
+                 sum_cs_rees_sec(ne,na,ik) = sumf_sec
               endif
            endif
         ENDDO
      ENDDO
   ENDDO
-
-  !
+  
   !  .. Move things to more convenient arrays
-  !
 
   nert = 0
   DO na = 1, nabs_el

@@ -28,13 +28,12 @@ SUBROUTINE ELDEP1
  
   IMPLICIT NONE
 
-  INTEGER :: nabs_el
-  INTEGER :: i, na, j, k, m, n, ni, nm, npe, nb, nl, ne, nj
+  INTEGER :: i, na, j, n, ni, nm, npe, nb, nl, ne, nj
   INTEGER, DIMENSION(2) :: isp
   REAL(RP), ALLOCATABLE, DIMENSION(:) :: Selz, src_plasma
   REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: Ael, Ael_ext, Ael_sec, Ael_ion, sum_cs_ion, sum_cs_ext
-  REAL(RP) :: sum1,sum2, sum_tot, sm, rn, rnp1, Ann, An1n1, E1, E2, E2_min, E2_max, step, Ei,Eion,  &
-       sm_ion, sm_sec, E3, E4, tei, eden, sigma_scaled, sigma_dif_ion, sigma_dif_sec, pSz,  &
+  REAL(RP) :: sum1,sum2, sum_tot, sm, rn, rnp1, Ann, An1n1, E1, E2, Eion,  &
+       sm_ion, sm_sec, E3, E4, eden, sigma_scaled, sigma_dif_ion, sigma_dif_sec, pSz,  &
        cs_ion, cs_sec
   CHARACTER(len=1) :: iret
 
@@ -42,102 +41,85 @@ SUBROUTINE ELDEP1
   !  .. Initialize
   ! 
 
-  nabs_el = SIZE(ipath,1)
   eFLUX(:,:) = zero
   isp(1) = iCO2
   isp(2) = iN2
 
   ALLOCATE(Selz(nelb),src_plasma(nelb),Ael(nelb,nelb), Ael_ext(nelb,nelb), Ael_sec(nelb,nelb),      &
-       Ael_ion(nelb,nelb),sum_cs_ion(nelb,nabs_el),sum_cs_ext(nelb,nabs_el))
+       Ael_ion(nelb,nelb),sum_cs_ion(nelb,nabs_el_thk),sum_cs_ext(nelb,nabs_el_thk))
 
   !
   !  .. Calculate electron flux at each energy and level
   !
 
-  ALTI: DO i = nlev, nibot, -1
+  DO nl = nibot, nlev
 
-     Ael(:,:) = zero
-     Ael_ext(:,:) = zero
-     Ael_sec(:,:) = zero
-     Ael_ion(:,:) = zero
-     Selz(:)=Sel(i,:)
-     tei = te(i)
-     eden = den(i,iELE)
+     Ael(:,:) = zero             ! total attenuation
+     Ael_ext(:,:) = zero         ! attenuation by excitation of neutrals
+     Ael_sec(:,:) = zero         ! attenuation by secondary electron
+     Ael_ion(:,:) = zero         ! attenuation by ionization
+     Selz(:)=Sel(nl,:)
+     eden = den(nl,iELE)
 
      IF( SUM(Selz(1:nelb)) > zero ) THEN
+        sum_cs_ext(:,:) = zero ! total excitation cross-section
+        sum_cs_ion(:,:) = zero ! total ionization cross-section
 
-        sum_cs_ext(:,:) = zero 
-        sum_cs_ion(:,:) = zero
+        DO ne = 2, nelb
+           DO na = 1, nabs_el_thk
+              
+              ! Excitation to discrete states
 
-        ENERGY: DO m = nelb,2,-1    
-
-           SPECIES: DO na = 1, nabs_el
-
-              ! Ionization channels
-
-              DO j = 1, ipath(na,3)  
-
+              DO j = 1, ipath(na,1)+ipath(na,2)
+                 E1 = elctreV(ne)-enrgE(na,j) ! exiting energy of electron
+                 IF(E1 > zero) THEN
+                    nm = FIND_BIN(elctreV,elctDeV,E1)
+                    IF(nm < ne) THEN
+                       sigma_scaled = eCS(ne,na,j)*(enrgE(na,j)/(elctreV(ne)-elctreV(nm)))
+                       Ael_ext(nm,ne) = Ael_ext(nm,ne) + den(nl,isp(na))*sigma_scaled
+                    ELSE IF(nm == ne) THEN
+                       sigma_scaled = eCS(ne,na,j)*(enrgE(na,j)/(elctreV(nm)-elctreV(nm-1)))
+                       Ael_ext(nm-1,ne) = Ael_ext(nm-1,ne) + den(nl,isp(na))*sigma_scaled
+                    ENDIF
+                    sum_cs_ext(ne,na) = sum_cs_ext(ne,na) + sigma_scaled
+                 END IF
+              END DO
+			  
+			  ! Ionization channels
+		
+			  DO j = 1, ipath(na,3)
                  nj = ipath(na,1)+ipath(na,2)+j
-                 E1 = elctreV(m)-enrgE(na,nj)
-                 IF(E1 > zero) THEN 
+                 E1 = elctreV(ne)-enrgE(na,nj) ! remaining energy after ionization
+                 IF(E1 > zero) THEN ! ionization occurs
                     ni = FIND_BIN(elctreV,elctDeV,E1)
                     IF((elctreV(ni) > E1) .and. (ni /= 1)) THEN
                        E4 = elctreV(ni)-half*elctDeV(ni)
-                       ni =ni-1
+                       ni = ni-1
                     ELSE
                        E4 = elctreV(ni)+half*elctDeV(ni)
                     END IF
-                    Eion = elctreV(m) - E4
-                    cs_ion = sum_cs_rees_ion(m,na,j)
-                    cs_sec = sum_cs_rees_sec(m,na,j)
-                    IF(ni > 0) THEN  
-                       DO nm = ni, 1, -1  
+                    Eion = elctreV(ne) - E4 ! "discretized" ionization energy
+                    cs_ion = sum_cs_rees_ion(ne,na,j)
+                    cs_sec = sum_cs_rees_sec(ne,na,j)
+                    IF(ni > 0) THEN  ! will this criterion ever fail?
+                       DO nm = 1, ni
                           IF(nm == ni) THEN
                              E3 = enrgE(na,nj)/Eion
                           ELSE
                              E3 = one
                           END IF
-                          E2_min = elctreV(nm)-half*elctDeV(nm)
-                          E2_max = elctreV(nm)+half*elctDeV(nm)
-                          step = (E2_max-E2_min)/one
-                          sm_ion = zero
-                          sm_sec = zero
-                          DO k=1,1
-                             Ei = E2_min + (k-1)*step + half*step
-                             sm_ion = sm_ion + step*DIFCS_SEC(elctreV(m)-Ei-Eion,elctreV(m),Eion)*eCS(m,na,nj)/cs_ion
-                             sm_sec = sm_sec + step*DIFCS_SEC(Ei,elctreV(m),Eion)*eCS(m,na,nj)/cs_sec
-                          END DO
-                          sigma_dif_ion = sm_ion/elctDeV(nm)
-                          sigma_dif_sec = sm_sec/elctDeV(nm)
-                          Ael_ion(nm,m) = Ael_ion(nm,m) + den(i,isp(na))*elctDeV(m)*(sigma_dif_ion)*E3 
-                          Ael_sec(nm,m) = Ael_sec(nm,m) + den(i,isp(na))*elctDeV(m)*(sigma_dif_sec)     
+                          sigma_dif_ion = DIFCS_SEC(elctreV(ne)-elctreV(nm)-Eion,elctreV(ne),Eion)*eCS(ne,na,nj)/cs_ion ! divide to ensure normalized
+                          sigma_dif_sec = DIFCS_SEC(elctreV(nm),elctreV(ne),Eion)*eCS(ne,na,nj)/cs_sec
+                          Ael_ion(nm,ne) = Ael_ion(nm,ne) + den(nl,isp(na))*elctDeV(ne)*(sigma_dif_ion)*E3 
+                          Ael_sec(nm,ne) = Ael_sec(nm,ne) + den(nl,isp(na))*elctDeV(ne)*(sigma_dif_sec)     
                        END DO
                     END IF
-                    sum_cs_ion(m,na) = sum_cs_ion(m,na) + eCS(m,na,nj) 
-                 END IF
-
-              END DO
-
-              ! Excitation to discrete states
-
-              DO j = 1, ipath(na,1)+ipath(na,2)
-                 E1 = elctreV(m)-enrgE(na,j)
-                 IF(E1 > zero) THEN
-                    nm = FIND_BIN(elctreV,elctDeV,E1)
-                    IF(nm < m) THEN
-                       sigma_scaled = eCS(m,na,j)*(enrgE(na,j)/(elctreV(m)-elctreV(nm)))
-                       Ael_ext(nm,m) = Ael_ext(nm,m) + den(i,isp(na))*sigma_scaled
-                    ELSE IF(nm == m) THEN
-                       sigma_scaled = eCS(m,na,j)*(enrgE(na,j)/(elctreV(nm)-elctreV(nm-1)))
-                       Ael_ext(nm-1,m) = Ael_ext(nm-1,m) + den(i,isp(na))*sigma_scaled
-                    ENDIF
-                    sum_cs_ext(m,na) = sum_cs_ext(m,na) + sigma_scaled
-!                    sum_cs_ext(m,na) = sum_cs_ext(m,na) + eCS(m,na,j)
+                    sum_cs_ion(ne,na) = sum_cs_ion(ne,na) + eCS(ne,na,nj) 
                  END IF
               END DO
 
-           END DO SPECIES
-        END DO ENERGY
+           END DO
+        END DO
 
         Ael = Ael_ext + Ael_ion + Ael_sec
 
@@ -145,35 +127,39 @@ SUBROUTINE ELDEP1
         !   .. Calculate Electron flux 
         !
 
-        eFLUX(i,nelb) = Selz(nelb)/(den(i,iCO2)*(sum_cs_ext(nelb,1)+sum_cs_ion(nelb,1)) &
-             +den(i,iN2)*(sum_cs_ext(nelb,2)+sum_cs_ion(nelb,2)))
-        DO n = nelb-1, 1, -1
-           sum1 = DOT_PRODUCT(Ael(n,n+1:nelb),eFLUX(i,n+1:nelb))
-           sum2 = DOT_PRODUCT(Ael(n+1,n+2:nelb),eFLUX(i,n+2:nelb))
+        eFLUX(nl,nelb) = Selz(nelb)/(den(nl,iCO2)*(sum_cs_ext(nelb,1)+sum_cs_ion(nelb,1)) &
+             +den(nl,iN2)*(sum_cs_ext(nelb,2)+sum_cs_ion(nelb,2)))
+        DO n = nelb-1, 1, -1 ! eqn 20 in photoelectron notes (with dE(j) =dE(j+1))
+           sum1 = DOT_PRODUCT(Ael(n,n+1:nelb),eFLUX(nl,n+1:nelb))
+           sum2 = DOT_PRODUCT(Ael(n+1,n+2:nelb),eFLUX(nl,n+2:nelb))
            sum_tot = half * (sum1 + sum2)
-           rn = eden*LOSS(elctreV(n),eden,tei)
-           rnp1 = eden*LOSS(elctreV(n+1),eden,tei)
-           Ann = (rn / (elctreV(n+1)-elctreV(n))) + half*( den(i,iCO2)* (sum_cs_ext(n,1) + sum_cs_ion(n,1) ) &
-                + den(i,iN2)* (sum_cs_ion(n,2)   + sum_cs_ext(n,2)) )
-           An1n1 = (rnp1 / (elctreV(n+1)-elctreV(n))) - half*(den(i,iCO2)*(sum_cs_ext(n+1,1) + sum_cs_ion(n+1,1)) & 
-                + den(i,iN2)*(sum_cs_ion(n+1,2) + sum_cs_ext(n+1,2)))
-           eFLUX(i,n) = ( half*(Selz(n)+Selz(n+1)) + An1n1*eFLUX(i,n+1) + sum_tot) / Ann
+           rn = eden*LOSS(elctreV(n),eden,te(nl))
+           rnp1 = eden*LOSS(elctreV(n+1),eden,te(nl))
+           Ann = (rn / (elctreV(n+1)-elctreV(n))) + half*( den(nl,iCO2)* (sum_cs_ext(n,1) + sum_cs_ion(n,1) ) &
+                + den(nl,iN2)* (sum_cs_ion(n,2)   + sum_cs_ext(n,2)) )
+           An1n1 = (rnp1 / (elctreV(n+1)-elctreV(n))) - half*(den(nl,iCO2)*(sum_cs_ext(n+1,1) + sum_cs_ion(n+1,1)) & 
+                + den(nl,iN2)*(sum_cs_ion(n+1,2) + sum_cs_ext(n+1,2)))
+           IF (Ann < 1.0E-20) THEN ! if Ann = 0
+              eFLUX(nl,n) = 0.57 * eden
+           ELSE
+              eFLUX(nl,n) = ( half*(Selz(n)+Selz(n+1)) + An1n1*eFLUX(nl,n+1) + sum_tot) / Ann
+           END IF
         END DO
 
      END IF
   
-  END DO ALTI
+  END DO 
    
   ! Secondary production rates
 
-  DO k = nibot, nlev
+  DO nl = nibot, nlev
      pSz = zero
-     do i = 1, nabs_el
+     do i = 1, nabs_el_thk
         do n = 1, nelb  !-1
-           pSz = pSz + den(k,isp(i))*eCS_ion(n,i)*eFLUX(k,n)*elctDeV(n) 
+           pSz = pSz + den(nl,isp(i))*eCS_ion(n,i)*eFLUX(nl,n)*elctDeV(n) 
         enddo
      enddo
-     pS(k) = pSz
+     pS(nl) = pSz
   ENDDO
 
   
@@ -191,7 +177,7 @@ SUBROUTINE ELDEP1
      END DO
   END DO
   
-  DO n = 1, nabs_el_thn ! why is this different?
+  DO n = 1, nabs_el_thn
      na = n + nabs_el_thk
      DO nb = 1, nbrnch_el(na)
         npe = npe + 1
@@ -211,27 +197,19 @@ SUBROUTINE ELDEP1
 
   CONTAINS
 
-  FUNCTION LOSS(E,NE,TE)
+  FUNCTION LOSS(E,NE,TE) ! loss of suprathermal electrons with energy E into thermal with density NE and temperature TE
     USE PRECISION
     USE CONSTANTS
     IMPLICIT NONE
     REAL(RP) :: LOSS, E, NE, TE, Ee
-!    IF(E <= 0._RP) THEN
-!	WRITE(*,"(' LOSS: E = ',ES15.7)") E
-!        STOP
-!    END IF
-!    IF(Ne <= 0._RP) THEN
-!	WRITE(*,"(' LOSS: Ne = ',ES15.7)") Ne 
-!        STOP
-!    END IF
+
     Ee = 8.618E-5_RP*TE
     IF (Ee > E) THEN
 	LOSS = zero
     ELSE 
 	LOSS = (3.37e-12_RP/((E**0.94_RP)*(NE**0.03_RP)))*((E-Ee)/(E-0.53_RP*Ee))**2.36_RP
     END IF
-!    IF (Ee > E) LOSS = zero !(3.37e-12/((E**0.94)*(NE**0.03)))*((Ee-E)/(Ee-0.53*E))**2.36  !zero
-!   IF (Ee > E) write(*,*) 'LOSS = ',LOSS
-  END FUNCTION LOSS
+
+	END FUNCTION LOSS
 
 END SUBROUTINE eldep1
