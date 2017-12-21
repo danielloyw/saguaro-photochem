@@ -1,4 +1,4 @@
-SUBROUTINE READ_PHOTO(name,file_photo,nbrnch,loab,lopr,ionize,enrgI,charge_state,phrct,wcrs,xcrs,brat)  !!!parameters
+SUBROUTINE READ_PHOTO(name,file_photo,nbrnch,loab,lopr,ionize,enrgI,charge_state,phrct,wcrs,xcrs,brat)
 
   USE PRECISION
   USE CONSTANTS
@@ -19,7 +19,7 @@ SUBROUTINE READ_PHOTO(name,file_photo,nbrnch,loab,lopr,ionize,enrgI,charge_state
   CHARACTER(len=*), INTENT(OUT), ALLOCATABLE, DIMENSION(:,:) :: phrct
   REAL(RP), INTENT(OUT), ALLOCATABLE, DIMENSION(:) :: wcrs
   REAL(RP), INTENT(OUT), ALLOCATABLE, DIMENSION(:,:) :: xcrs
-  REAL(RP), INTENT(OUT), ALLOCATABLE, DIMENSION(:,:,:) :: brat    !!!
+  REAL(RP), INTENT(OUT), ALLOCATABLE, DIMENSION(:,:,:) :: brat
 
   !  .. Internal Variables
 
@@ -78,7 +78,7 @@ SUBROUTINE READ_PHOTO(name,file_photo,nbrnch,loab,lopr,ionize,enrgI,charge_state
                  ionize(nb,na) = .true.
               END IF
            END DO
-           READ(65,'(10ES11.3)') (brat(nw,nb,na),nw=1,ncrs) ! cross sections
+           READ(65,'(10ES11.3)') (brat(nw,nb,na),nw=1,ncrs) ! branching ratios
         END DO
      END DO
      
