@@ -31,19 +31,22 @@ SUBROUTINE READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phr
   INTEGER, PARAMETER :: nwav_n2 = 540000
   INTEGER, PARAMETER :: nwav_coA = 16000
   INTEGER, PARAMETER :: nwav_coB = 840000
-
-  CHARACTER(len=128) :: header, cline
+  INTEGER, PARAMETER :: nprmaxB = 4
+  
+  CHARACTER(len=256) :: header, cline
+  CHARACTER(len=12) :: xname
   CHARACTER(len=12), DIMENSION(6) :: fm
-  INTEGER :: nwav_co2, nbrnch_co2, nsp
-  REAL(RP), ALLOCATABLE, DIMENSION(:) :: wav_co, crs_co_diss, crs_co_tot, wav_n2, crs_n2
+  INTEGER :: ncrs, nabs, nabsB, nbrmaxB, nwav_co2, nbrnch_co2, nsp, ndum
+  REAL(RP), ALLOCATABLE, DIMENSION(:) :: wcrs, xcrs, brat, wav_co, crs_co_diss, crs_co_tot, wav_n2, crs_n2
   REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: brat_co
+  REAL(RP), ALLOCATABLE, DIMENSION(:) :: xdum
   REAL(RP) :: rdum
   INTEGER :: na, nf, nw, nb, nm, np, j
+  
+  nsp = SIZE(name)-1
 
   ! Read main cross-section file
-  
   OPEN(unit=65, file='../data/photons/photoB.dat',status='old',action='read')
-
     READ(65,*) ncrs, nabs, nbrmaxB ! file wavelengths, species, maximum branches
     nabsB = nabs + 4
     ALLOCATE(nbrnchB(nabsB),loabB(nabsB),loprB(nprmaxB,nbrmaxB,nabsB),phrctB(nbrmaxB,nabsB),          &
@@ -59,10 +62,10 @@ SUBROUTINE READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phr
     ! Create wavelength scale
   
     delwB(:) = 2.E-4_RP
-    DO nw = 0, ncrsB-1
-       wcrsB(nw) = 790._RP + nw * delwB(nw)
+    DO nw = 1, ncrsB
+       wcrsB(nw) = 790._RP + (nw-1) * delwB(nw)
     END DO
-
+	
     ALLOCATE(wcrs(ncrs),xcrs(ncrs),xdum(ncrs),brat(ncrs))
     
     READ(65,'(A)') header                               
@@ -86,7 +89,7 @@ SUBROUTINE READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phr
           DO j = 3, 6 ! products
              nm = FIND_NAME(fm(j),name)
              IF ((nm > 0) .and. (nm <= nsp)) THEN
-                np = np + 1
+				np = np + 1
                 loprB(np,nb,na) = nm
              END IF
              IF (nm == nsp) THEN 
@@ -102,7 +105,6 @@ SUBROUTINE READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phr
      
   CLOSE(unit=65)
   DEALLOCATE(wcrs,xcrs,xdum,brat)
-  
   !
   !  .. N2 High Resolution Lewis et al. Cross Section for 800-1000 Angstroms
   !
@@ -172,7 +174,6 @@ SUBROUTINE READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phr
 
   CALL INTRP(wav_n2,crs_n2,wcrsB,xcrsB(1:ncrsB,na))
   DEALLOCATE(wav_n2, crs_n2)
-
   !
   !  .. Read CO cross section and interpolate to high res grid
   !
@@ -230,9 +231,7 @@ SUBROUTINE READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phr
   DO nb = 1, nbrnchB(na)
      CALL INTRP(wav_co,brat_co(:,nb),wcrsB,bratB(1:ncrsB,nb,na))
   END DO
-
   
   DEALLOCATE(wav_co, crs_co_diss, crs_co_tot, brat_co)
-
   RETURN
 END SUBROUTINE READ_PHOTOB

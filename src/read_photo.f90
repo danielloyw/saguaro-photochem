@@ -49,16 +49,16 @@ SUBROUTINE READ_PHOTO(name,file_photo,nbrnch,loab,lopr,ionize,enrgI,charge_state
      lopr(:,:,:) = 0
      enrgI(:,:) = zero
      
-     READ(65,'(A)') header                               
+     READ(65,'(A)') header     
      READ(65,'(10ES11.3)') wcrs ! wavelength scale
      DO na = 1, nabs
         READ(65,'(A12, I4)') xname, ndum
         loab(na) = FIND_NAME(xname,name)
         nbrnch(na) = ndum ! number of reactions/branches
         READ(65,'(A)') header
-        READ(65,*) (xcrs(nw,na),nw=1,ncrs) !'(10ES11.3)' ! total absorption cross section
+        READ(65,*) (xcrs(nw,na),nw=1,ncrs) ! total absorption cross section
         READ(65,'(A)') header
-        READ(65,*) (xdum(nw,na),nw=1,ncrs) !'(10ES11.3)' ! total ionization cross section?
+        READ(65,*) (xdum(nw,na),nw=1,ncrs) ! total ionization cross section
         DO nb = 1, nbrnch(na)
            READ (65,'(A)') cline
            phrct(nb,na) = cline
