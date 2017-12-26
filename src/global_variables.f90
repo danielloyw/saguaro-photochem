@@ -148,7 +148,7 @@ MODULE GLOBAL_VARIABLES
   REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: xcrsA, xcrsB, xcrsC                          ! total absorption cross sections (wavelength, species #)
   REAL(RP), ALLOCATABLE, DIMENSION(:,:,:) :: bratA, bratB, bratC                        ! branch ratio (wavelength, branch #, species #)
   LOGICAL, ALLOCATABLE, DIMENSION(:,:) :: ionizeA, ionizeB, ionizeC                     ! are there any ions?
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: enrgIA, enrgIB, enrgIC                       ! ionization energy (branch #, species #) in angstroms
+  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: enrgIA, enrgIB, enrgIC                       ! threshold energy (branch #, species #) in angstroms
   REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: charge_stateA, charge_stateB, charge_stateC  ! number of ions (branch #, species #)
   REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: srateJ                                       ! specified optically thin photolysis rates
   CHARACTER(len=87), ALLOCATABLE, DIMENSION(:) :: ptitle                                ! formula for each photolysis reaction
