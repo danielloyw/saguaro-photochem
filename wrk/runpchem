@@ -24,6 +24,7 @@ cp ../data/reactions/nreactions.csv ../runs/$1/input/.
 cp ../data/reactions/nreactions.tab ../runs/$1/input/.
 cp ../data/reactions/ireactions.csv ../runs/$1/input/.
 cp ../data/reactions/ireactions.tab ../runs/$1/input/.
+cp tctl.out ../runs/$1/input/.
 cp pchem1D.ctl ../runs/$1/input/.
 cp pchem1D.sol ../runs/$1/input/.
 cp atm1D.in ../runs/$1/input/.
