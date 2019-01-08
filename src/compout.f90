@@ -191,6 +191,32 @@ SUBROUTINE COMPOUT
      END DO
   CLOSE(unit=62)
   
+  
+    REAL(RP), ALLOCATABLE, DIMENSION(:) :: COphotorate
+    ALLOCATE(COphotorate(wcrsA+wcrsB_low, nlev))
+    OPEN(unit=70,file='../runs/'//TRIM(runID)//'/output/COphotorates.out',status='unknown')
+     WRITE (70,"(2I6)") ncrsA+ncrsB_low+ncrsC, nlev
+     WRITE (70,"('Wavelength (Angstroms)')")
+     WRITE (70,"(10ES11.3)") (wcrs(nw), nw=1, ncrsA+ncrsB_low)
+     DO nz = 1, nlev
+        WRITE(70,"(F11.3)") 1.E-5_RP*z(nz)
+        na = 4
+        nb = 4
+        DO nw = 1, ncrsA
+           COphotorate(nw,nz) = prtA(nw,nb,na)*trnA(nw,nz)*diurnal_average
+        END DO
+        na = 19
+        nb = 1
+        DO nw = 1, ncrsB_low
+           sm = zero
+           DO nw_high = (nw-1)*50000+1, nw*50000
+              sm = sm + prtB(nw,nb,na)*trnB(nw,nz)*diurnal_average
+           END DO
+           COphotorate(ncrsA+nw,nz) = sm
+        END DO
+        WRITE(70,"(10ES11.3)") (COphotorate(nw,nz), nw=1,ncrsA+ncrsB_low)
+     END DO
+  CLOSE(unit=70)
   END IF
 
   !
