@@ -1,4 +1,3 @@
-! Need to fix CO2 branching ratios in the 80-100 nm region
 PROGRAM PCHEM1D
 
   !  .. Modules
