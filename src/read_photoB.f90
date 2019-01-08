@@ -48,7 +48,7 @@ SUBROUTINE READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phr
   ! Read main cross-section file
   OPEN(unit=65, file='../data/photons/photoB.dat',status='old',action='read')
     READ(65,*) ncrs, nabs, nbrmaxB ! file wavelengths, species, maximum branches
-    nabsB = nabs + 4
+    nabsB = nabs + 3
     ALLOCATE(nbrnchB(nabsB),loabB(nabsB),loprB(nprmaxB,nbrmaxB,nabsB),phrctB(nbrmaxB,nabsB),          &
        ionizeB(nbrmaxB,nabsB),charge_stateB(nbrmaxB,nabsB),wcrsB(ncrsB),enrgIB(nbrmaxB,nabsB),      &
        delwB(ncrsB),xcrsB(ncrsB,nabsB),bratB(ncrsB,nbrmaxB,nabsB))
@@ -89,7 +89,7 @@ SUBROUTINE READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phr
           DO j = 3, 6 ! products
              nm = FIND_NAME(fm(j),name)
              IF ((nm > 0) .and. (nm <= nsp)) THEN
-				np = np + 1
+                np = np + 1
                 loprB(np,nb,na) = nm
              END IF
              IF (nm == nsp) THEN 
@@ -181,13 +181,12 @@ SUBROUTINE READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phr
   na = nabs + 3
   nbrnchB(na) = 2
   ALLOCATE(wav_co(nwav_coA+nwav_coB),crs_co_diss(nwav_coA+nwav_coB),crs_co_tot(nwav_coA+nwav_coB),brat_co(nwav_coA+nwav_coB,nbrnchB(na)))
-  OPEN(Unit=67,file='../data/photons/photoB-12C16O_300K_89.6-91.2.dat',status='old',action='read')
+  OPEN(Unit=67,file='../data/photons/photoB-12C16O_300K_75-91.2.dat',status='old',action='read')
      READ(67,"(A)") header
      READ(67,"(A)") header
      DO nf = 1, nwav_coA
-        READ(67,*) wav_co(nf), crs_co_diss(nf) ! wavelengths, cross sections
+        READ(67,*) wav_co(nf), crs_co_tot(nf), crs_co_diss(nf) ! wavelengths, total cross section, dissociative cross section
         wav_co(nf) = wav_co(nf)*10._RP
-        crs_co_tot(nf) = crs_co_diss(nf)
      END DO
   CLOSE(unit=67)
   OPEN(Unit=68,file='../data/photons/photoB-12C16O_300K_91.2-108.dat',status='old',action='read')
@@ -220,8 +219,11 @@ SUBROUTINE READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phr
   ionizeB(nb,na) = .true.
   charge_stateB(nb,na) = one
   enrgIB(nb,na) = 885.6_RP
-  DO nf = 1, nwav_coA+nwav_coB
+  DO nf = 1, nwav_coA
      brat_co(nf,nb) = one - brat_co(nf,1)
+  END DO
+  DO nf = nwav_coA+1, nwav_coB
+     brat_co(nf,nb) = zero
   END DO
   loprB(1,nb,na) = FIND_NAME('COP         ',name)
   loprB(2,nb,na) = FIND_NAME('E           ',name)
