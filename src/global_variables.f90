@@ -138,13 +138,15 @@ MODULE GLOBAL_VARIABLES
 
   LOGICAL :: lcrsA, lcrsB, lcrsC, lcrsJ                 ! calculate photolysis?
   INTEGER :: nphrt                                      ! total number of photolysis reactions
-  INTEGER :: ncrsA, ncrsB, ncrsC                        ! number of wavelength bins for spectral ranges A, B and C
+  INTEGER :: ncrsA, ncrsB, ncrsB_low, ncrsC                        ! number of wavelength bins for spectral ranges A, B and C
   INTEGER :: nabsA, nabsB, nabsC, nabsJ                 ! number of species for spectral ranges A, B and C
   INTEGER :: nbrmaxA, nbrmaxB, nbrmaxC, nbrmaxJ         ! maximum number of branches for each species
   INTEGER, ALLOCATABLE, DIMENSION(:) :: loabA, loabB, loabC, loabJ                      ! photolyzed species index
   INTEGER, ALLOCATABLE, DIMENSION(:) :: nbrnchA, nbrnchB, nbrnchC, nbrnchJ              ! number of photo reactions/branches
-  REAL(RP), ALLOCATABLE, DIMENSION(:) :: wcrsA, wcrsB, wcrsC                            ! wavelength scale
+  REAL(RP), ALLOCATABLE, DIMENSION(:) :: wcrsA, wcrsB, wcrsB_low, wcrsC                            ! wavelength scale
   REAL(RP), ALLOCATABLE, DIMENSION(:) :: fsolA, fsolB, fsolC                            ! solar flux for spectral ranges A, B and C
+  REAL(RP), ALLOCATABLE, DIMENSION(:) :: trnA, trnB, trnC                            ! transmission of solar flux for spectral ranges A, B and C
+  REAL(RP), ALLOCATABLE, DIMENSION(:) :: prtA, prtB, prtC                            ! non-diurnally averaged photo rate for spectral ranges A, B and C (wavelength, branch #, species #)
   REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: xcrsA, xcrsB, xcrsC                          ! total absorption cross sections (wavelength, species #)
   REAL(RP), ALLOCATABLE, DIMENSION(:,:,:) :: bratA, bratB, bratC                        ! branch ratio (wavelength, branch #, species #)
   LOGICAL, ALLOCATABLE, DIMENSION(:,:) :: ionizeA, ionizeB, ionizeC                     ! are there any ions?

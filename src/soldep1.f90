@@ -16,13 +16,6 @@ SUBROUTINE SOLDEP1
   IMPLICIT  none
 
   REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: clm
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: trnA
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: trnB
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: trnC
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:,:) :: prtA
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:,:) :: prtB
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:,:) :: prtC
-  REAL(RP), ALLOCATABLE, DIMENSION(:) :: sol1, sol2, sol3, sol4, sol5
   REAL(RP) :: sin_sza, sa, ca, xp, yv, htop, sm, fac, Eion, Ehv, Eel
   INTEGER :: nm, nz, nl, nw, na, nph, nb, ne
   CHARACTER(len=1) :: iret
@@ -195,7 +188,7 @@ SUBROUTINE SOLDEP1
      END DO
   END DO
   ELSE
-  nph = 0   ! what does this section do?
+  nph = 0
   DO na = 1, nabsA
      DO nb = 1, nbrnchA(na)
         nph = nph + 1
@@ -369,62 +362,11 @@ SUBROUTINE SOLDEP1
      END DO
   CLOSE(unit=60)
 
-  IF( lcrsA .and. lcrsB .and. lcrsC) THEN
-  ALLOCATE(sol1(nlev),sol2(nlev),sol3(nlev),sol4(nlev),sol5(nlev))
-  DO nz = 1, nlev
-     sm = zero
-     DO nw = 1, ncrsA
-        sm = sm + fsolA(nw)*trnA(nw,nz)
-     END DO
-     sol1(nz) = sm
-  END DO
-
-  DO nz = 1, nlev
-     sm = zero
-     DO nw = 1, ncrsB
-        sm = sm + fsolB(nw)*trnB(nw,nz)
-     END DO
-     sol2(nz) = sm
-  END DO
-
-  DO nz = 1, nlev
-     sm = zero
-     DO nw = 1, 45
-        sm = sm + fsolC(nw)*trnC(nw,nz)
-     END DO
-     sol3(nz) = sm
-  END DO
-
-  DO nz = 1, nlev
-     sm = zero
-     DO nw = 46, 80
-        sm = sm + fsolC(nw)*trnC(nw,nz)
-     END DO
-     sol4(nz) = sm
-  END DO
-
-  DO nz = 1, nlev
-     sm = zero
-     DO nw = 81, ncrsC
-        sm = sm + fsolC(nw)*trnC(nw,nz)
-     END DO
-     sol5(nz) = sm
-  END DO
-
-
-  OPEN(unit=70,file='../runs/'//trim(runID)//'/output/solar_flux.out',status='unknown')
-     DO nz = 1, nlev
-        WRITE(70,"(6ES11.3)") 1.E-5_RP*z(nz), sol1(nz),sol2(nz),sol3(nz),sol4(nz),sol5(nz)
-     END DO
-  CLOSE(unit=70)
-  DEALLOCATE(sol1,sol2,sol3,sol4,sol5)
-  END IF
-
   !
   !  .. All Done
   !
 
-  DEALLOCATE(clm,trnA,trnB,trnC,prtA,prtB,prtC)
+  DEALLOCATE(clm)
   
   RETURN
 END SUBROUTINE SOLDEP1

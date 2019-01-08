@@ -26,6 +26,9 @@ SUBROUTINE COMPOUT
   INTEGER, ALLOCATABLE, DIMENSION(:) :: indx
   INTEGER :: nz, nm, np, nx, nr, nl, ne
 
+  REAL(RP), ALLOCATABLE, DIMENSION(:) :: wcrs, solar_flux
+  ALLOCATE(wcrs(wcrsA+wcrsB_low+wcrsC), solar_flux(wcrsA+wcrsB_low+wcrsC, nlev))
+  
   REAL(RP), ALLOCATABLE, DIMENSION(:) :: den_oxy, mol_oxy, flx_oxy, prext_oxy, pr_ph_oxy, ls_ph_oxy, &
        pr_pe_oxy, ls_pe_oxy, pr_chem_oxy, ls_chem_oxy, pr_oxy, ls_oxy, rcdn_oxy, div_flx_oxy
 
@@ -159,6 +162,36 @@ SUBROUTINE COMPOUT
   !
   !  .. Solar Fluxes
   !
+
+  IF( lcrsA .and. lcrsB .and. lcrsC) THEN
+
+  OPEN(unit=62,file='../runs/'//TRIM(runID)//'/output/solar_flux.out',status='unknown')
+     WRITE (62,"(2I6)") ncrsA+ncrsB_low+ncrsC, nlev
+     WRITE (62,"('Wavelength (Angstroms)')") 
+     wcrs(1:ncrsA) = wcrsA
+     wcrs(ncrsA+1:ncrsA+ncrsB_low) = wcrsB_low
+     wcrs(ncrsA+ncrsB_low+1:ncrsA+ncrsB_low+ncrsC) = wcrsC
+     WRITE (62,"(10ES11.3)") (wcrs(nw), nw=1, ncrsA+ncrsB_low+ncrsC)
+     DO nz = 1, nlev
+        WRITE(62,"(F11.3)") 1.E-5_RP*z(nz)
+        DO nw = 1, ncrsA
+           solar_flux(nw,nz) = fsolA(nw)*trnA(nw,nz)
+        END DO
+        DO nw = 1, ncrsB_low
+           sm = zero
+           DO nw_high = (nw-1)*50000+1, nw*50000
+              sm = sm + fsolB(nw_high)*trnB(nw_high,nz)
+           END DO
+           solar_flux(ncrsA+nw,nz) = sm
+        END DO
+        DO nw = 1, ncrsC
+           solar_flux(ncrsA+ncrsB_low+nw,nz) = fsolC(nw)*trnC(nw,nz)
+        END DO
+        WRITE(62,"(10ES11.3)") (solar_flux(nw,nz), nw=1,ncrsA+ncrsB_low+ncrsC)
+     END DO
+  CLOSE(unit=62)
+  
+  END IF
 
   !
   !  .. Photolysis Rates

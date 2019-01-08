@@ -36,8 +36,8 @@ SUBROUTINE READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phr
   CHARACTER(len=256) :: header, cline
   CHARACTER(len=12) :: xname
   CHARACTER(len=12), DIMENSION(6) :: fm
-  INTEGER :: ncrs, nabs, nabsB, nbrmaxB, nwav_co2, nbrnch_co2, nsp, ndum
-  REAL(RP), ALLOCATABLE, DIMENSION(:) :: wcrs, xcrs, brat, wav_co, crs_co_diss, crs_co_tot, wav_n2, crs_n2
+  INTEGER :: ncrsB_low, nabs, nabsB, nbrmaxB, nwav_co2, nbrnch_co2, nsp, ndum
+  REAL(RP), ALLOCATABLE, DIMENSION(:) :: wcrsB_low, xcrs, brat, wav_co, crs_co_diss, crs_co_tot, wav_n2, crs_n2
   REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: brat_co
   REAL(RP), ALLOCATABLE, DIMENSION(:) :: xdum
   REAL(RP) :: rdum
@@ -47,7 +47,7 @@ SUBROUTINE READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phr
 
   ! Read main cross-section file
   OPEN(unit=65, file='../data/photons/photoB.dat',status='old',action='read')
-    READ(65,*) ncrs, nabs, nbrmaxB ! file wavelengths, species, maximum branches
+    READ(65,*) ncrsB_low, nabs, nbrmaxB ! file wavelengths, species, maximum branches
     nabsB = nabs + 3
     ALLOCATE(nbrnchB(nabsB),loabB(nabsB),loprB(nprmaxB,nbrmaxB,nabsB),phrctB(nbrmaxB,nabsB),          &
        ionizeB(nbrmaxB,nabsB),charge_stateB(nbrmaxB,nabsB),wcrsB(ncrsB),enrgIB(nbrmaxB,nabsB),      &
@@ -66,18 +66,18 @@ SUBROUTINE READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phr
        wcrsB(nw) = 790._RP + (nw-1) * delwB(nw)
     END DO
 	
-    ALLOCATE(wcrs(ncrs),xcrs(ncrs),xdum(ncrs),brat(ncrs))
+    ALLOCATE(wcrsB_low(ncrsB_low),xcrs(ncrsB_low),xdum(ncrsB_low),brat(ncrsB_low))
     
     READ(65,'(A)') header                               
-    READ(65,'(10ES11.3)') wcrs ! wavelength scale
+    READ(65,'(10ES11.3)') wcrsB_low ! wavelength scale
     DO na = 1, nabs
        READ(65,'(A12, I4)') xname, ndum
        loabB(na) = FIND_NAME(xname,name)
        nbrnchB(na) = ndum ! number of reactions/branches
        READ(65,'(A)') header
-       READ(65,*) (xcrs(nw),nw=1,ncrs) !'(10ES11.3)' ! total absorption cross section
+       READ(65,*) (xcrs(nw),nw=1,ncrsB_low) !'(10ES11.3)' ! total absorption cross section
        READ(65,'(A)') header
-       READ(65,*) (xdum(nw),nw=1,ncrs) !'(10ES11.3)' ! total ionization cross section
+       READ(65,*) (xdum(nw),nw=1,ncrsB_low) !'(10ES11.3)' ! total ionization cross section
        DO nb = 1, nbrnchB(na)
           READ (65,'(A)') cline
           phrctB(nb,na) = cline
@@ -97,14 +97,14 @@ SUBROUTINE READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phr
                 ionizeB(nb,na) = .true.
              END IF
           END DO
-          READ(65,'(10ES11.3)') (brat(nw),nw=1,ncrs) ! branching ratios
-          CALL INTRP(wcrs,brat,wcrsB,bratB(1:ncrsB,nb,na))
+          READ(65,'(10ES11.3)') (brat(nw),nw=1,ncrsB_low) ! branching ratios
+          CALL INTRP(wcrsB_low,brat,wcrsB,bratB(1:ncrsB,nb,na))
        END DO
-       CALL INTRP(wcrs,xcrs,wcrsB,xcrsB(1:ncrsB,na))
+       CALL INTRP(wcrsB_low,xcrs,wcrsB,xcrsB(1:ncrsB,na))
     END DO
      
   CLOSE(unit=65)
-  DEALLOCATE(wcrs,xcrs,xdum,brat)
+  DEALLOCATE(wcrsB_low,xcrs,xdum,brat)
   !
   !  .. N2 High Resolution Lewis et al. Cross Section for 800-1000 Angstroms
   !
