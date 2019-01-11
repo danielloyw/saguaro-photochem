@@ -145,8 +145,8 @@ MODULE GLOBAL_VARIABLES
   INTEGER, ALLOCATABLE, DIMENSION(:) :: nbrnchA, nbrnchB, nbrnchC, nbrnchJ              ! number of photo reactions/branches
   REAL(RP), ALLOCATABLE, DIMENSION(:) :: wcrsA, wcrsB, wcrsB_low, wcrsC                            ! wavelength scale
   REAL(RP), ALLOCATABLE, DIMENSION(:) :: fsolA, fsolB, fsolC                            ! solar flux for spectral ranges A, B and C
-  REAL(RP), ALLOCATABLE, DIMENSION(:) :: trnA, trnB, trnC                            ! transmission of solar flux for spectral ranges A, B and C
-  REAL(RP), ALLOCATABLE, DIMENSION(:) :: prtA, prtB, prtC                            ! non-diurnally averaged photo rate for spectral ranges A, B and C (wavelength, branch #, species #)
+  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: trnA, trnB, trnC                            ! transmission of solar flux for spectral ranges A, B and C
+  REAL(RP), ALLOCATABLE, DIMENSION(:,:,:) :: prtA, prtB, prtC                            ! non-diurnally averaged photo rate for spectral ranges A, B and C (wavelength, branch #, species #)
   REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: xcrsA, xcrsB, xcrsC                          ! total absorption cross sections (wavelength, species #)
   REAL(RP), ALLOCATABLE, DIMENSION(:,:,:) :: bratA, bratB, bratC                        ! branch ratio (wavelength, branch #, species #)
   LOGICAL, ALLOCATABLE, DIMENSION(:,:) :: ionizeA, ionizeB, ionizeC                     ! are there any ions?

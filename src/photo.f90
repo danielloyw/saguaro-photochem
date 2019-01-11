@@ -209,7 +209,9 @@ SUBROUTINE PHOTO
      END DO
   END DO
 
-
+  ALLOCATE(trnA(ncrsA,nlev),trnB(ncrsB,nlev),trnC(ncrsC,nlev), & 
+     prtA(ncrsA,nbrmaxA,nabsA),prtB(ncrsB,nbrmaxB,nabsB),prtC(ncrsC,nbrmaxC,nabsC))
+  
   ! #################################################################################################
 
   DEALLOCATE(loprA, loprB, loprC, loprJ, phrctA, phrctB, phrctC, phrctJ, delwB, wav_sol_ionz,       &

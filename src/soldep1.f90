@@ -25,8 +25,7 @@ SUBROUTINE SOLDEP1
   !  .. Initialize
   !
   
-  ALLOCATE(clm(nlev,0:nsp),trnA(ncrsA,nlev),trnB(ncrsB,nlev),trnC(ncrsC,nlev),                     &
-       prtA(ncrsA,nbrmaxA,nabsA),prtB(ncrsB,nbrmaxB,nabsB),prtC(ncrsC,nbrmaxC,nabsC))
+  ALLOCATE(clm(nlev,0:nsp))
 
   ALLOCATE(Selsum(nlev))
  

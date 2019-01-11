@@ -24,10 +24,11 @@ SUBROUTINE COMPOUT
   REAL(RP) :: cprd_ext_hyd,cprd_ph_hyd,clss_ph_hyd,cprd_pe_hyd,clss_pe_hyd,cprd_chem_hyd,      &
        clss_chem_hyd,cprd_net_hyd,clss_net_hyd,crc_hyd,ctp_hyd,cbt_hyd,cbl_hyd
   INTEGER, ALLOCATABLE, DIMENSION(:) :: indx
-  INTEGER :: nz, nm, np, nx, nr, nl, ne
+  INTEGER :: nz, nm, np, nx, nr, nl, ne, nw, nw_high, na, nb
 
-  REAL(RP), ALLOCATABLE, DIMENSION(:) :: wcrs, solar_flux
-  ALLOCATE(wcrs(wcrsA+wcrsB_low+wcrsC), solar_flux(wcrsA+wcrsB_low+wcrsC, nlev))
+  REAL(RP), ALLOCATABLE, DIMENSION(:) :: wcrs
+  
+  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: solar_flux, COphotorate
   
   REAL(RP), ALLOCATABLE, DIMENSION(:) :: den_oxy, mol_oxy, flx_oxy, prext_oxy, pr_ph_oxy, ls_ph_oxy, &
        pr_pe_oxy, ls_pe_oxy, pr_chem_oxy, ls_chem_oxy, pr_oxy, ls_oxy, rcdn_oxy, div_flx_oxy
@@ -50,6 +51,9 @@ SUBROUTINE COMPOUT
        ls_ph_hyd(nlev), pr_pe_hyd(nlev), ls_pe_hyd(nlev), pr_chem_hyd(nlev), ls_chem_hyd(nlev),     &
        pr_hyd(nlev), ls_hyd(nlev), rcdn_hyd(nlev), div_flx_hyd(nlev))
 
+  ALLOCATE(wcrs(ncrsA+ncrsB_low+ncrsC), solar_flux(ncrsA+ncrsB_low+ncrsC, nlev))
+  ALLOCATE(COphotorate(ncrsA+ncrsB_low, nlev))
+  
   ALLOCATE(heads(nsp+10),dheads(2*nsp+3))
   nlev = 241
   OPEN (unit=61,file='../runs/'//trim(runID)//'/output/atm1D.out',status='unknown',action='write')
@@ -192,8 +196,6 @@ SUBROUTINE COMPOUT
   CLOSE(unit=62)
   
   
-    REAL(RP), ALLOCATABLE, DIMENSION(:) :: COphotorate
-    ALLOCATE(COphotorate(wcrsA+wcrsB_low, nlev))
     OPEN(unit=70,file='../runs/'//TRIM(runID)//'/output/COphotorates.out',status='unknown')
      WRITE (70,"(2I6)") ncrsA+ncrsB_low+ncrsC, nlev
      WRITE (70,"('Wavelength (Angstroms)')")
@@ -955,7 +957,6 @@ SUBROUTINE COMPOUT
 
            
   DEALLOCATE(pcolrate,ecolrate,colrate,indxr,indxp,cprd_ext,cprd_ph,clss_ph,cprd_pe,clss_pe,        &
-       cprd_chem,clss_chem,cprd_net,clss_net,crc,ctp,cbt,cbl,csf)
-
+       cprd_chem,clss_chem,cprd_net,clss_net,crc,ctp,cbt,cbl,csf,wcrs,solar_flux,COphotorate)
   RETURN
 END SUBROUTINE COMPOUT

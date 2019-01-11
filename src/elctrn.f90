@@ -35,7 +35,7 @@ SUBROUTINE ELCTRN
 
   OPEN(unit=60, file='../data/electrons/eimpact.dat', status='old', action='read')
 
-  READ (60,*) nelb, nabs_el_thk, nabs_el_thn, nbrn_max, nprmax_el ! number of bins, number of species (thick), number of species (thin), maximum number of states, 
+  READ (60,*) nelb, nabs_el_thk, nabs_el_thn, nbrn_max, nprmax_el ! number of bins, number of species (thick), number of species (thin), maximum number of states, maximum number of products
 
   nabs_el = nabs_el_thk + nabs_el_thn ! number of species
 
@@ -93,8 +93,8 @@ SUBROUTINE ELCTRN
            nm = FIND_NAME(fm(j),name)
            IF ((nm > 0) .and. (nm <= nsp)) THEN
               np = np + 1
-              lopr_el(np,nb,na) = nm
-              lobr_el(np,na) = nb
+              lopr_el(np,nb,na) = nm ! product number of product np in branch nb of species na
+              lobr_el(np,na) = nb       ! branch number 
            END IF
         END DO
         nprdcts_el(nb,na) = np   ! total products
