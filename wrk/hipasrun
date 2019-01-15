@@ -1,7 +1,15 @@
 #!/bin/csh
 
+#PBS -S /bin/csh
 #PBS -N pchem
-#PBS -l nodes=1
+#PBS -l nodes=1:ppn=1:Y21G
+#PBS -j oe
+#PBS -m e
 
-# Run my Job
-beorun --nolocal --np 1 ./runpchem z 1.E10 20 1.E9 5
+cd $PBS_O_WORKDIR
+pwd
+
+date
+./runpchem t 1.E6 10 1.E5 10
+cp atm1D.out atm1D.in
+date
