@@ -52,8 +52,7 @@ SUBROUTINE PHOTO
   !  .. Region B: 800-1000 Angstroms 
   !
  
-  CALL READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phrctB,wcrsB,delwB,xcrsB,  &
-       bratB)
+  CALL READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phrctB,wcrsB,wcrsB_low,delwB,xcrsB,bratB)
 
   ncrsB = SIZE(wcrsB)
   nabsB = SIZE(xcrsB,2)

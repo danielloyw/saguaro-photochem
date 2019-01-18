@@ -23,7 +23,7 @@ MODULE SUBS_PHOTO
   END INTERFACE
 
   INTERFACE
-     SUBROUTINE READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phrctB,wcrsB,delwB,xcrsB,bratB)
+     SUBROUTINE READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phrctB,wcrsB,wcrsB_low,delwB,xcrsB,bratB)
        USE PRECISION
        USE CONSTANTS
        USE SUBS, ONLY : FIND_NAME, INTRP
@@ -36,7 +36,7 @@ MODULE SUBS_PHOTO
        REAL(RP), INTENT(OUT), ALLOCATABLE, DIMENSION(:,:) :: enrgIB
        REAL(RP), INTENT(OUT), ALLOCATABLE, DIMENSION(:,:) :: charge_stateB
        CHARACTER(len=*), INTENT(OUT), ALLOCATABLE, DIMENSION(:,:) :: phrctB
-       REAL(RP), INTENT(OUT), ALLOCATABLE, DIMENSION(:) :: wcrsB
+       REAL(RP), INTENT(OUT), ALLOCATABLE, DIMENSION(:) :: wcrsB, wcrsB_low
        REAL(RP), INTENT(OUT), ALLOCATABLE, DIMENSION(:) :: delwB
        REAL(RP), INTENT(OUT), ALLOCATABLE, DIMENSION(:,:) :: xcrsB
        REAL(RP), INTENT(OUT), ALLOCATABLE, DIMENSION(:,:,:) :: bratB

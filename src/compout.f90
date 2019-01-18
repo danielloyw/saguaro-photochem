@@ -167,8 +167,6 @@ SUBROUTINE COMPOUT
   !  .. Solar Fluxes
   !
 
-  IF( lcrsA .and. lcrsB .and. lcrsC) THEN
-
   OPEN(unit=62,file='../runs/'//TRIM(runID)//'/output/solar_flux.out',status='unknown')
      WRITE (62,"(2I6)") ncrsA+ncrsB_low+ncrsC, nlev
      WRITE (62,"('Wavelength (Angstroms)')") 
@@ -219,7 +217,6 @@ SUBROUTINE COMPOUT
         WRITE(70,"(10ES11.3)") (COphotorate(nw,nz), nw=1,ncrsA+ncrsB_low)
      END DO
   CLOSE(unit=70)
-  END IF
 
   !
   !  .. Photolysis Rates

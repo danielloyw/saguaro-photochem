@@ -1,4 +1,4 @@
-SUBROUTINE READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phrctB,wcrsB,delwB,xcrsB,bratB)
+SUBROUTINE READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phrctB,wcrsB,wcrsB_low,delwB,xcrsB,bratB)
      
   USE PRECISION
   USE CONSTANTS
@@ -19,6 +19,7 @@ SUBROUTINE READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phr
   REAL(RP), INTENT(OUT), ALLOCATABLE, DIMENSION(:,:) :: charge_stateB
   CHARACTER(len=*), INTENT(OUT), ALLOCATABLE, DIMENSION(:,:) :: phrctB
   REAL(RP), INTENT(OUT), ALLOCATABLE, DIMENSION(:) :: wcrsB
+  REAL(RP), INTENT(OUT), ALLOCATABLE, DIMENSION(:) :: wcrsB_low
   REAL(RP), INTENT(OUT), ALLOCATABLE, DIMENSION(:) :: delwB
   REAL(RP), INTENT(OUT), ALLOCATABLE, DIMENSION(:,:) :: xcrsB
   REAL(RP), INTENT(OUT), ALLOCATABLE, DIMENSION(:,:,:) :: bratB
@@ -37,7 +38,7 @@ SUBROUTINE READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phr
   CHARACTER(len=12) :: xname
   CHARACTER(len=12), DIMENSION(6) :: fm
   INTEGER :: ncrsB_low, nabs, nabsB, nbrmaxB, nwav_co2, nbrnch_co2, nsp, ndum
-  REAL(RP), ALLOCATABLE, DIMENSION(:) :: wcrsB_low, xcrs, brat, wav_co, crs_co_diss, crs_co_tot, wav_n2, crs_n2
+  REAL(RP), ALLOCATABLE, DIMENSION(:) :: xcrs, brat, wav_co, crs_co_diss, crs_co_tot, wav_n2, crs_n2
   REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: brat_co
   REAL(RP), ALLOCATABLE, DIMENSION(:) :: xdum
   REAL(RP) :: rdum
@@ -104,7 +105,7 @@ SUBROUTINE READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phr
     END DO
      
   CLOSE(unit=65)
-  DEALLOCATE(wcrsB_low,xcrs,xdum,brat)
+  DEALLOCATE(xcrs,xdum,brat)
   !
   !  .. N2 High Resolution Lewis et al. Cross Section for 800-1000 Angstroms
   !
