@@ -55,6 +55,7 @@ SUBROUTINE PHOTO
   CALL READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phrctB,wcrsB,wcrsB_low,delwB,xcrsB,bratB)
 
   ncrsB = SIZE(wcrsB)
+  ncrsB_low = SIZE(wcrsB_low)
   nabsB = SIZE(xcrsB,2)
   nbrmaxB = SIZE(bratB,2)
 
