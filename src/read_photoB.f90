@@ -28,9 +28,9 @@ SUBROUTINE READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phr
   !  .. Internal Variables
   !
 
-  INTEGER, PARAMETER :: ncrsB = 1500001 ! wavelengths
+  INTEGER, PARAMETER :: ncrsB = 1650000 ! wavelengths
   INTEGER, PARAMETER :: nwav_n2 = 540000
-  INTEGER, PARAMETER :: nwav_coA = 16000
+  INTEGER, PARAMETER :: nwav_coA = 162000
   INTEGER, PARAMETER :: nwav_coB = 840000
   INTEGER, PARAMETER :: nprmaxB = 4
   
@@ -64,7 +64,7 @@ SUBROUTINE READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phr
   
     delwB(:) = 2.E-4_RP
     DO nw = 1, ncrsB
-       wcrsB(nw) = 790._RP + (nw-1) * delwB(nw)
+       wcrsB(nw) = 750._RP + (nw-0.5) * delwB(nw)
     END DO
 	
     ALLOCATE(wcrsB_low(ncrsB_low),xcrs(ncrsB_low),xdum(ncrsB_low),brat(ncrsB_low))
@@ -185,9 +185,9 @@ SUBROUTINE READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phr
   OPEN(Unit=67,file='../data/photons/photoB-12C16O_300K_75-91.2.dat',status='old',action='read')
      READ(67,"(A)") header
      READ(67,"(A)") header
-     DO nf = 1, nwav_coA
-        READ(67,*) wav_co(nf), crs_co_tot(nf), crs_co_diss(nf) ! wavelengths, total cross section, dissociative cross section
-        wav_co(nf) = wav_co(nf)*10._RP
+     DO nw = 1, nwav_coA
+        READ(67,*) wav_co(nw), crs_co_tot(nw), crs_co_diss(nw) ! wavelengths, total cross section, dissociative cross section
+        wav_co(nw) = wav_co(nw)*10._RP
      END DO
   CLOSE(unit=67)
   OPEN(Unit=68,file='../data/photons/photoB-12C16O_300K_91.2-108.dat',status='old',action='read')
@@ -195,12 +195,12 @@ SUBROUTINE READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phr
      READ(68,"(A)") header
      READ(68,"(A)") header
      READ(68,"(A)") header
-     DO nf = nwav_coA+1, nwav_coA+nwav_coB
-        READ(68,*) wav_co(nf), crs_co_tot(nf), crs_co_diss(nf) ! wavelengths, total cross section, dissociative cross section
-        wav_co(nf) = wav_co(nf)*10._RP
+     DO nw = nwav_coA+1, nwav_coA+nwav_coB
+        READ(68,*) wav_co(nw), crs_co_tot(nw), crs_co_diss(nw) ! wavelengths, total cross section, dissociative cross section
+        wav_co(nw) = wav_co(nw)*10._RP
      END DO
   CLOSE(unit=68)
-
+  
   loabB(na) = FIND_NAME('CO          ',name)
 
   nb = 1
@@ -231,6 +231,7 @@ SUBROUTINE READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phr
   loprB(3:4,nb,na) = 0
 
   CALL INTRP(wav_co,crs_co_tot,wcrsB,xcrsB(1:ncrsB,na))
+  
   DO nb = 1, nbrnchB(na)
      CALL INTRP(wav_co,brat_co(:,nb),wcrsB,bratB(1:ncrsB,nb,na))
   END DO

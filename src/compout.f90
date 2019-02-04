@@ -51,7 +51,7 @@ SUBROUTINE COMPOUT
        ls_ph_hyd(nlev), pr_pe_hyd(nlev), ls_pe_hyd(nlev), pr_chem_hyd(nlev), ls_chem_hyd(nlev),     &
        pr_hyd(nlev), ls_hyd(nlev), rcdn_hyd(nlev), div_flx_hyd(nlev))
 
-  ALLOCATE(wcrs(ncrsA+ncrsB_low+ncrsC), solar_flux(ncrsA+ncrsB_low+ncrsC, nlev))
+  ALLOCATE(wcrs(ncrsA+ncrsB_low+ncrsC), solar_flux(ncrsA+ncrsB_low+ncrsC-2, nlev))
   ALLOCATE(COphotorate(ncrsA+ncrsB_low, nlev))
   
   ALLOCATE(heads(nsp+10),dheads(2*nsp+3))
@@ -168,18 +168,18 @@ SUBROUTINE COMPOUT
   !
 
   OPEN(unit=62,file='../runs/'//TRIM(runID)//'/output/solar_flux.out',status='unknown')
-     WRITE (62,"(2I6)") ncrsA+ncrsB_low+ncrsC, nlev
+     WRITE (62,"(2I6)") ncrsA+ncrsB_low-2+ncrsC, nlev
      WRITE (62,"('Wavelength (Angstroms)')") 
      wcrs(1:ncrsA) = wcrsA
-     wcrs(ncrsA+1:ncrsA+ncrsB_low) = wcrsB_low
-     wcrs(ncrsA+ncrsB_low+1:ncrsA+ncrsB_low+ncrsC) = wcrsC
-     WRITE (62,"(10ES11.3)") (wcrs(nw), nw=1, ncrsA+ncrsB_low+ncrsC)
+     wcrs(ncrsA+1:ncrsA+ncrsB_low-2) = wcrsB_low(2:ncrsB_low-2)
+     wcrs(ncrsA+ncrsB_low-1:ncrsA+ncrsB_low-2+ncrsC) = wcrsC
+     WRITE (62,"(10ES11.3)") (wcrs(nw), nw=1, ncrsA+ncrsB_low-2+ncrsC)
      DO nz = 1, nlev
         WRITE(62,"(F11.3)") 1.E-5_RP*z(nz)
         DO nw = 1, ncrsA
            solar_flux(nw,nz) = fsolA(nw)*trnA(nw,nz)
         END DO
-        DO nw = 1, ncrsB_low
+        DO nw = 1, ncrsB_low-2
            sm = zero
            DO nw_high = (nw-1)*50000+1, nw*50000
               sm = sm + fsolB(nw_high)*trnB(nw_high,nz)
@@ -187,34 +187,34 @@ SUBROUTINE COMPOUT
            solar_flux(ncrsA+nw,nz) = sm
         END DO
         DO nw = 1, ncrsC
-           solar_flux(ncrsA+ncrsB_low+nw,nz) = fsolC(nw)*trnC(nw,nz)
+           solar_flux(ncrsA+ncrsB_low-2+nw,nz) = fsolC(nw)*trnC(nw,nz)
         END DO
-        WRITE(62,"(10ES11.3)") (solar_flux(nw,nz), nw=1,ncrsA+ncrsB_low+ncrsC)
+        WRITE(62,"(10ES11.3)") (solar_flux(nw,nz), nw=1,ncrsA+ncrsB_low-2+ncrsC)
      END DO
   CLOSE(unit=62)
   
   
-    OPEN(unit=70,file='../runs/'//TRIM(runID)//'/output/COphotorates.out',status='unknown')
-     WRITE (70,"(2I6)") ncrsA+ncrsB_low+ncrsC, nlev
-     WRITE (70,"('Wavelength (Angstroms)')")
-     WRITE (70,"(10ES11.3)") (wcrs(nw), nw=1, ncrsA+ncrsB_low)
-     DO nz = 1, nlev
-        WRITE(70,"(F11.3)") 1.E-5_RP*z(nz)
-        na = 4
-        nb = 4
-        DO nw = 1, ncrsA
-           COphotorate(nw,nz) = prtA(nw,nb,na)*trnA(nw,nz)*diurnal_average
-        END DO
-        na = 19
-        nb = 1
-        DO nw = 1, ncrsB_low
-           sm = zero
-           DO nw_high = (nw-1)*50000+1, nw*50000
-              sm = sm + prtB(nw,nb,na)*trnB(nw,nz)*diurnal_average
-           END DO
-           COphotorate(ncrsA+nw,nz) = sm
-        END DO
-        WRITE(70,"(10ES11.3)") (COphotorate(nw,nz), nw=1,ncrsA+ncrsB_low)
+  OPEN(unit=70,file='../runs/'//TRIM(runID)//'/output/COphotorates.out',status='unknown')
+    WRITE (70,"(2I6)") ncrsA+ncrsB_low-1, nlev
+    WRITE (70,"('Wavelength (Angstroms)')")
+    WRITE (70,"(10ES11.3)") (wcrs(nw), nw=1, ncrsA+ncrsB_low-1)
+    DO nz = 1, nlev
+       WRITE(70,"(F11.3)") 1.E-5_RP*z(nz)
+       na = 4
+       nb = 4
+       DO nw = 1, ncrsA
+          COphotorate(nw,nz) = xcrsA(nw,na)*bratA(nw, nb, na)*fsolA(nw)*trnA(nw,nz)
+       END DO
+       na = 22
+       nb = 1
+       DO nw = 1, ncrsB_low-2
+          sm = zero
+          DO nw_high = (nw-1)*50000+1, nw*50000
+             sm = sm + xcrsB(nw_high,na)*bratB(nw_high, nb, na)*fsolB(nw_high)*trnB(nw_high,nz)
+          END DO
+          COphotorate(ncrsA+nw,nz) = sm
+       END DO
+        WRITE(70,"(10ES11.3)") (COphotorate(nw,nz), nw=1,ncrsA+ncrsB_low-2)
      END DO
   CLOSE(unit=70)
 

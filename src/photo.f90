@@ -18,7 +18,7 @@ SUBROUTINE PHOTO
   CHARACTER(len=87), ALLOCATABLE, DIMENSION(:,:) :: phrctA, phrctB, phrctC, phrctJ
   INTEGER, ALLOCATABLE, DIMENSION(:,:,:) :: loprA, loprB, loprC, loprJ
   REAL(RP), ALLOCATABLE, DIMENSION(:) :: wav_sol_ionz, flx_sol_ionz,wav_sol_uv,flx_sol_uv,          &
-       wav_sol_hres, flx_sol_hres, wav_sol_bnd,flx_sol_bnd
+       wav_sol_hres, flx_sol_hres, wav_sol_bnd,flx_sol_bnd, fsolB1, fsolB2, wcrsB1, wcrsB2
   INTEGER :: na, nb, nw, nph, np
 
   !
@@ -54,6 +54,7 @@ SUBROUTINE PHOTO
  
   CALL READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phrctB,wcrsB,wcrsB_low,delwB,xcrsB,bratB)
 
+         WRITE (*,"(1ES11.3)") maxval(xcrsB(:,22))
   ncrsB = SIZE(wcrsB)
   ncrsB_low = SIZE(wcrsB_low)
   nabsB = SIZE(xcrsB,2)
@@ -78,7 +79,7 @@ SUBROUTINE PHOTO
   nabsJ = SIZE(srateJ,2)
   nbrmaxJ = SIZE(phrctJ,1)
 
-  ALLOCATE(fsolA(ncrsA),fsolB(ncrsB),fsolC(ncrsC))
+  ALLOCATE(fsolA(ncrsA),fsolB(ncrsB),fsolC(ncrsC),fsolB1(250000),fsolB2(1400000),wcrsB1(250000),wcrsB2(1400000))
 
   !
   !  .. Read solar spectra wav < 800 A
@@ -107,8 +108,12 @@ SUBROUTINE PHOTO
   !  .. Interpolate High Res Spectrum to Low Res Grid
   !
   
-  CALL INTRP(wav_sol_hres,flx_sol_hres,wcrsB,fsolB)
-
+  wcrsB1 = wcrsB(1:250000)
+  wcrsB2 = wcrsB(250001:1650000)
+  CALL INTRP(wav_sol_bnd,flx_sol_bnd,wcrsB1,fsolB1)
+  CALL INTRP(wav_sol_hres,flx_sol_hres,wcrsB2,fsolB2)
+  fsolB(1:250000) = fsolB1
+  fsolB(250001:1650000) = fsolB2
   !
   !  .. Convert High Res Spectrum from ph/cm2/s/A to ph/cm2/s/bin
   !
@@ -215,7 +220,7 @@ SUBROUTINE PHOTO
   ! #################################################################################################
 
   DEALLOCATE(loprA, loprB, loprC, loprJ, phrctA, phrctB, phrctC, phrctJ, delwB, wav_sol_ionz,       &
-       flx_sol_ionz, wav_sol_bnd, flx_sol_bnd, wav_sol_uv, flx_sol_uv, wav_sol_hres, flx_sol_hres)
+       flx_sol_ionz, wav_sol_bnd, flx_sol_bnd, wav_sol_uv, flx_sol_uv, wav_sol_hres, flx_sol_hres, fsolB1, fsolB2)
 
   ALLOCATE(rph(nphrt,nlev),rpt(nphrt,nlev))
 
