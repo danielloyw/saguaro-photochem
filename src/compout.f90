@@ -195,9 +195,9 @@ SUBROUTINE COMPOUT
   
   
   OPEN(unit=70,file='../runs/'//TRIM(runID)//'/output/COphotorates.out',status='unknown')
-    WRITE (70,"(2I6)") ncrsA+ncrsB_low-1, nlev
+    WRITE (70,"(2I6)") ncrsA+ncrsB_low-2, nlev
     WRITE (70,"('Wavelength (Angstroms)')")
-    WRITE (70,"(10ES11.3)") (wcrs(nw), nw=1, ncrsA+ncrsB_low-1)
+    WRITE (70,"(10ES11.3)") (wcrs(nw), nw=1, ncrsA+ncrsB_low-2)
     DO nz = 1, nlev
        WRITE(70,"(F11.3)") 1.E-5_RP*z(nz)
        na = 4
