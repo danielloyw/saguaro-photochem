@@ -28,9 +28,9 @@ SUBROUTINE PHOTO
   file_photoA = '../data/photons/photoA.dat'
   file_photoC = '../data/photons/photoC.dat'
   file_jvals = '../data/photons/jvals.dat'
-  file_sol_ionz = '../data/solar/sorce_ionz_T40.dat'
-  file_sol_bnd = '../data/solar/sorce_bnd_T40.dat'
-  file_sol_uv = '../data/solar/sorce_uv_T40.dat'
+  file_sol_ionz = '../data/solar/solar_fluxA.dat'
+  file_sol_bnd = '../data/solar/solar_fluxB.dat'
+  file_sol_uv = '../data/solar/solar_fluxC.dat'
   file_sol_hres = '../data/solar/sumer.new'
 
   !
