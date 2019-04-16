@@ -219,7 +219,7 @@ SUBROUTINE READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phr
   phrctB(nb,na) = 'CO           + hv           = COP          + E            +              +             '
   ionizeB(nb,na) = .true.
   charge_stateB(nb,na) = one
-  enrgIB(nb,na) = 885.6_RP
+  enrgIB(nb,na) = 884.7_RP
   DO nf = 1, nwav_coA
      brat_co(nf,nb) = one - brat_co(nf,1)
   END DO
