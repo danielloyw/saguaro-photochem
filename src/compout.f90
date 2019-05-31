@@ -52,7 +52,7 @@ SUBROUTINE COMPOUT
        pr_hyd(nlev), ls_hyd(nlev), rcdn_hyd(nlev), div_flx_hyd(nlev))
 
   ALLOCATE(wcrs(ncrsA+ncrsB_low+ncrsC), solar_flux(ncrsA+ncrsB_low+ncrsC-2, nlev))
-  ALLOCATE(COphotorate(ncrsA+ncrsB_low, nlev))
+  ALLOCATE(COphotorate(ncrsB/100, nlev))
   
   ALLOCATE(heads(nsp+10),dheads(2*nsp+3))
   nlev = 241
@@ -193,28 +193,24 @@ SUBROUTINE COMPOUT
      END DO
   CLOSE(unit=62)
   
+  !  .. CO photodissociation rates in photoregion B
   
-  OPEN(unit=70,file='../runs/'//TRIM(runID)//'/output/COphotorates.out',status='unknown')
-    WRITE (70,"(2I6)") ncrsA+ncrsB_low-2, nlev
+  OPEN(unit=70,file='../runs/'//TRIM(runID)//'/output/COphotofreqB.out',status='unknown')
+    WRITE (70,"(1I6)") ncrsB/100
     WRITE (70,"('Wavelength (Angstroms)')")
-    WRITE (70,"(10ES11.3)") (wcrs(nw), nw=1, ncrsA+ncrsB_low-2)
+    WRITE (70,"(10ES11.3)") ((wcrsB((nw-1)*100+50)+wcrsB((nw-1)*100+51)), nw=1, ncrsB/100)
     DO nz = 1, nlev
        WRITE(70,"(F11.3)") 1.E-5_RP*z(nz)
-       na = 4
-       nb = 4
-       DO nw = 1, ncrsA
-          COphotorate(nw,nz) = xcrsA(nw,na)*bratA(nw, nb, na)*fsolA(nw)*trnA(nw,nz)
-       END DO
        na = 22
        nb = 1
-       DO nw = 1, ncrsB_low-2
+       DO nw = 1, ncrsB/100
           sm = zero
-          DO nw_high = (nw-1)*50000+1, nw*50000
+          DO nw_high = (nw-1)*100+1, nw*100
              sm = sm + xcrsB(nw_high,na)*bratB(nw_high, nb, na)*fsolB(nw_high)*trnB(nw_high,nz)
           END DO
-          COphotorate(ncrsA+nw,nz) = sm
+          COphotorate(nw,nz) = sm
        END DO
-        WRITE(70,"(10ES11.3)") (COphotorate(nw,nz), nw=1,ncrsA+ncrsB_low-2)
+       WRITE(70,"(10ES11.3)") (COphotorate(nw,nz), nw=1,ncrsB/100)
      END DO
   CLOSE(unit=70)
 
@@ -941,16 +937,6 @@ SUBROUTINE COMPOUT
 !        END DO
 !     CLOSE(unit=40)
 
-
-!           OPEN(unit=30, file='electron_flux.out',status='unknown')
-!              write(30,"(2I6)") nelb,nlev
-!              write(30,"(' Energy Grid (eV)')")
-!              write(30,"(10ES11.3)") (elctreV(ne),ne=1,nelb)
-!              DO nl = nibot, nlev
-!                 WRITE(30,"(' alt = ',ES11.3)") 1.E-5*z(nl)
-!                 write(30,"(10ES11.3)") (eFLUX(nl,ne),ne=1,nelb)
-!              END DO
-!           CLOSE(30)
 
            
   DEALLOCATE(pcolrate,ecolrate,colrate,indxr,indxp,cprd_ext,cprd_ph,clss_ph,cprd_pe,clss_pe,        &

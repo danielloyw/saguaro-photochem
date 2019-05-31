@@ -61,7 +61,6 @@ SUBROUTINE READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phr
     ionizeB = .false.
     
     ! Create wavelength scale
-  
     delwB(:) = 2.E-4_RP
     DO nw = 1, ncrsB
        wcrsB(nw) = 750._RP + (nw-0.5) * delwB(nw)
@@ -106,9 +105,11 @@ SUBROUTINE READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phr
      
   CLOSE(unit=65)
   DEALLOCATE(xcrs,xdum,brat)
+  
   !
   !  .. N2 High Resolution Lewis et al. Cross Section for 800-1000 Angstroms
   !
+  
   ALLOCATE(wav_n2(nwav_n2),crs_n2(nwav_n2))
   na = nabs + 1
   OPEN(Unit=64,file='../data/photons/photoB-28N2.dat',status='old',action='read')
