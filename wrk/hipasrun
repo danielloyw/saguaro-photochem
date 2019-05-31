@@ -10,11 +10,61 @@ cd $PBS_O_WORKDIR
 pwd
 
 # Load run data
-#cp WIH_0-75nm.dat solar_fluxA.dat
-#cp WIH_74-109nm.dat solar_fluxB.dat
-#cp WIH_108-300nm.dat solar_fluxC.dat
+cp ../data/solar/MAVEN_DD2_0-75nm.dat ../data/solar/solar_fluxA.dat
+cp ../data/solar/MAVEN_DD2_74-109nm.dat ../data/solar/solar_fluxB.dat
+cp ../data/solar/MAVEN_DD2_108-300nm.dat ../data/solar/solar_fluxC.dat
+
+#cp atm1D_DD2_loH2O.in atm1D.in
+cp pchem1D_DD2.sol pchem1D.sol
 
 date
-./runpchem t 1.E6 10 1.E5 10
+cp nmolecules-default.dat nmolecules.dat
+./runpchem c1 1.E11 200 1.E10 20
 cp atm1D.out atm1D.in
+
+date
+cp nmolecules-default.dat nmolecules.dat
+./runpchem c2 1.E11 200 1.E10 20
+cp atm1D.out atm1D.in
+
+#date
+#cp nmolecules-default.dat nmolecules.dat
+#./runpchem c3 1.E9 200 1.E8 20
+#cp atm1D.out atm1D.in
+
+#date
+#cp nmolecules-default.dat nmolecules.dat
+#./runpchem c4 1.E7 200 1.E6 20
+#cp atm1D.out atm1D.in
+
+#date
+#cp nmolecules-default.dat nmolecules.dat
+#./runpchem c5 1.E5 200 1.E4 20
+#cp atm1D.out atm1D.in
+
+#date
+#cp nmolecules-default.dat nmolecules.dat
+#./runpchem c6 1.E3 200 1.E2 20
+#cp atm1D.out atm1D.in
+
+#date
+#cp nmolecules-default.dat nmolecules.dat
+#./runpchem c7 1.E3 200 1.E2 20
+#cp atm1D.out atm1D.in
+
+#date
+#cp nmolecules-default.dat nmolecules.dat
+#./runpchem c8 1.E9 200 1.E8 20
+#cp atm1D.out atm1D.in
+
+date
+#cp nmolecules-default.dat nmolecules.dat
+#./runpchem c9 1.E9 200 1.E8 20
+#cp atm1D.out atm1D.in
+
+#date
+#cp nmolecules-default.dat nmolecules.dat
+#./runpchem c10 1.E9 200 1.E8 20
+#cp atm1D.out atm1D.in
+
 date
