@@ -140,12 +140,6 @@ SUBROUTINE COMPO
            rjac(nx4,nx1,nl) = rjac(nx4,nx1,nl) + rph(np,nl)
            rjac(nx5,nx1,nl) = rjac(nx5,nx1,nl) + rph(np,nl)
 
-!     IF(rjac(nx1,nx1,nl) .ne. rjac(nx1,nx1,nl)) THEN
-!        WRITE(*,"(' COMPO1: ',11I4,10(2X,ES11.3))") np, nx1,nx2,nx3,nx4,nx5,nm1,nm2,nm3,nm4,nm5,d1,d2,rr,r1,r2,rjac(nx1,nx1,nl)
-!        WRITE(*,"(10ES11.3)") (den(nz,nm1),nz=1,nlev)
-!        STOP
-!     END IF
-
         END DO
      END DO
 
@@ -174,11 +168,6 @@ SUBROUTINE COMPO
         END DO
      END DO
 
-     !-------------------------------------------------------------------------
-     ! Chemical Species
-     !-------------------------------------------------------------------------
-
-!     CALL CHEMEQ
           
      !-------------------------------------------------------------------------
      !  Section 3:  Chemical Reactions
@@ -256,11 +245,6 @@ SUBROUTINE COMPO
               rjac(nx4,nx2,nl) = rjac(nx4,nx2,nl) + r1
               rjac(nx5,nx1,nl) = rjac(nx5,nx1,nl) + r2
               rjac(nx5,nx2,nl) = rjac(nx5,nx2,nl) + r1
-
-!     IF(rjac(nx1,nx1,nl) .ne. rjac(nx1,nx1,nl)) THEN
-!        WRITE(*,"(' COMPO3: ',11I4,10(2X,ES11.3))") nr, nx1,nx2,nx3,nx4,nx5,nm1,nm2,nm3,nm4,nm5,d1,d2,rr,r1,r2,rjac(nx1,nx1,nl)
-!        STOP
-!     END IF
 
            END DO
 
@@ -536,7 +520,7 @@ SUBROUTINE COMPO
 !          iter, denerr, den(imxdnl,ldcp(imxdnx)), name(ldcp(imxdnx)), 1.E-5_RP*(rz(imxdnl)-RPLANET),    &
 !                balerr, fd(imxbnx,imxbnl), name(ldcp(imxbnx)), 1.E-5_RP*(rz(imxbnl)-RPLANET)
 
-     IF (lprnt) WRITE(*,"(10X,'  COMPO  : ITER== ',I4,2X,A12,' Z = ',F8.1,' N = ',ES11.3,' P = ',ES11.3,    &
+     IF (lprnt) WRITE(*,"(10X,'  COMPO : ITER== ',I4,2X,A12,' Z = ',F8.1,' N = ',ES11.3,' P = ',ES11.3,    &
           ' L = ',ES11.3,' C = ',ES11.3,' Div_Flx = ',ES11.3,' delN/N = ',ES11.3)")                         &
           iter, name(ldcp(imxdnx)), 1.E-5_RP*z(imxdnl), den(imxdnl,ldcp(imxdnx)), pr(imxdnl,ldcp(imxdnx)),  &
           ls(imxdnl,ldcp(imxdnx)), rcdn(imxdnl,ldcp(imxdnx)), div_flx(imxdnl,ldcp(imxdnx)), denerr

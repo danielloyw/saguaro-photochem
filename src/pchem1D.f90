@@ -11,7 +11,7 @@ PROGRAM PCHEM1D
 
   IMPLICIT none 
 
-  REAL(RP) :: tol_diff, tol_chem, test_chem, test_diff
+  REAL(RP) :: tol_diff, tol_chem, test_chem, test_diff, test_time
   INTEGER :: ntim_diff, ntim_chem, iter_chem, iter_diff ! max diffusion time steps (overall number of loops), max reaction time steps per diffusion step, iteration count for reactions, iteration count for diffusion
   INTEGER :: nm, nl, nx, np, nln, nmn, nm1, nm2, nm3, nm4, nm5
   INTEGER :: isol, iprnt
@@ -26,9 +26,8 @@ PROGRAM PCHEM1D
 
 
   tol_diff = 1.E-10_RP
-  tol_chem = 1.E-6_RP
-  tstep_chem = 1.E3_RP
-  ntim_chem = 5
+  tol_chem = 1.E-10_RP
+
   lprnt = .true.
   zbot = 0.E5_RP
   RSHADOW = RPLANET + zbot
@@ -129,13 +128,13 @@ PROGRAM PCHEM1D
 
      den_old(1:nlev,0:nsp) = den(1:nlev,0:nsp)
 
-     IF (MOD(iter_diff-1,isol) == 0) THEN    
+     IF (MOD(iter_diff-1,isol) == 0) THEN
 
         !  .. Photolysis Reactions
  
         lcrsA = .true.; lcrsB = .true.; lcrsC = .true.; lcrsJ = .true.
 
-        CALL SOLDEP1 
+        CALL SOLDEP1
 
         !  .. Suprathermal Electron Reactions
         
@@ -181,58 +180,9 @@ PROGRAM PCHEM1D
            pr_pe(nl,nm2) = pr_pe(nl,nm2) + rpe(np,nl)
            pr_pe(nl,nm3) = pr_pe(nl,nm3) + rpe(np,nl)
            pr_pe(nl,nm4) = pr_pe(nl,nm4) + rpe(np,nl)
-           pr_pe(nl,nm5) = pr_pe(nl,nm5) + rpe(np,nl)           
+           pr_pe(nl,nm5) = pr_pe(nl,nm5) + rpe(np,nl)
         END DO
      END DO
-
-
-     ! ---------------------------------------------------------------------------------------------
-     !
-     !                                 CHEMICAL EQUILIBRIUM SPECIES                                
-     !
-     ! ---------------------------------------------------------------------------------------------
-     
-
-     iter_chem = 0; test_chem = 10._RP*tol_chem
-     CHEM: DO
-     
-        iter_chem = iter_chem + 1
-        IF((iter_chem > ntim_chem) .or. (test_chem < tol_chem)) EXIT ! why would second condition occur?
-
-        den_old = den
-     
-        CALL CHEMEQ
-
-        !  .. Check Convergence
-  
-!        test_chem = zero; nmn = locp(1); nln = 1
-!        DO nx = 1, nchem
-!           nm = locp(nx)
-!           DO nl = 1, nlev
-!!              IF(den(nl,nm) > 1.0E+00_RP) THEN
-!                 dnm = MAX(pr(nl,nm),ls(nl,nm))
-!                 IF(dnm > 1.E-30_RP) THEN
-!                    tst1 = ABS(pr(nl,nm)-ls(nl,nm))/dnm
-!                 ELSE
-!                    tst1 = zero
-!                 END IF
-!                 IF(tst1 > test_chem) THEN
-!                    test_chem = tst1
-!                    nln = nl
-!                    nmn = nm
-!!                    WRITE(*,"(2I4,A12,5ES11.3)") nln,nmn,name(nmn),pr(nln,nmn),ls(nln,nmn),test_chem
-!                 END IF
-!!              END IF
-!           END DO
-!        END DO
-        
-!        IF (lprnt .and. (nchem >0)) THEN
-!           WRITE(*,"(10X,'  CHEMEQ :',2X,A12,' Z = ',F8.1,' N = ',ES11.3,' P = ',ES11.3,      &
-!                ' L = ',ES11.3,' Relerr = ',ES11.3)") name(nmn),1.E-5_RP*z(nln), den(nln,nmn), & 
-!                pr(nln,nmn), ls(nln,nmn), test_chem 
-!        END IF
-       
-     END DO CHEM
 
      ! ---------------------------------------------------------------------------------------------
      !
@@ -241,14 +191,11 @@ PROGRAM PCHEM1D
      ! ---------------------------------------------------------------------------------------------
          
      lcrsA = .true.; lcrsB = .false.; lcrsC = .true.; lcrsJ = .true.
-     CALL COMPO 
-
-!#     !
-!#     !  .. Should I enforce hydrostatic equilibrium ?
-!#     !
+     CALL COMPO
 
      DO nl = 1, nlev
         den(nl,0) = SUM(den(nl,1:nsp))
+        prs(nl) = rkb*tn(nl)*den(nl,0)
      END DO
 
      DO nl = 1, nlev
@@ -263,19 +210,11 @@ PROGRAM PCHEM1D
 
       CALL HYDROST
 
-!     DO nl = 2, nlev
-!        den(nl,0) = SUM(den(nl,1:nsp))
-!        prs(nl) = rkb*tn(nl)*den(nl,0)
-!     END DO
-
-!     DO nl = 1, nlev
-!        sm = zero
-!        DO nm = 1, nsp
-!           sm = sm + mmw(nm)*den(nl,nm)
-!        END DO
-!        rho(nl) = amu*sm
-!        mass(nl) = sm/den(nl,0)
-!     END DO
+      ! ---------------------------------------------------------------------------------------------
+     !
+     !                                 CHEMICAL EQUILIBRIUM SPECIES                                
+     !
+     ! ---------------------------------------------------------------------------------------------
 
      DO nm = 1, nsp
         IF(istat(nm) /= 0) THEN
@@ -283,59 +222,91 @@ PROGRAM PCHEM1D
         END IF
      END DO
 
+     iter_chem = 0; test_chem = 10._RP*tol_chem
+     CHEM: DO
+     
+        iter_chem = iter_chem + 1
+        IF((iter_chem > ntim_chem) .or. (test_chem < tol_chem)) EXIT
+
+        den_old = den
+     
+        CALL CHEMEQ
+
+        !  .. Check Convergence
+  
+        test_chem = zero; nmn = locp(1); nln = 1
+        DO nx = 1, nchem
+           nm = locp(nx)
+           DO nl = 1, nlev
+              IF(den(nl,nm) > 1.0E+00_RP) THEN
+                 dnm = MAX(pr(nl,nm),ls(nl,nm))
+                 IF(dnm > 1.E-6_RP) THEN
+                    tst1 = ABS(pr(nl,nm)-ls(nl,nm)-dNdt(nl,nm))/dnm
+                 ELSE
+                    tst1 = zero
+                 END IF
+                 IF(tst1 > test_chem) THEN
+                    test_chem = tst1
+                    nln = nl
+                    nmn = nm
+                 END IF
+              END IF
+           END DO
+        END DO
+        
+        IF (lprnt) THEN
+           WRITE(*,"(10X,'  CHEMEQ: ITER = ',I4,2X,A12,' Z = ',F8.1,' N = ',ES11.3,' P = ',ES11.3,' L = ',ES11.3,' dNdt = ',ES11.3,' Err = ',ES11.3,' Relerr = ',ES11.3)") &
+                iter_chem,name(nmn),1.E-5_RP*z(nln),den(nln,nmn),pr(nln,nmn), ls(nln,nmn), dNdt(nln,nmn),pr(nln,nmn)-ls(nln,nmn)-dNdt(nln,nmn),test_chem
+        END IF
+       
+     END DO CHEM
+
      ! ---------------------------------------------------------------------------------------------
      !
      !                                   CHECK CONVERGENCE                                         
      !
      ! ---------------------------------------------------------------------------------------------
 
-     test_diff = zero; nln = 1; nmn = 1
+     test_time = zero; nln = 1; nmn = 1
 
      IF(ndiff > 0) THEN
-     DO nx = 1, ndiff
-        nm = ldcp(nx)
-        DO nl = 1, nlev
-!           IF( ((istat(nm) == 2).and.(den(nl,nm)/den(nl,0) > 1.E-12_RP)) .or.                       &
-!               ((istat(nm) == 1).and.(den(nl,nm) > 1.E-2_RP)) )                 THEN
-              dnm = MAX(pr(nl,nm),ls(nl,nm),ABS(div_flx(nl,nm)))
-!              IF(dnm > 1.E-30_RP) THEN
-                 tst1 = ABS(pr(nl,nm)-ls(nl,nm)-div_flx(nl,nm))/dnm
-!              ELSE
-!                 tst1 = zero
-!              END IF
-              IF(tst1 > test_diff) THEN
-                 test_diff = tst1
+        DO nx = 1, ndiff
+           nm = ldcp(nx)
+           DO nl = 1, nlev
+              IF(den(nl,nm) > 1.E0_RP) THEN
+                 tst1 = ABS(den(nl,nm)-den_old(nl,nm))/den(nl,nm)
+              ELSE
+                 tst1 = zero
+              END IF
+              IF(tst1 > test_time) THEN
+                 test_time = tst1
                  nln = nl
                  nmn = nm
               END IF
-!           END IF
+           END DO
         END DO
-     END DO
      END IF
+  
+
      IF(nchem > 0) THEN
-     DO nx = 1, nchem
-        nm = locp(nx)
-        DO nl = 1, nlev
-!           IF( ((istat(nm) == 2).and.(den(nl,nm)/den(nl,0) > 1.E-12_RP)) .or.                       &
-!               ((istat(nm) == 1).and.(den(nl,nm) > 1.E-2_RP)) )                 THEN
-              dnm = MAX(pr(nl,nm),ls(nl,nm))
-!              IF(dnm > 1.E-30_RP) THEN
-                 tst1 = ABS(pr(nl,nm)-ls(nl,nm))/dnm
-!              ELSE
-!                 tst1 = zero
-!              END IF
-              IF(tst1 > test_diff) THEN
-                 test_diff = tst1
+        DO nx = 1, nchem
+           nm = locp(nx)
+           DO nl = 1, nlev
+              IF(den(nl,nm) > 1.E0_RP) THEN
+                 tst1 = ABS(den(nl,nm)-den_old(nl,nm))/den(nl,nm)
+              ELSE
+                 tst1 = zero
+              END IF
+              IF(tst1 > test_time) THEN
+                 test_time = tst1
                  nln = nl
                  nmn = nm
               END IF
-!           END IF
+           END DO
         END DO
-     END DO
      END IF
 
-     WRITE(*,911) iter_diff,name(nmn), pr(nln,nmn)-ls(nln,nmn)-div_flx(nln,nmn), pr(nln,nmn), ls(nln,nmn),   &
-          div_flx(nln,nmn), 1.E-5*z(nln), test_diff
+     WRITE(*,910) iter_diff,name(nmn),1.E-5_RP*z(nln),den(nln,nmn),den(nln,nmn)-den_old(nln,nmn),test_time
      
      !  .. Write to Disc
      
@@ -349,7 +320,7 @@ PROGRAM PCHEM1D
   CALL COMPOUT                    !  .. Final output
 
 
-910 FORMAT(10X,' STEP=',I6,2X,' DelN=',ES11.3,' Z = ',ES11.3,' SPECIES = ',A12) 
+910 FORMAT(10X,' STEP=',I6,' SPECIES = ',A12,' Z = ',ES12.4,' N = ',ES11.3,' DelN =',ES11.3,' Rerr = ',ES11.3) 
 911 FORMAT(5X,' STEP=',I6,2X,A12,' DNDT = ',ES11.3,' Pr = ',ES11.3,' Ls = ',   &
       ES11.3,' div_flx = ',ES11.3,' Z = ',ES12.4,' Test = ',ES11.3)
 912 FORMAT(10X,A12,' DNDT = ',ES11.3,' Pr = ',ES11.3,' Ls = ',   &
