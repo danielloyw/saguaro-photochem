@@ -196,9 +196,9 @@ SUBROUTINE COMPOUT
   !  .. CO photodissociation rates in photoregion B
   
   OPEN(unit=70,file='../runs/'//TRIM(runID)//'/output/COphotofreqB.out',status='unknown')
-    WRITE (70,"(1I6)") ncrsB/100
+    WRITE (70,"(1I6)") ncrsB/100, nlev
     WRITE (70,"('Wavelength (Angstroms)')")
-    WRITE (70,"(10ES11.3)") ((wcrsB((nw-1)*100+50)+wcrsB((nw-1)*100+51)), nw=1, ncrsB/100)
+    WRITE (70,"(10ES11.3)") (((wcrsB((nw-1)*100+50)+wcrsB((nw-1)*100+51)))/2, nw=1, ncrsB/100)
     DO nz = 1, nlev
        WRITE(70,"(F11.3)") 1.E-5_RP*z(nz)
        na = 22
