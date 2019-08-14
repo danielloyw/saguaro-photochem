@@ -1,4 +1,4 @@
-f_in = open('ireactions_temp.csv','r')
+f_in = open('ireactions.csv','r')
 f_out = open('ireactions_table.tex','w')
 
 t = f_in.readline().split(',')
@@ -11,8 +11,8 @@ f_out.write('\\usepackage{fullpage}\n')
 f_out.write('\\usepackage{longtable}\n')
 f_out.write('\\usepackage[landscape]{geometry}\n')
 f_out.write('\\begin{document}\n')
-f_out.write('\\begin{longtable}{l l l l l l l}\n')
-f_out.write('\# & Reaction & $k$ & $T$ Range (K) & Reference & Notes\\\\\n')
+f_out.write('\\begin{longtable}{l l l l l l}\n')
+f_out.write('\# & Reaction & $k$ & Reference & Notes\\\\\n')
 for i_reactions in range(n_reactions):
     t = f_in.readline().split(',')
     for i_spe in range(1,6):
@@ -150,9 +150,9 @@ for i_reactions in range(n_reactions):
         f_out.write('$ & ')
 
     # output ancillary info
-    f_out.write(t[17] + ' & ' + t[18])
-    if t[19] != '\n':
-        f_out.write(' & ' + t[19].replace('\\n',''))
+    f_out.write(t[18])
+    #if t[19] != '\n':
+    #    f_out.write(' & ' + t[19].replace('\\n',''))
     f_out.write(' \\\\\n')
     
 
