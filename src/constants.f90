@@ -25,19 +25,19 @@ MODULE CONSTANTS
   
   REAL(RP), PARAMETER :: pi=3.1415926536       ! pi   
   REAL(RP), PARAMETER :: sqpi=1.7724538509     ! SQRT(pi)                       
-  REAL(RP), PARAMETER :: fourpi=12.56637062    ! 4 * pi                        
-  REAL(RP), PARAMETER :: amu=1.660531E-24      ! atomic mass unit            
-  REAL(RP), PARAMETER :: rkb=1.38062E-16       ! Boltzmann's constant 
+  REAL(RP), PARAMETER :: fourpi=12.56637061    ! 4 * pi                        
+  REAL(RP), PARAMETER :: amu=1.660539E-24      ! atomic mass unit            
+  REAL(RP), PARAMETER :: rkb=1.38065E-16       ! Boltzmann's constant 
   REAL(RP), PARAMETER :: rgas = rkb/amu        ! gas constant        
   REAL(RP), PARAMETER :: crs0=2.654E-2         ! atomic cross section         
   REAL(RP), PARAMETER :: cs=2.997925E10        ! speed of light               
-  REAL(RP), PARAMETER :: hplnk=6.626205E-27    ! Planck's constant            
-  REAL(RP), PARAMETER :: Gcnst=6.6704E-8       ! Gravitational constant      
-  REAL(RP), PARAMETER :: crad2=1.43883         ! hplnk*cs/rkb                  
-  REAL(RP), PARAMETER :: hc=1.986468E-16       ! hplnk*cs                     
+  REAL(RP), PARAMETER :: hplnk=6.626070E-27    ! Planck's constant            
+  REAL(RP), PARAMETER :: Gcnst=6.6743E-8       ! Gravitational constant      
+  REAL(RP), PARAMETER :: crad2=1.43878         ! hplnk*cs/rkb                  
+  REAL(RP), PARAMETER :: hc=1.986446E-16       ! hplnk*cs                     
   REAL(RP), PARAMETER :: hck=1.43883           ! crad2                        
   REAL(RP), PARAMETER :: AU=1.495979E13        ! Astronomical unit            
-  REAL(RP), PARAMETER :: nlosch=2.686E19       ! Loschmidt's number   
+  REAL(RP), PARAMETER :: nlosch=2.687E19       ! Loschmidt's number   
   
   !
   !  .. Conversion factors

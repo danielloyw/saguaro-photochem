@@ -4,7 +4,7 @@ MODULE GLOBAL_VARIABLES
 
   !  .. Planet Parameters
 
-  REAL(RP), PARAMETER :: GM = 4.284E19            !  Grav Const X Planet Mass      
+  REAL(RP), PARAMETER :: GM = 4.283E19            !  Grav Const X Planet Mass      
   REAL(RP), PARAMETER :: RPLANET = 3389.5E5        !  Radius of Planet              
   REAL(RP), PARAMETER :: DH = 1.5200_RP           !  Planet Heliocentric Distance (AU)
 
