@@ -42,7 +42,7 @@ MODULE CONSTANTS
   !
   !  .. Conversion factors
   !
-  
+
   REAL(RP), PARAMETER :: cm_to_km=1.E-5        
   REAL(RP), PARAMETER :: km_to_cm=1.E+5         
   REAL(RP), PARAMETER :: cm_to_aa=1.E+8
