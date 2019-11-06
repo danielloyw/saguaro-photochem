@@ -22,25 +22,21 @@
   
   DO nr = 1, nrct
      IF ((itype(nr) < -4) .or. (itype(nr) > 7)) THEN
-
         WRITE(*,"(5X,' ERROR, INCORRECT REACTION TYPE, nr = ',I4,' itype = ',I3,' ABORTING ...')") nr, itype(nr)
         STOP
 
      ELSE IF (itype(nr) == 1) THEN                                          ! Unimolecular
-
         irct(2,nr) = 0
         DO nl = 1, nlev
            rt(nr,nl) = rck(1,nr)
         END DO
 
      ELSE IF(itype(nr) == 2) THEN                                           ! Bimolecular
-
         DO nl = 1, nlev
            rt(nr,nl) = rck(1,nr)*(tn(nl)**rck(2,nr))*EXP(rck(3,nr)/tn(nl))
         END DO
 
      ELSE IF (itype(nr) == 3) THEN                                          ! Association
-
         DO nl = 1, nlev
            rk1 = rck(1,nr)*(tn(nl)**rck(2,nr))*EXP(rck(3,nr)/tn(nl))
            rk0 = rck(4,nr)*(tn(nl)**rck(5,nr))*EXP(rck(6,nr)/tn(nl))
@@ -58,7 +54,6 @@
         END DO
 
      ELSE IF (itype(nr) == 4) THEN                                           ! Association & Radiative Association
-
         DO nl = 1, nlev
            rk1 = rck(1,nr)*(tn(nl)**rck(2,nr))*EXP(rck(3,nr)/tn(nl))
            rk0 = rck(4,nr)*(tn(nl)**rck(5,nr))*EXP(rck(6,nr)/tn(nl))
@@ -78,7 +73,6 @@
         END DO
 
      ELSE IF (itype(nr) == 5) THEN                                           ! Association (Sander's Formula)
-
         DO nl = 1, nlev
            rk1 = rck(1,nr)*(tn(nl)**rck(2,nr))*EXP(rck(3,nr)/tn(nl))
            rk0 = rck(4,nr)*(tn(nl)**rck(5,nr))*EXP(rck(6,nr)/tn(nl))
@@ -87,7 +81,6 @@
         END DO
 
      ELSE IF(itype(nr) == 6) THEN                                                 !   Tabulated reactions
-
         nt = ntab(nr)
         DO nl = 1, nlev
            IF(tn(nl) < tmp_rct(1,nt)) THEN
@@ -124,37 +117,32 @@
         END DO
 
      ELSE IF (itype(nr) == 7) THEN                                                ! Heterogenous
-
         nm = irct(1,nr)
         DO nl = 1, nlev
            rt(nr,nl) = rck(1,nr)*SQRT(rgas*tn(nl)/two/pi/mmw(nm))*surfarea(nl)/den(nl,0)
         END DO
 
      ELSE IF (itype(nr) == -1) THEN                  ! Unimolecular Reaction
-
         DO nl = 1, nlev
            rt(nr,nl)=rck(1,nr)*(tn(nl)**rck(2,nr))                                                  &
              *two*EXP(rck(3,nr)/tn(nl))/(one+EXP(rck(4,nr)/tn(nl)))
         END DO
 
      ELSE IF (itype(nr) == -2) THEN                  ! normal two-body reaction
-
         DO nl = 1, nlev
            rt(nr,nl)=rck(1,nr)*(tn(nl)**rck(2,nr))                                                  &
                 *two*EXP(rck(3,nr)/tn(nl))/(one+EXP(rck(4,nr)/tn(nl)))
         END DO
 
      ELSE IF (itype(nr) == -3) THEN                  ! 3-body reaction
-
         DO nl = 1, nlev
            rt(nr,nl)=rck(1,nr)*(tn(nl)**rck(2,nr))                                                  &
                 *two*EXP(rck(3,nr)/tn(nl))/(one+EXP(rck(4,nr)/tn(nl))) 
         END DO
 
      ELSE IF (itype(nr) == -4) THEN                  ! electron recombination
-
         DO nl = 1, nlev
-           rt(nr,nl)=rck(1,nr)*(tn(nl)**rck(2,nr))                                                  &
+           rt(nr,nl)=rck(1,nr)*(te(nl)**rck(2,nr))                                                  &
                 *two*EXP(rck(3,nr)/te(nl))/(one+EXP(rck(4,nr)/te(nl)))
         END DO
 
