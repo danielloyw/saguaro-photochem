@@ -10,131 +10,142 @@ SUBROUTINE COMPOUT
   !
 
   IMPLICIT none
-  
-  REAL(RP) :: sm,sum0,sum1,sum2,sum3,sum4,sum5,sum6,sum7,rfac
+
+  REAL(RP) :: sm,sum0,sum1,sum2,sum3,sum4,sum5,sum6,sum7,rfac,sm1,sm2,sum8,sum9,rfp,rfm,div_chk
   REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: pcolrate
   REAL(RP), ALLOCATABLE, DIMENSION(:) :: ecolrate
   REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: colrate
   INTEGER, ALLOCATABLE, DIMENSION(:) :: indxp
   INTEGER, ALLOCATABLE, DIMENSION(:) :: indxr
-  REAL(RP), ALLOCATABLE, DIMENSION(:) :: cprd_ext, cprd_ph, clss_ph, cprd_pe, clss_pe, cprd_chem,   &
-       clss_chem, cprd_net, clss_net, crc, ctp, cbt, cbl, csf, cdens, tbal
+  REAL(RP), ALLOCATABLE, DIMENSION(:) :: cprd_ext, cprd_ph, clss_ph, cprd_pe, clss_pe, cprd_chem, cdv,   &
+       clss_chem, cprd_net, clss_net, crc, ctp, cbt, cbl, csf, cdens, tbal, chk
   REAL(RP) :: cprd_ext_oxy,cprd_ph_oxy,clss_ph_oxy,cprd_pe_oxy,clss_pe_oxy,cprd_chem_oxy,      &
        clss_chem_oxy,cprd_net_oxy,clss_net_oxy,crc_oxy,ctp_oxy,cbt_oxy,cbl_oxy
-  REAL(RP) :: cprd_ext_hyd,cprd_ph_hyd,clss_ph_hyd,cprd_pe_hyd,clss_pe_hyd,cprd_chem_hyd,      &
-       clss_chem_hyd,cprd_net_hyd,clss_net_hyd,crc_hyd,ctp_hyd,cbt_hyd,cbl_hyd
+  REAL(RP) :: cprd_ext_ohyd,cprd_ph_ohyd,clss_ph_ohyd,cprd_pe_ohyd,clss_pe_ohyd,cprd_chem_ohyd,      &
+       clss_chem_ohyd,cprd_net_ohyd,clss_net_ohyd,crc_ohyd,ctp_ohyd,cbt_ohyd,cbl_ohyd
+  REAL(RP) :: cprd_ext_ehyd,cprd_ph_ehyd,clss_ph_ehyd,cprd_pe_ehyd,clss_pe_ehyd,cprd_chem_ehyd,      &
+       clss_chem_ehyd,cprd_net_ehyd,clss_net_ehyd,crc_ehyd,ctp_ehyd,cbt_ehyd,cbl_ehyd
   INTEGER, ALLOCATABLE, DIMENSION(:) :: indx
   INTEGER :: nz, nm, np, nx, nr, nl, ne, nw, nw_high, na, nb
 
   REAL(RP), ALLOCATABLE, DIMENSION(:) :: wcrs
-  
+
   REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: solar_flux, COphotorate
-  
+
   REAL(RP), ALLOCATABLE, DIMENSION(:) :: den_oxy, mol_oxy, flx_oxy, prext_oxy, pr_ph_oxy, ls_ph_oxy, &
        pr_pe_oxy, ls_pe_oxy, pr_chem_oxy, ls_chem_oxy, pr_oxy, ls_oxy, rcdn_oxy, div_flx_oxy
 
-  REAL(RP), ALLOCATABLE, DIMENSION(:) :: den_hyd, mol_hyd, flx_hyd, prext_hyd, pr_ph_hyd, ls_ph_hyd, &
-       pr_pe_hyd, ls_pe_hyd, pr_chem_hyd, ls_chem_hyd, pr_hyd, ls_hyd, rcdn_hyd, div_flx_hyd
+  REAL(RP), ALLOCATABLE, DIMENSION(:) :: den_ohyd, mol_ohyd, flx_ohyd, prext_ohyd, pr_ph_ohyd, ls_ph_ohyd, &
+       pr_pe_ohyd, ls_pe_ohyd, pr_chem_ohyd, ls_chem_ohyd, pr_ohyd, ls_ohyd, rcdn_ohyd, div_flx_ohyd
 
+  REAL(RP), ALLOCATABLE, DIMENSION(:) :: den_ehyd, mol_ehyd, flx_ehyd, prext_ehyd, pr_ph_ehyd, ls_ph_ehyd, &
+       pr_pe_ehyd, ls_pe_ehyd, pr_chem_ehyd, ls_chem_ehyd, pr_ehyd, ls_ehyd, rcdn_ehyd, div_flx_ehyd
   CHARACTER(len=12), ALLOCATABLE, DIMENSION(:) :: heads, dheads
+
+  INTEGER :: nm1, nm2, nm3, nm4, nm5, nx1, nx2, nx3, nx4, nx5
 
   ALLOCATE(pcolrate(nphrt,3),ecolrate(nert),colrate(nrct,3),indxr(nrct),indxp(nphrt), cprd_ext(nsp),    &
        cprd_ph(nsp), clss_ph(nsp), cprd_pe(nsp), clss_pe(nsp), cprd_chem(nsp), clss_chem(nsp),      &
        cprd_net(nsp), clss_net(nsp), crc(nsp), ctp(nsp), cbt(nsp), cbl(nsp), csf(nsp), indx(nsp),   &
-       cdens(nsp), tbal(nsp))
+       cdens(nsp), tbal(nsp), cdv(nsp), chk(nsp))
 
   ALLOCATE(den_oxy(nlev), mol_oxy(nlev), flx_oxy(nlev), prext_oxy(nlev), pr_ph_oxy(nlev),           &
        ls_ph_oxy(nlev), pr_pe_oxy(nlev), ls_pe_oxy(nlev), pr_chem_oxy(nlev), ls_chem_oxy(nlev),     &
        pr_oxy(nlev), ls_oxy(nlev), rcdn_oxy(nlev), div_flx_oxy(nlev))
 
-  ALLOCATE(den_hyd(nlev), mol_hyd(nlev), flx_hyd(nlev), prext_hyd(nlev), pr_ph_hyd(nlev),           &
-       ls_ph_hyd(nlev), pr_pe_hyd(nlev), ls_pe_hyd(nlev), pr_chem_hyd(nlev), ls_chem_hyd(nlev),     &
-       pr_hyd(nlev), ls_hyd(nlev), rcdn_hyd(nlev), div_flx_hyd(nlev))
+  ALLOCATE(den_ohyd(nlev), mol_ohyd(nlev), flx_ohyd(nlev), prext_ohyd(nlev), pr_ph_ohyd(nlev),           &
+       ls_ph_ohyd(nlev), pr_pe_ohyd(nlev), ls_pe_ohyd(nlev), pr_chem_ohyd(nlev), ls_chem_ohyd(nlev),     &
+       pr_ohyd(nlev), ls_ohyd(nlev), rcdn_ohyd(nlev), div_flx_ohyd(nlev))
+
+  ALLOCATE(den_ehyd(nlev), mol_ehyd(nlev), flx_ehyd(nlev), prext_ehyd(nlev), pr_ph_ehyd(nlev),           &
+       ls_ph_ehyd(nlev), pr_pe_ehyd(nlev), ls_pe_ehyd(nlev), pr_chem_ehyd(nlev), ls_chem_ehyd(nlev),     &
+       pr_ehyd(nlev), ls_ehyd(nlev), rcdn_ehyd(nlev), div_flx_ehyd(nlev))
 
   ALLOCATE(wcrs(ncrsA+ncrsB_low+ncrsC), solar_flux(ncrsA+ncrsB_low+ncrsC-2, nlev))
   ALLOCATE(COphotorate(ncrsB/100, nlev))
-  
+
   ALLOCATE(heads(nsp+10),dheads(2*nsp+3))
-  nlev = 241
+
   OPEN (unit=61,file='../runs/'//trim(runID)//'/output/atm1D.out',status='unknown',action='write')
-  
+
      WRITE (61,"(2I6)") nlev, nsp
      WRITE (61,"(' MOLECULES')")
      WRITE (61,"(10(2X,A12,1X))") (name(nm),nm=1,nsp)
-     WRITE (61,"(' ALTITUDE (cm)')") 
+     WRITE (61,"(' ALTITUDE (cm)')")
      WRITE (61,"(10ES15.7)") (z(nz), nz=1, nlev)
-     WRITE (61,"(' RADIUS (cm)')") 
+     WRITE (61,"(' RADIUS (cm)')")
      WRITE (61,"(10ES15.7)") (rz(nz), nz=1, nlev)
      WRITE (61,"(' GRAVITY (cm s-2)')")
      WRITE (61,"(10ES15.7)") (grv(nz), nz=1, nlev)
-     WRITE (61,"(' NEUTRAL TEMPERATURE (Kelvins)')") 
+     WRITE (61,"(' NEUTRAL TEMPERATURE (Kelvins)')")
      WRITE (61,"(10ES15.7)") (tn(nz), nz=1, nlev)
-     WRITE (61,"(' ELECTRON TEMPERATURE (Kelvins)')") 
+     WRITE (61,"(' ELECTRON TEMPERATURE (Kelvins)')")
      WRITE (61,"(10ES15.7)") (te(nz), nz=1, nlev)
-     WRITE (61,"(' PRESSURE (dyne/cm^2)')") 
+     WRITE (61,"(' PRESSURE (dyne/cm^2)')")
      WRITE (61,"(10ES15.7)") (prs(nz), nz=1, nlev)
-     WRITE (61,"(' MASS DENSITY (g cm^-3)')") 
+     WRITE (61,"(' MASS DENSITY (g cm^-3)')")
      WRITE (61,"(10ES15.7)") (rho(nz), nz=1, nlev)
-     WRITE (61,"(' MEAN MOLECULAR WEIGHT (amu)')") 
+     WRITE (61,"(' MEAN MOLECULAR WEIGHT (amu)')")
      WRITE (61,"(10ES15.7)") (mass(nz), nz=1, nlev)
-     WRITE (61,"(' EDDY COEFFICIENT (cm^2s^-1)')") 
+     WRITE (61,"(' EDDY COEFFICIENT (cm^2s^-1)')")
      WRITE (61,"(10ES15.7)") (ek(nz), nz=1, nlev)
      WRITE (61,"(' TOTAL DENISTY (cm^-3)')")
-     WRITE (61,"(10ES15.7)") (den(nz,0), nz=1, nlev) 
+     WRITE (61,"(10ES15.7)") (den(nz,0), nz=1, nlev)
      DO nm = 1, nsp
         WRITE (61,"(A12,F5.2)") name(nm)
         WRITE (61,"(10ES15.7)") (den(nz,nm), nz=1, nlev)
      END DO
-   
+
   CLOSE(unit=61)
 
   OPEN (unit=61,file='atm1D.out',status='unknown',action='write')
-  
+
      WRITE (61,"(2I6)") nlev, nsp
      WRITE (61,"(' MOLECULES')")
      WRITE (61,"(10(2X,A12,1X))") (name(nm),nm=1,nsp)
-     WRITE (61,"(' ALTITUDE (cm)')") 
+     WRITE (61,"(' ALTITUDE (cm)')")
      WRITE (61,"(10ES15.7)") (z(nz), nz=1, nlev)
-     WRITE (61,"(' RADIUS (cm)')") 
+     WRITE (61,"(' RADIUS (cm)')")
      WRITE (61,"(10ES15.7)") (rz(nz), nz=1, nlev)
      WRITE (61,"(' GRAVITY (cm s-2)')")
      WRITE (61,"(10ES15.7)") (grv(nz), nz=1, nlev)
-     WRITE (61,"(' NEUTRAL TEMPERATURE (Kelvins)')") 
+     WRITE (61,"(' NEUTRAL TEMPERATURE (Kelvins)')")
      WRITE (61,"(10ES15.7)") (tn(nz), nz=1, nlev)
-     WRITE (61,"(' ELECTRON TEMPERATURE (Kelvins)')") 
+     WRITE (61,"(' ELECTRON TEMPERATURE (Kelvins)')")
      WRITE (61,"(10ES15.7)") (te(nz), nz=1, nlev)
-     WRITE (61,"(' PRESSURE (dyne/cm^2)')") 
+     WRITE (61,"(' PRESSURE (dyne/cm^2)')")
      WRITE (61,"(10ES15.7)") (prs(nz), nz=1, nlev)
-     WRITE (61,"(' MASS DENSITY (g cm^-3)')") 
+     WRITE (61,"(' MASS DENSITY (g cm^-3)')")
      WRITE (61,"(10ES15.7)") (rho(nz), nz=1, nlev)
-     WRITE (61,"(' MEAN MOLECULAR WEIGHT (amu)')") 
+     WRITE (61,"(' MEAN MOLECULAR WEIGHT (amu)')")
      WRITE (61,"(10ES15.7)") (mass(nz), nz=1, nlev)
-     WRITE (61,"(' EDDY COEFFICIENT (cm^2s^-1)')") 
+     WRITE (61,"(' EDDY COEFFICIENT (cm^2s^-1)')")
      WRITE (61,"(10ES15.7)") (ek(nz), nz=1, nlev)
      WRITE (61,"(' TOTAL DENSITY (cm^-3)')")
-     WRITE (61,"(10ES15.7)") (den(nz,0), nz=1, nlev) 
+     WRITE (61,"(10ES15.7)") (den(nz,0), nz=1, nlev)
      DO nm = 1, nsp
         WRITE (61,"(A12,F5.2)") name(nm)
         WRITE (61,"(10ES15.7)") (den(nz,nm), nz=1, nlev)
      END DO
-   
+
   CLOSE(unit=61)
 
-  heads(1) = 'ALT (km)'
-  heads(2) = 'RAD (km)'
-  heads(3) = 'GRV (cm/s2)'
-  heads(4) = 'Tn (K)'
-  heads(5) = 'Te (K)'
-  heads(6) = 'PRS (ubar)'
-  heads(7) = 'RHO (gm/cm3)'
-  heads(8) = 'MMW (amu)'
-  heads(9) = 'Kzz (cm2/s)'
-  heads(10) = 'Ntot (cm-3)'
-  DO nm = 1, nsp
-     heads(10+nm) = name(nm)
-  END DO
-
   OPEN (unit=61,file='../runs/'//trim(runID)//'/output/atm1D.csv',status='unknown',action='write')
+
+     heads(1) = 'ALT (km)'
+     heads(2) = 'RAD (km)'
+     heads(3) = 'GRV (cm/s2)'
+     heads(4) = 'Tn (K)'
+     heads(5) = 'Te (K)'
+     heads(6) = 'PRS (ubar)'
+     heads(7) = 'RHO (gm/cm3)'
+     heads(8) = 'MMW (amu)'
+     heads(9) = 'Kzz (cm2/s)'
+     heads(10) = 'Ntot (cm-3)'
+     DO nm = 1, nsp
+        heads(10+nm) = name(nm)
+     END DO
+
      WRITE (61,"(A12,500(',',A12))") (heads(nm),nm=1,10+nsp)
      DO nz = 1, nlev
         WRITE (61,"(ES15.7,500(',',ES15.7))") 1.E-5*z(nz),1.E-5*rz(nz),grv(nz),tn(nz),te(nz),prs(nz),rho(nz),mass(nz),ek(nz),den(nz,0),(xmol(nz,nm),nm=1,nsp)
@@ -144,32 +155,32 @@ SUBROUTINE COMPOUT
   !
   !  .. Diffusion Coefficients
   !
-
-  dheads(1) = 'ALT (km)'
-  dheads(2) = 'Kzz (cm^2s^-1)'
-  DO nm = 1, nsp
-     dheads(2+nm) = name(nm)
-  END DO
-  dheads(3+nsp) = 'HT (km)'
-  DO nm = 1, nsp
-     dheads(nsp+3+nm) = name(nm)
-  END DO
-
   OPEN (unit=61,file='../runs/'//trim(runID)//'/output/diff.csv',status='unknown',action='write')
+  
+     dheads(1) = 'ALT (km)'
+     dheads(2) = 'Kzz (cm^2s^-1)'
+     DO nm = 1, nsp
+        dheads(2+nm) = name(nm)
+     END DO
+     dheads(3+nsp) = 'HT (km)'
+     DO nm = 1, nsp
+        dheads(nsp+3+nm) = name(nm)
+     END DO
+
      WRITE (61,"(A12,500(',',A12))") (dheads(nm),nm=1,2*nsp+3)
      DO nz = 1, nlev
         WRITE (61,"(ES15.7,500(',',ES15.7))") 1.E-5*z(nz),ek(nz),(df(nz,nm),nm=1,nsp),(1.E-5_RP*ht(nz,nm),nm=0,nsp)
      END DO
   CLOSE(unit=61)
 
-
   !
   !  .. Solar Fluxes
   !
 
   OPEN(unit=62,file='../runs/'//TRIM(runID)//'/output/solar_flux.out',status='unknown')
+
      WRITE (62,"(2I6)") ncrsA+ncrsB_low-2+ncrsC, nlev
-     WRITE (62,"('Wavelength (Angstroms)')") 
+     WRITE (62,"('Wavelength (Angstroms)')")
      wcrs(1:ncrsA) = wcrsA
      wcrs(ncrsA+1:ncrsA+ncrsB_low-2) = wcrsB_low(2:ncrsB_low-2)
      wcrs(ncrsA+ncrsB_low-1:ncrsA+ncrsB_low-2+ncrsC) = wcrsC
@@ -191,11 +202,13 @@ SUBROUTINE COMPOUT
         END DO
         WRITE(62,"(10ES11.3)") (solar_flux(nw,nz), nw=1,ncrsA+ncrsB_low-2+ncrsC)
      END DO
+
   CLOSE(unit=62)
-  
+
   !  .. CO photodissociation rates in photoregion B
-  
+
   OPEN(unit=70,file='../runs/'//TRIM(runID)//'/output/COphotofreqB.out',status='unknown')
+
     WRITE (70,"(1I6)") ncrsB/100, nlev
     WRITE (70,"('Wavelength (Angstroms)')")
     WRITE (70,"(10ES11.3)") (((wcrsB((nw-1)*100+50)+wcrsB((nw-1)*100+51)))/2, nw=1, ncrsB/100)
@@ -212,16 +225,40 @@ SUBROUTINE COMPOUT
        END DO
        WRITE(70,"(10ES11.3)") (COphotorate(nw,nz), nw=1,ncrsB/100)
      END DO
+
   CLOSE(unit=70)
 
   !
   !  .. Photolysis Rates
   !
- 
-  WHERE (rpt < 1.0E-99_RP) rpt = zero
+  !  .. Recompute production and loss
+
+  CALL SOLDEP1
+  CALL ELDEP1
+
+  !  .. Photon Reactions
   OPEN(unit=62,file='../runs/'//TRIM(runID)//'/output/photorates.out',status='unknown')
+
+     pr_ph = zero; ls_ph = zero; rpt = zero
+     DO nz = 1, nlev
+        DO np = 1, nphrt
+           nm1=irpt(1,np); nx1 = lopc(nm1)
+           nm2=irpt(2,np); nx2 = lopc(nm2)
+           nm3=irpt(3,np); nx3 = lopc(nm3)
+           nm4=irpt(4,np); nx4 = lopc(nm4)
+           nm5=irpt(5,np); nx5 = lopc(nm5)
+           rpt(np,nz) = rph(np,nz)*den(nz,nm1)
+           ls_ph(nz,nm1) = ls_ph(nz,nm1) + rpt(np,nz)
+           pr_ph(nz,nm2) = pr_ph(nz,nm2) + rpt(np,nz)
+           pr_ph(nz,nm3) = pr_ph(nz,nm3) + rpt(np,nz)
+           pr_ph(nz,nm4) = pr_ph(nz,nm4) + rpt(np,nz)
+           pr_ph(nz,nm5) = pr_ph(nz,nm5) + rpt(np,nz)
+        END DO
+     END DO
+     WHERE (rpt < 1.0E-99_RP) rpt = zero
+
      WRITE (62,"(2I6)") nphrt, nlev
-     WRITE (62,"(' ALTITUDE (km)')") 
+     WRITE (62,"(' ALTITUDE (km)')")
      WRITE (62,"(10ES11.3)") (1.E-5*z(nz), nz=1, nlev)
      DO np = 1, nphrt
         WRITE(62,"(A)") ptitle(np)
@@ -235,7 +272,7 @@ SUBROUTINE COMPOUT
 
   OPEN(unit=62,file='../runs/'//TRIM(runID)//'/output/eflux.out',status='unknown')
      WRITE (62,"(2I6)") nelb, nlev
-     WRITE (62,"(' ENERGY GRID (eV)')") 
+     WRITE (62,"(' ENERGY GRID (eV)')")
      WRITE (62,"(10ES11.3)") (elctreV(ne), ne=1, nelb)
      DO nz = 1, nlev
         WRITE(62,"(F11.3)") 1.E-5_RP*z(nz)
@@ -250,7 +287,7 @@ SUBROUTINE COMPOUT
   WHERE (rpe < 1.0E-99_RP) rpe = zero
   OPEN(unit=62,file='../runs/'//TRIM(runID)//'/output/elerates.out',status='unknown')
      WRITE (62,"(3I6)") nert, nlev
-     WRITE (62,"(' ALTITUDE (km)')") 
+     WRITE (62,"(' ALTITUDE (km)')")
      WRITE (62,"(10ES11.3)") (1.E-5*z(nz), nz=1, nlev)
      DO np = 1, nert
         WRITE(62,"(A)") etitle(np)
@@ -270,7 +307,7 @@ SUBROUTINE COMPOUT
   WHERE (rt < 1.0E-99_RP) rt = zero
   OPEN(unit=63,file='../runs/'//TRIM(runID)//'/output/ratecoeff.out',status='unknown')
      WRITE (63,"(2I6)") nrct, nlev
-     WRITE (63,"(' ALTITUDE (km)')") 
+     WRITE (63,"(' ALTITUDE (km)')")
      WRITE (63,"(10ES11.3)") (1.E-5*z(nz), nz=1, nlev)
      DO nr = 1, nrct
 !        IF(itype(nr) /= 1) THEN
@@ -283,7 +320,7 @@ SUBROUTINE COMPOUT
   WHERE (rct < 1.0E-99_RP) rct = zero
   OPEN(unit=63,file='../runs/'//TRIM(runID)//'/output/chemrates.out',status='unknown')
      WRITE (63,"(2I6)") nrct, nlev
-     WRITE (63,"(' ALTITUDE (km)')") 
+     WRITE (63,"(' ALTITUDE (km)')")
      WRITE (63,"(10ES11.3)") (1.E-5*z(nz), nz=1, nlev)
      DO nr = 1, nrct
         WRITE(63,"(A)") ctitle(nr)
@@ -295,28 +332,28 @@ SUBROUTINE COMPOUT
   !  .. Column-integrated Rates for each reaction
   !
 
-
   !
   !   .. Photons
   !
 
-  DO np = 1, nphrt
-     sum0 = zero
-     DO nz = nibot, nlev-1
-        rfac=((half*(rz(nz+1)+rz(nz)))**2/RPLANET**2)*half*(rz(nz+1)-rz(nz))
-        sum0=sum0 + rfac*(rpt(np,nz)+rpt(np,nz+1))
-     END DO
-     pcolrate(np,1) = sum0
-     sum0 = zero
-     DO nz = 1, nibot-1
-        rfac=((half*(rz(nz+1)+rz(nz)))**2/RPLANET**2)*half*(rz(nz+1)-rz(nz))
-        sum0=sum0 + rfac*(rpt(np,nz)+rpt(np,nz+1))
-     END DO
-     pcolrate(np,2) = sum0
-     pcolrate(np,3) = pcolrate(np,1) + pcolrate(np,2)
-  END DO
-
   OPEN(unit=74,file='../runs/'//TRIM(runID)//'/output/pcolrates.out',status='unknown',action='write')
+
+     DO np = 1, nphrt
+        sum0 = zero
+        DO nz = nibot, nlev-1
+           rfac=((half*(rz(nz+1)+rz(nz)))**2/RPLANET**2)*half*(rz(nz+1)-rz(nz))
+           sum0=sum0 + rfac*(rpt(np,nz)+rpt(np,nz+1))
+        END DO
+        pcolrate(np,1) = sum0
+        sum0 = zero
+        DO nz = 1, nibot-1
+           rfac=((half*(rz(nz+1)+rz(nz)))**2/RPLANET**2)*half*(rz(nz+1)-rz(nz))
+           sum0=sum0 + rfac*(rpt(np,nz)+rpt(np,nz+1))
+        END DO
+        pcolrate(np,2) = sum0
+        pcolrate(np,3) = pcolrate(np,1) + pcolrate(np,2)
+     END DO
+
      CALL INDEXX(pcolrate(1:nphrt,3),indxp)
      DO np = nphrt, 1, -1
         WRITE(74,"(I4,3(2X,ES11.3),2X,A87)") indxp(np),pcolrate(indxp(np),1), pcolrate(indxp(np),2),pcolrate(indxp(np),3),ptitle(indxp(np))
@@ -327,16 +364,17 @@ SUBROUTINE COMPOUT
   !  .. Suprathermal Electrons
   !
 
-  DO np = 1, nert
-     sum0 = zero
-     DO nz = 1, nlev-1
-        rfac=((half*(rz(nz+1)+rz(nz)))**2/RPLANET**2)*half*(rz(nz+1)-rz(nz))
-        sum0=sum0 + rfac*(rpe(np,nz)+rpe(np,nz+1))
-     END DO
-     ecolrate(np) = sum0
-  END DO
-
   OPEN(unit=74,file='../runs/'//TRIM(runID)//'/output/ecolrates.out',status='unknown',action='write')
+
+     DO np = 1, nert
+        sum0 = zero
+        DO nz = 1, nlev-1
+           rfac=((half*(rz(nz+1)+rz(nz)))**2/RPLANET**2)*half*(rz(nz+1)-rz(nz))
+           sum0=sum0 + rfac*(rpe(np,nz)+rpe(np,nz+1))
+        END DO
+        ecolrate(np) = sum0
+     END DO
+
      CALL INDEXX(ecolrate,indxp)
      DO np = nert, 1, -1
         WRITE(74,"(I4,2X,ES11.3,2X,A87)") indxp(np),ecolrate(indxp(np)), etitle(indxp(np))
@@ -346,27 +384,27 @@ SUBROUTINE COMPOUT
   !
   !  .. Chemical Reactions
   !
-
-  DO nr = 1, nrct
-     sum0 = zero
-     DO nz = nibot, nlev-1
-        rfac=((half*(rz(nz+1)+rz(nz)))**2/RPLANET**2)*half*(rz(nz+1)-rz(nz))
-        sum0=sum0 + rfac*(rct(nr,nz)+rct(nr,nz+1))
-     END DO
-     colrate(nr,1) = sum0
-     sum0 = zero
-     DO nz = 1, nibot-1
-        rfac=((half*(rz(nz+1)+rz(nz)))**2/RPLANET**2)*half*(rz(nz+1)-rz(nz))
-        sum0=sum0 + rfac*(rct(nr,nz)+rct(nr,nz+1))
-     END DO
-     colrate(nr,2) = sum0
-     colrate(nr,3) = colrate(nr,1) + colrate(nr,2)
-  END DO
-
   OPEN(unit=75,file='../runs/'//TRIM(runID)//'/output/colrates.out',status='unknown',action='write')
+
+     DO nr = 1, nrct
+        sum0 = zero
+        DO nz = nibot, nlev-1
+           rfac=((half*(rz(nz+1)+rz(nz)))**2/RPLANET**2)*half*(rz(nz+1)-rz(nz))
+           sum0=sum0 + rfac*(rct(nr,nz)+rct(nr,nz+1))
+        END DO
+        colrate(nr,1) = sum0
+        sum0 = zero
+        DO nz = 1, nibot-1
+           rfac=((half*(rz(nz+1)+rz(nz)))**2/RPLANET**2)*half*(rz(nz+1)-rz(nz))
+           sum0=sum0 + rfac*(rct(nr,nz)+rct(nr,nz+1))
+        END DO
+        colrate(nr,2) = sum0
+        colrate(nr,3) = colrate(nr,1) + colrate(nr,2)
+     END DO
+
      CALL INDEXX(colrate(1:nrct,3),indxr)
      DO nr = nrct, 1, -1
-        WRITE(75,"(I4,3(2X,ES11.3),2X,A73)") indxr(nr),colrate(indxr(nr),1),colrate(indxr(nr),2),colrate(indxr(nr),3),ctitle(indxr(nr)) 
+        WRITE(75,"(I4,3(2X,ES11.3),2X,A73)") indxr(nr),colrate(indxr(nr),1),colrate(indxr(nr),2),colrate(indxr(nr),3),ctitle(indxr(nr))
      END DO
   CLOSE(unit=75)
 
@@ -380,7 +418,7 @@ SUBROUTINE COMPOUT
          rfac=((half*(rz(nl+1)+rz(nl)))**2/RPLANET**2)*half*(rz(nl+1)-rz(nl))
          sum0=sum0 + rfac*(den(nl,nm)+den(nl+1,nm))
       END DO
-      cdens(nm) = sum0 
+      cdens(nm) = sum0
    END DO
 
    !
@@ -388,17 +426,21 @@ SUBROUTINE COMPOUT
    !
 
    DO nm = 1, nsp
-      sum0=zero; sum1=zero; sum2=zero; sum3=zero; sum4=zero; sum5=zero; sum6=zero; sum7=zero
+      sum0=zero; sum1=zero; sum2=zero; sum3=zero; sum4=zero; sum5=zero; sum6=zero; sum7=zero; sum8=zero;sum9=zero
       DO nl = 1, nlev-1
-         rfac=((half*(rz(nl+1)+rz(nl)))**2/RPLANET**2)*half*(rz(nl+1)-rz(nl))
-         sum0=sum0 + rfac*(prext(nl,nm)+prext(nl+1,nm))
-         sum1=sum1 + rfac*(pr_ph(nl,nm)+pr_ph(nl+1,nm))
-         sum2=sum2 + rfac*(ls_ph(nl,nm)+ls_ph(nl+1,nm))
-         sum3=sum3 + rfac*(pr_pe(nl,nm)+pr_pe(nl+1,nm))
-         sum4=sum4 + rfac*(ls_pe(nl,nm)+ls_pe(nl+1,nm))
-         sum5=sum5 + rfac*(pr_chem(nl,nm)+pr_chem(nl+1,nm))
-         sum6=sum6 + rfac*(ls_chem(nl,nm)+ls_chem(nl+1,nm))
-         sum7=sum7 + rfac*(rcdn(nl,nm)+rcdn(nl+1,nm))
+         rfp=half*((rz(nl+1)/RPLANET)**2)*(rz(nl+1)-rz(nl))
+         rfm=half*((rz(nl)/RPLANET)**2)*(rz(nl+1)-rz(nl))
+         sum0=sum0 + rfp*prext(nl,nm)+rfm*prext(nl+1,nm)
+         sum1=sum1 + rfp*pr_ph(nl,nm)+rfm*pr_ph(nl+1,nm)
+         sum2=sum2 + rfp*ls_ph(nl,nm)+rfm*ls_ph(nl+1,nm)
+         sum3=sum3 + rfp*pr_pe(nl,nm)+rfm*pr_pe(nl+1,nm)
+         sum4=sum4 + rfp*ls_pe(nl,nm)+rfm*ls_pe(nl+1,nm)
+         sum5=sum5 + rfp*pr_chem(nl,nm)+rfm*pr_chem(nl+1,nm)
+         sum6=sum6 + rfp*ls_chem(nl,nm)+rfm*ls_chem(nl+1,nm)
+         sum7=sum7 + rfp*rcdn(nl,nm)+rfm*rcdn(nl+1,nm)
+         sum8=sum8 + rfp*div_flx(nl+1,nm)+rfm*div_flx(nl,nm)
+!         sum9=sum9 + rfp*(pr(nl+1,nm)-ls(nl+1,nm)-div_flx(nl+1,nm))+rfm*(pr(nl,nm)-ls(nl,nm)-div_flx(nl,nm))
+         sum9=sum9 + rfp*(pr(nl+1,nm)-ls(nl+1,nm))+rfm*(pr(nl,nm)-ls(nl,nm))
       END DO
       cprd_ext(nm) = sum0
       cprd_ph(nm) = sum1
@@ -408,10 +450,16 @@ SUBROUTINE COMPOUT
       cprd_chem(nm) = sum5
       clss_chem(nm) = -sum6
       cprd_net(nm) = sum0 + sum1 + sum3 + sum5
-      clss_net(nm) = -sum2 - sum4 - sum6 
+      clss_net(nm) = -sum2 - sum4 - sum6
       crc(nm) = -sum7
       ctp(nm) = -flx(nlev,nm)*rz(nlev)**2/RPLANET**2
-      cbt(nm) = flx(1,nm)
+      cdv(nm) = sum8
+      chk(nm) =sum9
+      IF(ibnd(nm,1) == 2) THEN
+         cbt(nm) = bval(nm,1)*den(1,nm)
+      ELSE
+         cbt(nm) = flx(1,nm)*(RPLANET/(half*(rz(1)+rz(2))))**2
+      END IF
       cbl(nm) = cprd_net(nm)+clss_net(nm)+crc(nm)+ctp(nm)+cbt(nm)
       csf(nm) = -crc(nm) - cbt(nm)
       tbal(nm) = cdens(nm)/abs(cbl(nm))
@@ -423,7 +471,7 @@ SUBROUTINE COMPOUT
 
    CALL INDEXX(abs(cbl),indx)
    OPEN(unit=64,file='../runs/'//TRIM(runID)//'/output/balance.out',status='unknown')
-      WRITE(64,"('    Name  Status  Density    Ext/GCR     Bot Flux    Top Flux      Prod       Loss       Condense     Balance  Time Const')")   
+      WRITE(64,"('    Name  Status  Density    Ext/GCR     Bot Flux    Top Flux      Prod       Loss       Condense     Balance  Time Const')")
       DO nx = nsp, 1, -1
          nm = indx(nx)
          IF(istat(nm) > 0) THEN
@@ -439,7 +487,6 @@ SUBROUTINE COMPOUT
          END IF
       END DO
    CLOSE(unit=64)
-
 
    !
    !  .. Sort
@@ -469,7 +516,7 @@ SUBROUTINE COMPOUT
    WHERE (ls < 1.E-99_RP) ls = zero
    WHERE (rcdn < 1.E-99_RP) rcdn = zero
 
-   DO nx = 1, SIZE(locp)           
+   DO nx = 1, SIZE(locp)
       nm = locp(nx)
       OPEN(unit=64,file='../runs/'//TRIM(runID)//'/output/molecules/'//name(nm)(1:LEN_TRIM(name(nm)))//'.OUT',status='unknown')
          WRITE(64,"(ES11.3,' ;Column External Production  ')") cprd_ext(nm)
@@ -495,22 +542,24 @@ SUBROUTINE COMPOUT
      CLOSE(unit=64)
   END DO
 
-   DO nx = 1, SIZE(ldcp)           
+   DO nx = 1, SIZE(ldcp)
       nm = ldcp(nx)
       OPEN(unit=65,file='../runs/'//TRIM(runID)//'/output/molecules/'//name(nm)(1:LEN_TRIM(name(nm)))//'.OUT',status='unknown')
-         WRITE(65,"(ES11.3,' ;Column External Production  ')") cprd_ext(nm)
-         WRITE(65,"(ES11.3,' ;Column Photon Production    ')") cprd_ph(nm)
-         WRITE(65,"(ES11.3,' ;Column Photon Loss          ')") clss_ph(nm)
-         WRITE(65,"(ES11.3,' ;Column Electron Production  ')") cprd_pe(nm)
-         WRITE(65,"(ES11.3,' ;Column Electron Loss        ')") clss_pe(nm)
-         WRITE(65,"(ES11.3,' ;Column chem Production      ')") cprd_chem(nm)
-         WRITE(65,"(ES11.3,' ;Column chem Loss            ')") clss_chem(nm)
-         WRITE(65,"(ES11.3,' ;Column Net Production       ')") cprd_net(nm)
-         WRITE(65,"(ES11.3,' ;Column Net Loss             ')") clss_net(nm)
-         WRITE(65,"(ES11.3,' ;Column Net Condensation     ')") crc(nm)
-         WRITE(65,"(ES11.3,' ;Escape Flux                 ')") ctp(nm)
-         WRITE(65,"(ES11.3,' ;Surface Flux                ')") cbt(nm)
-         WRITE(65,"(ES11.3,' ;Net Balance                 ')") cbl(nm)
+         WRITE(65,"(ES15.7,' ;Column External Production  ')") cprd_ext(nm)
+         WRITE(65,"(ES15.7,' ;Column Photon Production    ')") cprd_ph(nm)
+         WRITE(65,"(ES15.7,' ;Column Photon Loss          ')") clss_ph(nm)
+         WRITE(65,"(ES15.7,' ;Column Electron Production  ')") cprd_pe(nm)
+         WRITE(65,"(ES15.7,' ;Column Electron Loss        ')") clss_pe(nm)
+         WRITE(65,"(ES15.7,' ;Column chem Production      ')") cprd_chem(nm)
+         WRITE(65,"(ES15.7,' ;Column chem Loss            ')") clss_chem(nm)
+         WRITE(65,"(ES15.7,' ;Column Net Production       ')") cprd_net(nm)
+         WRITE(65,"(ES15.7,' ;Column Net Loss             ')") clss_net(nm)
+         WRITE(65,"(ES15.7,' ;Column Net Condensation     ')") crc(nm)
+         WRITE(65,"(ES15.7,' ;Escape Flux                 ')") ctp(nm)
+         WRITE(65,"(ES15.7,' ;Surface Flux                ')") cbt(nm)
+         WRITE(65,"(ES15.7,' ;Net Balance                 ')") cbl(nm)
+!         WRITE(65,"(ES15.7,' ;Integral of Divergence      ')") cdv(nm)
+!         WRITE(65,"(ES15.7,' ;Check                       ')") chk(nm)
          WRITE(65,932)
          DO nl = 1, nlev
             WRITE(65,933) cm_to_km*z(nl), den(nl,nm), den(nl,nm)/den(nl,0), flx(nl,nm),             &
@@ -636,8 +685,6 @@ SUBROUTINE COMPOUT
   END DO
 
   !
-
-  !
   !  .. Column-integrated rates for O
   !
 
@@ -661,26 +708,26 @@ SUBROUTINE COMPOUT
   cprd_chem_oxy = sum5
   clss_chem_oxy = -sum6
   cprd_net_oxy = sum0 + sum1 + sum3 + sum5
-  clss_net_oxy = -sum2 - sum4 - sum6 
+  clss_net_oxy = -sum2 - sum4 - sum6
   crc_oxy = -sum7
   ctp_oxy = -flx_oxy(nlev)*rz(nlev)**2/RPLANET**2
   cbt_oxy = flx_oxy(1)
   cbl_oxy = cprd_net_oxy+clss_net_oxy+crc_oxy+ctp_oxy+cbt_oxy
-  
+
   OPEN(unit=65,file='../runs/'//TRIM(runID)//'/output/molecules/O_ATOMS.OUT',status='unknown')
-     WRITE(65,"(ES11.3,' ;Column External Production  ')") cprd_ext_oxy
-     WRITE(65,"(ES11.3,' ;Column Photon Production    ')") cprd_ph_oxy
-     WRITE(65,"(ES11.3,' ;Column Photon Loss          ')") clss_ph_oxy
-     WRITE(65,"(ES11.3,' ;Column Electron Production  ')") cprd_pe_oxy
-     WRITE(65,"(ES11.3,' ;Column Electron Loss        ')") clss_pe_oxy
-     WRITE(65,"(ES11.3,' ;Column chem Production      ')") cprd_chem_oxy
-     WRITE(65,"(ES11.3,' ;Column chem Loss            ')") clss_chem_oxy
-     WRITE(65,"(ES11.3,' ;Column Net Production       ')") cprd_net_oxy
-     WRITE(65,"(ES11.3,' ;Column Net Loss             ')") clss_net_oxy
-     WRITE(65,"(ES11.3,' ;Column Net Condensation     ')") crc_oxy
-     WRITE(65,"(ES11.3,' ;Escape Flux                 ')") ctp_oxy
-     WRITE(65,"(ES11.3,' ;Surface Flux                ')") cbt_oxy
-     WRITE(65,"(ES11.3,' ;Net Balance                 ')") cbl_oxy
+     WRITE(65,"(ES15.7,' ;Column External Production  ')") cprd_ext_oxy
+     WRITE(65,"(ES15.7,' ;Column Photon Production    ')") cprd_ph_oxy
+     WRITE(65,"(ES15.7,' ;Column Photon Loss          ')") clss_ph_oxy
+     WRITE(65,"(ES15.7,' ;Column Electron Production  ')") cprd_pe_oxy
+     WRITE(65,"(ES15.7,' ;Column Electron Loss        ')") clss_pe_oxy
+     WRITE(65,"(ES15.7,' ;Column chem Production      ')") cprd_chem_oxy
+     WRITE(65,"(ES15.7,' ;Column chem Loss            ')") clss_chem_oxy
+     WRITE(65,"(ES15.7,' ;Column Net Production       ')") cprd_net_oxy
+     WRITE(65,"(ES15.7,' ;Column Net Loss             ')") clss_net_oxy
+     WRITE(65,"(ES15.7,' ;Column Net Condensation     ')") crc_oxy
+     WRITE(65,"(ES15.7,' ;Escape Flux                 ')") ctp_oxy
+     WRITE(65,"(ES15.7,' ;Surface Flux                ')") cbt_oxy
+     WRITE(65,"(ES15.7,' ;Net Balance                 ')") cbl_oxy
      WRITE(65,962)
      DO nl = 1, nlev
         WRITE(65,933) cm_to_km*z(nl), den_oxy(nl), mol_oxy(nl), flx_oxy(nl),                     &
@@ -691,169 +738,286 @@ SUBROUTINE COMPOUT
   CLOSE(unit=65)
 
   !
-  !  Hydrogen
+  !  Odd Hydrogen
   !
 
   DO nl = 1, nlev
-     sm = zero
+     sm1 = zero; sm2 = zero
      DO nm = 1, nsp-1
-        sm = sm + nhyd(nm)*den(nl,nm)
+        IF(nhyd(nm) == 1) THEN
+           sm1 = sm1 + nhyd(nm)*den(nl,nm)
+        ELSE IF(nhyd(nm) == 2) THEN
+           sm2 = sm2 + nhyd(nm)*den(nl,nm)
+        END IF
      END DO
-     den_hyd(nl) = sm
+     den_ohyd(nl) = sm1
+     den_ehyd(nl) = sm2
   END DO
 
   DO nl = 1, nlev
-     mol_hyd(nl) = den_hyd(nl)/den(nl,0)
+     mol_ohyd(nl) = den_ohyd(nl)/den(nl,0)
+     mol_ehyd(nl) = den_ehyd(nl)/den(nl,0)
   END DO
 
   DO nl = 1, nlev
-     sm = zero
+     sm1 = zero; sm2 = zero
      DO nm = 1, nsp-1
-        sm = sm + nhyd(nm)*flx(nl,nm)
+        IF (nhyd(nm) == 1) THEN
+           sm1 = sm1 + nhyd(nm)*flx(nl,nm)
+        ELSE IF(nhyd(nm) == 2) THEN
+           sm2 = sm2 + nhyd(nm)*flx(nl,nm)
+        END IF
      END DO
-     flx_hyd(nl) = sm
+     flx_ohyd(nl) = sm1
+     flx_ehyd(nl) = sm2
   END DO
 
   DO nl = 1, nlev
-     sm = zero
+     sm1 = zero; sm2 = zero
      DO nm = 1, nsp-1
-        sm = sm + nhyd(nm)*prext(nl,nm)
+        IF (nhyd(nm) == 1) THEN
+           sm1 = sm1 + nhyd(nm)*prext(nl,nm)
+        ELSE IF(nhyd(nm) == 2) THEN
+           sm2 = sm2 + nhyd(nm)*prext(nl,nm)
+        END IF
      END DO
-     prext_hyd(nl) = sm
+     prext_ehyd(nl) = sm1
+     prext_ohyd(nl) = sm2
   END DO
 
   DO nl = 1, nlev
-     sm = zero
+     sm1 = zero; sm2 = zero
      DO nm = 1, nsp-1
-        sm = sm + nhyd(nm)*pr_ph(nl,nm)
+        IF (nhyd(nm) == 1) THEN
+           sm1 = sm1 + nhyd(nm)*pr_ph(nl,nm)
+        ELSE IF(nhyd(nm) == 2) THEN
+           sm2 = sm2 + nhyd(nm)*pr_ph(nl,nm)
+        END IF
      END DO
-     pr_ph_hyd(nl) = sm
+     pr_ph_ohyd(nl) = sm1
+     pr_ph_ehyd(nl) = sm2
   END DO
 
   DO nl = 1, nlev
-     sm = zero
+     sm1 = zero; sm2 = zero
      DO nm = 1, nsp-1
-        sm = sm + nhyd(nm)*ls_ph(nl,nm)
+        IF (nhyd(nm) == 1) THEN
+           sm1 = sm1 + nhyd(nm)*ls_ph(nl,nm)
+        ELSE IF(nhyd(nm) == 2) THEN
+           sm2 = sm2 + nhyd(nm)*ls_ph(nl,nm)
+        END IF
      END DO
-     ls_ph_hyd(nl) = sm
+     ls_ph_ohyd(nl) = sm1
+     ls_ph_ehyd(nl) = sm2
   END DO
 
   DO nl = 1, nlev
-     sm = zero
+     sm1 = zero; sm2 = zero
      DO nm = 1, nsp-1
-        sm = sm + nhyd(nm)*pr_pe(nl,nm)
+        IF (nhyd(nm) == 1) THEN
+           sm1 = sm1 + nhyd(nm)*pr_pe(nl,nm)
+        ELSE IF(nhyd(nm) == 2) THEN
+           sm2 = sm2 + nhyd(nm)*pr_pe(nl,nm)
+        END IF
      END DO
-     pr_pe_hyd(nl) = sm
+     pr_pe_ohyd(nl) = sm1
+     pr_pe_ehyd(nl) = sm2
   END DO
 
   DO nl = 1, nlev
-     sm = zero
+     sm1 = zero; sm2 = zero
      DO nm = 1, nsp-1
-        sm = sm + nhyd(nm)*ls_pe(nl,nm)
+        IF (nhyd(nm) == 1) THEN
+           sm1 = sm1 + nhyd(nm)*ls_pe(nl,nm)
+        ELSE IF(nhyd(nm) == 2) THEN
+           sm2 = sm2 + nhyd(nm)*ls_pe(nl,nm)
+        END IF
      END DO
-     ls_pe_hyd(nl) = sm
+     ls_pe_ohyd(nl) = sm1
+     ls_pe_ehyd(nl) = sm2
   END DO
 
   DO nl = 1, nlev
-     sm = zero
+     sm1 = zero; sm2 = zero
      DO nm = 1, nsp-1
-        sm = sm + nhyd(nm)*pr_chem(nl,nm)
+        IF (nhyd(nm) == 1) THEN
+           sm1 = sm1 + nhyd(nm)*pr_chem(nl,nm)
+        ELSE IF(nhyd(nm) == 2) THEN
+           sm2 = sm2 + nhyd(nm)*pr_chem(nl,nm)
+        END IF
      END DO
-     pr_chem_hyd(nl) = sm
+     pr_chem_ohyd(nl) = sm1
+     pr_chem_ehyd(nl) = sm2
   END DO
 
   DO nl = 1, nlev
-     sm = zero
+     sm1 = zero; sm2 = zero
      DO nm = 1, nsp-1
-        sm = sm + nhyd(nm)*ls_chem(nl,nm)
+        IF (nhyd(nm) == 1) THEN
+           sm1 = sm1 + nhyd(nm)*ls_chem(nl,nm)
+        ELSE IF(nhyd(nm) == 2) THEN
+           sm2 = sm2 + nhyd(nm)*ls_chem(nl,nm)
+        END IF
      END DO
-     ls_chem_hyd(nl) = sm
+     ls_chem_ohyd(nl) = sm1
+     ls_chem_ehyd(nl) = sm2
   END DO
 
   DO nl = 1, nlev
-     sm = zero
+     sm1 = zero; sm2 = zero
      DO nm = 1, nsp-1
-        sm = sm + nhyd(nm)*pr(nl,nm)
+        IF (nhyd(nm) == 1) THEN
+           sm1 = sm1 + nhyd(nm)*pr(nl,nm)
+        ELSE IF(nhyd(nm) == 2) THEN
+           sm2 = sm2 + nhyd(nm)*pr(nl,nm)
+        END IF
      END DO
-     pr_hyd(nl) = sm
+     pr_ohyd(nl) = sm1
+     pr_ehyd(nl) = sm2
   END DO
 
   DO nl = 1, nlev
-     sm = zero
+     sm1 = zero; sm2 = zero
      DO nm = 1, nsp-1
-        sm = sm + nhyd(nm)*ls(nl,nm)
+        IF (nhyd(nm) == 1) THEN
+           sm1 = sm1 + nhyd(nm)*ls(nl,nm)
+        ELSE IF(nhyd(nm) == 2) THEN
+           sm2 = sm2 + nhyd(nm)*ls(nl,nm)
+        END IF
      END DO
-     ls_hyd(nl) = sm
+     ls_ohyd(nl) = sm1
+     ls_ehyd(nl) = sm2
   END DO
 
   DO nl = 1, nlev
-     sm = zero
+     sm1 = zero; sm2 = zero
      DO nm = 1, nsp-1
-        sm = sm + nhyd(nm)*rcdn(nl,nm)
+        IF (nhyd(nm) == 1) THEN
+           sm1 = sm1 + nhyd(nm)*rcdn(nl,nm)
+        ELSE IF(nhyd(nm) == 2) THEN
+           sm2 = sm2 + nhyd(nm)*rcdn(nl,nm)
+        END IF
      END DO
-     rcdn_hyd(nl) = sm
+     rcdn_ohyd(nl) = sm1
+     rcdn_ehyd(nl) = sm2
   END DO
 
   DO nl = 1, nlev
-     sm = zero
+     sm1 = zero; sm2 = zero
      DO nm = 1, nsp-1
-        sm = sm + nhyd(nm)*div_flx(nl,nm)
+        IF (nhyd(nm) == 1) THEN
+           sm1 = sm1 + nhyd(nm)*div_flx(nl,nm)
+        ELSE IF(nhyd(nm) == 2) THEN
+           sm2 = sm2 + nhyd(nm)*div_flx(nl,nm)
+        END IF
      END DO
-     div_flx_hyd(nl) = sm
+     div_flx_ohyd(nl) = sm1
+     div_flx_ehyd(nl) = sm2
   END DO
 
   !
-
-  !
-  !  .. Column-integrated rates for O
+  !  .. Column-integrated rates for odd H
   !
 
   sum0=zero; sum1=zero; sum2=zero; sum3=zero; sum4=zero; sum5=zero; sum6=zero; sum7=zero
   DO nl = 1, nlev-1
      rfac=((half*(rz(nl+1)+rz(nl)))**2/RPLANET**2)*half*(rz(nl+1)-rz(nl))
-     sum0=sum0 + rfac*(prext_hyd(nl)+prext_hyd(nl+1))
-     sum1=sum1 + rfac*(pr_ph_hyd(nl)+pr_ph_hyd(nl+1))
-     sum2=sum2 + rfac*(ls_ph_hyd(nl)+ls_ph_hyd(nl+1))
-     sum3=sum3 + rfac*(pr_pe_hyd(nl)+pr_pe_hyd(nl+1))
-     sum4=sum4 + rfac*(ls_pe_hyd(nl)+ls_pe_hyd(nl+1))
-     sum5=sum5 + rfac*(pr_chem_hyd(nl)+pr_chem_hyd(nl+1))
-     sum6=sum6 + rfac*(ls_chem_hyd(nl)+ls_chem_hyd(nl+1))
-     sum7=sum7 + rfac*(rcdn_hyd(nl)+rcdn_hyd(nl+1))
+     sum0=sum0 + rfac*(prext_ohyd(nl)+prext_ohyd(nl+1))
+     sum1=sum1 + rfac*(pr_ph_ohyd(nl)+pr_ph_ohyd(nl+1))
+     sum2=sum2 + rfac*(ls_ph_ohyd(nl)+ls_ph_ohyd(nl+1))
+     sum3=sum3 + rfac*(pr_pe_ohyd(nl)+pr_pe_ohyd(nl+1))
+     sum4=sum4 + rfac*(ls_pe_ohyd(nl)+ls_pe_ohyd(nl+1))
+     sum5=sum5 + rfac*(pr_chem_ohyd(nl)+pr_chem_ohyd(nl+1))
+     sum6=sum6 + rfac*(ls_chem_ohyd(nl)+ls_chem_ohyd(nl+1))
+     sum7=sum7 + rfac*(rcdn_ohyd(nl)+rcdn_ohyd(nl+1))
   END DO
-  cprd_ext_hyd = sum0
-  cprd_ph_hyd = sum1
-  clss_ph_hyd = -sum2
-  cprd_pe_hyd = sum3
-  clss_pe_hyd = -sum4
-  cprd_chem_hyd = sum5
-  clss_chem_hyd = -sum6
-  cprd_net_hyd = sum0 + sum1 + sum3 + sum5
-  clss_net_hyd = -sum2 - sum4 - sum6 
-  crc_hyd = -sum7
-  ctp_hyd = -flx_hyd(nlev)*rz(nlev)**2/RPLANET**2
-  cbt_hyd = flx_hyd(1)
-  cbl_hyd = cprd_net_hyd+clss_net_hyd+crc_hyd+ctp_hyd+cbt_hyd
-  
-  OPEN(unit=65,file='../runs/'//TRIM(runID)//'/output/molecules/H_ATOMS.OUT',status='unknown')
-     WRITE(65,"(ES11.3,' ;Column External Production  ')") cprd_ext_hyd
-     WRITE(65,"(ES11.3,' ;Column Photon Production    ')") cprd_ph_hyd
-     WRITE(65,"(ES11.3,' ;Column Photon Loss          ')") clss_ph_hyd
-     WRITE(65,"(ES11.3,' ;Column Electron Production  ')") cprd_pe_hyd
-     WRITE(65,"(ES11.3,' ;Column Electron Loss        ')") clss_pe_hyd
-     WRITE(65,"(ES11.3,' ;Column chem Production      ')") cprd_chem_hyd
-     WRITE(65,"(ES11.3,' ;Column chem Loss            ')") clss_chem_hyd
-     WRITE(65,"(ES11.3,' ;Column Net Production       ')") cprd_net_hyd
-     WRITE(65,"(ES11.3,' ;Column Net Loss             ')") clss_net_hyd
-     WRITE(65,"(ES11.3,' ;Column Net Condensation     ')") crc_hyd
-     WRITE(65,"(ES11.3,' ;Escape Flux                 ')") ctp_hyd
-     WRITE(65,"(ES11.3,' ;Surface Flux                ')") cbt_hyd
-     WRITE(65,"(ES11.3,' ;Net Balance                 ')") cbl_hyd
+  cprd_ext_ohyd = sum0
+  cprd_ph_ohyd = sum1
+  clss_ph_ohyd = -sum2
+  cprd_pe_ohyd = sum3
+  clss_pe_ohyd = -sum4
+  cprd_chem_ohyd = sum5
+  clss_chem_ohyd = -sum6
+  cprd_net_ohyd = sum0 + sum1 + sum3 + sum5
+  clss_net_ohyd = -sum2 - sum4 - sum6
+  crc_ohyd = -sum7
+  ctp_ohyd = -flx_ohyd(nlev)*rz(nlev)**2/RPLANET**2
+  cbt_ohyd = flx_ohyd(1)
+  cbl_ohyd = cprd_net_ohyd+clss_net_ohyd+crc_ohyd+ctp_ohyd+cbt_ohyd
+
+  OPEN(unit=65,file='../runs/'//TRIM(runID)//'/output/molecules/ODDH.OUT',status='unknown')
+     WRITE(65,"(ES15.7,' ;Column External Production  ')") cprd_ext_ohyd
+     WRITE(65,"(ES15.7,' ;Column Photon Production    ')") cprd_ph_ohyd
+     WRITE(65,"(ES15.7,' ;Column Photon Loss          ')") clss_ph_ohyd
+     WRITE(65,"(ES15.7,' ;Column Electron Production  ')") cprd_pe_ohyd
+     WRITE(65,"(ES15.7,' ;Column Electron Loss        ')") clss_pe_ohyd
+     WRITE(65,"(ES15.7,' ;Column chem Production      ')") cprd_chem_ohyd
+     WRITE(65,"(ES15.7,' ;Column chem Loss            ')") clss_chem_ohyd
+     WRITE(65,"(ES15.7,' ;Column Net Production       ')") cprd_net_ohyd
+     WRITE(65,"(ES15.7,' ;Column Net Loss             ')") clss_net_ohyd
+     WRITE(65,"(ES15.7,' ;Column Net Condensation     ')") crc_ohyd
+     WRITE(65,"(ES15.7,' ;Escape Flux                 ')") ctp_ohyd
+     WRITE(65,"(ES15.7,' ;Surface Flux                ')") cbt_ohyd
+     WRITE(65,"(ES15.7,' ;Net Balance                 ')") cbl_ohyd
      WRITE(65,962)
      DO nl = 1, nlev
-        WRITE(65,933) cm_to_km*z(nl), den_hyd(nl), mol_hyd(nl), flx_hyd(nl),                     &
-             prext_hyd(nl), pr_ph_hyd(nl), ls_ph_hyd(nl), pr_pe_hyd(nl), ls_pe_hyd(nl),          &
-             pr_chem_hyd(nl), ls_chem_hyd(nl), pr_hyd(nl), ls_hyd(nl), rcdn_hyd(nl),             &
-             pr_hyd(nl)-ls_hyd(nl), div_flx_hyd(nl), pr_hyd(nl)-ls_hyd(nl)-rcdn_hyd(nl)-div_flx_hyd(nl)
+        WRITE(65,933) cm_to_km*z(nl), den_ohyd(nl), mol_ohyd(nl), flx_ohyd(nl),                     &
+             prext_ohyd(nl), pr_ph_ohyd(nl), ls_ph_ohyd(nl), pr_pe_ohyd(nl), ls_pe_ohyd(nl),          &
+             pr_chem_ohyd(nl), ls_chem_ohyd(nl), pr_ohyd(nl), ls_ohyd(nl), rcdn_ohyd(nl),             &
+             pr_ohyd(nl)-ls_ohyd(nl), div_flx_ohyd(nl), pr_ohyd(nl)-ls_ohyd(nl)-rcdn_ohyd(nl)-div_flx_ohyd(nl)
+     END DO
+  CLOSE(unit=65)
+
+  !
+  !  .. Column-integrated rates for even H
+  !
+
+  sum0=zero; sum1=zero; sum2=zero; sum3=zero; sum4=zero; sum5=zero; sum6=zero; sum7=zero
+  DO nl = 1, nlev-1
+     rfac=((half*(rz(nl+1)+rz(nl)))**2/RPLANET**2)*half*(rz(nl+1)-rz(nl))
+     sum0=sum0 + rfac*(prext_ehyd(nl)+prext_ehyd(nl+1))
+     sum1=sum1 + rfac*(pr_ph_ehyd(nl)+pr_ph_ehyd(nl+1))
+     sum2=sum2 + rfac*(ls_ph_ehyd(nl)+ls_ph_ehyd(nl+1))
+     sum3=sum3 + rfac*(pr_pe_ehyd(nl)+pr_pe_ehyd(nl+1))
+     sum4=sum4 + rfac*(ls_pe_ehyd(nl)+ls_pe_ehyd(nl+1))
+     sum5=sum5 + rfac*(pr_chem_ehyd(nl)+pr_chem_ehyd(nl+1))
+     sum6=sum6 + rfac*(ls_chem_ehyd(nl)+ls_chem_ehyd(nl+1))
+     sum7=sum7 + rfac*(rcdn_ehyd(nl)+rcdn_ehyd(nl+1))
+  END DO
+  cprd_ext_ehyd = sum0
+  cprd_ph_ehyd = sum1
+  clss_ph_ehyd = -sum2
+  cprd_pe_ehyd = sum3
+  clss_pe_ehyd = -sum4
+  cprd_chem_ehyd = sum5
+  clss_chem_ehyd = -sum6
+  cprd_net_ehyd = sum0 + sum1 + sum3 + sum5
+  clss_net_ehyd = -sum2 - sum4 - sum6
+  crc_ehyd = -sum7
+  ctp_ehyd = -flx_ehyd(nlev)*rz(nlev)**2/RPLANET**2
+  cbt_ehyd = flx_ehyd(1)
+  cbl_ehyd = cprd_net_ehyd+clss_net_ehyd+crc_ehyd+ctp_ehyd+cbt_ehyd
+
+  OPEN(unit=65,file='../runs/'//TRIM(runID)//'/output/molecules/EVENH.OUT',status='unknown')
+     WRITE(65,"(ES15.7,' ;Column External Production  ')") cprd_ext_ehyd
+     WRITE(65,"(ES15.7,' ;Column Photon Production    ')") cprd_ph_ehyd
+     WRITE(65,"(ES15.7,' ;Column Photon Loss          ')") clss_ph_ehyd
+     WRITE(65,"(ES15.7,' ;Column Electron Production  ')") cprd_pe_ehyd
+     WRITE(65,"(ES15.7,' ;Column Electron Loss        ')") clss_pe_ehyd
+     WRITE(65,"(ES15.7,' ;Column chem Production      ')") cprd_chem_ehyd
+     WRITE(65,"(ES15.7,' ;Column chem Loss            ')") clss_chem_ehyd
+     WRITE(65,"(ES15.7,' ;Column Net Production       ')") cprd_net_ehyd
+     WRITE(65,"(ES15.7,' ;Column Net Loss             ')") clss_net_ehyd
+     WRITE(65,"(ES15.7,' ;Column Net Condensation     ')") crc_ehyd
+     WRITE(65,"(ES15.7,' ;Escape Flux                 ')") ctp_ehyd
+     WRITE(65,"(ES15.7,' ;Surface Flux                ')") cbt_ehyd
+     WRITE(65,"(ES15.7,' ;Net Balance                 ')") cbl_ehyd
+     WRITE(65,962)
+     DO nl = 1, nlev
+        WRITE(65,933) cm_to_km*z(nl), den_ehyd(nl), mol_ehyd(nl), flx_ehyd(nl),                     &
+             prext_ehyd(nl), pr_ph_ehyd(nl), ls_ph_ehyd(nl), pr_pe_ehyd(nl), ls_pe_ehyd(nl),          &
+             pr_chem_ehyd(nl), ls_chem_ehyd(nl), pr_ehyd(nl), ls_ehyd(nl), rcdn_ehyd(nl),             &
+             pr_ehyd(nl)-ls_ehyd(nl), div_flx_ehyd(nl), pr_ehyd(nl)-ls_ehyd(nl)-rcdn_ehyd(nl)-div_flx_ehyd(nl)
      END DO
   CLOSE(unit=65)
 
@@ -929,7 +1093,6 @@ SUBROUTINE COMPOUT
 !     END DO
 !  CLOSE(unit=82)
 
-
 !     OPEN(unit=40,file='eph.out',status='unknown')
 !        DO npe = 1, nert
 !           WRITE(40,"(I6,':  e + ',A12,' --> ',3(2X,A12))") npe,name(iele(1,npe)),(name(iele(np,npe)),np=2,4)
@@ -938,7 +1101,6 @@ SUBROUTINE COMPOUT
 !     CLOSE(unit=40)
 
 
-           
   DEALLOCATE(pcolrate,ecolrate,colrate,indxr,indxp,cprd_ext,cprd_ph,clss_ph,cprd_pe,clss_pe,        &
        cprd_chem,clss_chem,cprd_net,clss_net,crc,ctp,cbt,cbl,csf,wcrs,solar_flux,COphotorate)
   RETURN
