@@ -19,16 +19,16 @@ SUBROUTINE SOLDEP1
   REAL(RP) :: sin_sza, sa, ca, xp, yv, htop, sm, fac, Eion, Ehv, Eel
   INTEGER :: nm, nz, nl, nw, na, nph, nb, ne
   CHARACTER(len=1) :: iret
-  REAL(RP), ALLOCATABLE, DIMENSION(:) :: Selsum
+!  REAL(RP), ALLOCATABLE, DIMENSION(:) :: Selsum
 
   !
   !  .. Initialize
   !
-  
+
   ALLOCATE(clm(nlev,0:nsp))
 
-  ALLOCATE(Selsum(nlev))
- 
+!  ALLOCATE(Selsum(nlev))
+
   IF(lcrsA) THEN
   DO na = 1, nabsA
      DO nb = 1, nbrnchA(na)
@@ -58,13 +58,13 @@ SUBROUTINE SOLDEP1
      END DO
   END DO
   END IF
-  
+
   !
   !  ..  Calculate Column Densities to Sun
   !
 
   sin_sza = SQRT(one-cos_sza*cos_sza)
-  
+
   IF (illum == 1) THEN             !  .. dayside
      DO nm = 1, nsp-1
         DO nz = 1, nlev
@@ -82,7 +82,7 @@ SUBROUTINE SOLDEP1
               htop = ht(nlev,nm)/cos_sza
            END IF
            sm = htop * den(nlev,nm)
-           DO nl = nlev-1, nz, -1  
+           DO nl = nlev-1, nz, -1
               sm = sm + half*(den(nl,nm)+den(nl+1,nm)) * ds(nl,nz)
            END DO
            clm(nz,nm) = sm
@@ -127,7 +127,7 @@ SUBROUTINE SOLDEP1
   !
   !  .. Calculate gas absorption optical depth at each level and wavelength
   !
-  
+
   IF(lcrsA) THEN
   DO nz = 1, nlev
      DO nw = 1, ncrsA
@@ -140,7 +140,7 @@ SUBROUTINE SOLDEP1
      END DO
   END DO
   END IF
-  
+
   IF(lcrsB) THEN
   DO nz = 1, nlev
      DO nw = 1, ncrsB
@@ -153,7 +153,7 @@ SUBROUTINE SOLDEP1
      END DO
   END DO
   END IF
-  
+
   IF(lcrsC) THEN
   DO nz = 1, nlev
      DO nw = 1, ncrsC
@@ -166,10 +166,10 @@ SUBROUTINE SOLDEP1
      END DO
   END DO
   END IF
-  
+
   !
   !  .. Calculate absorption rate for each molecule at each level
-  !     for each wavelength. 
+  !     for each wavelength.
   !
 
   nph = 0
@@ -194,9 +194,9 @@ SUBROUTINE SOLDEP1
      END DO
   END DO
   END IF
-  
+
   IF(lcrsB) THEN
-  DO na = 1, nabsB                                 
+  DO na = 1, nabsB
      DO nb = 1, nbrnchB(na)
         nph = nph + 1
            DO nz = 1, nlev
@@ -204,20 +204,20 @@ SUBROUTINE SOLDEP1
               DO nw = 1, ncrsB
                  sm = sm + prtB(nw,nb,na)*trnB(nw,nz)
               END DO
-              rph(nph,nz) = diurnal_average*sm     
+              rph(nph,nz) = diurnal_average*sm
            END DO
      END DO
   END DO
   ELSE
-  DO na = 1, nabsB                                 
+  DO na = 1, nabsB
      DO nb = 1, nbrnchB(na)
         nph = nph + 1
      END DO
   END DO
   END IF
 
-  IF(lcrsC) THEN  
-  DO na = 1, nabsC                                 
+  IF(lcrsC) THEN
+  DO na = 1, nabsC
      DO nb = 1, nbrnchC(na)
         nph = nph + 1
            DO nz = 1, nlev
@@ -225,12 +225,12 @@ SUBROUTINE SOLDEP1
               DO nw = 1, ncrsC
                  sm = sm + prtC(nw,nb,na)*trnC(nw,nz)
               END DO
-              rph(nph,nz) = diurnal_average*sm     
+              rph(nph,nz) = diurnal_average*sm
            END DO
      END DO
   END DO
   ELSE
-  DO na = 1, nabsC                                 
+  DO na = 1, nabsC
      DO nb = 1, nbrnchC(na)
         nph = nph + 1
      END DO
@@ -238,7 +238,7 @@ SUBROUTINE SOLDEP1
   END IF
 
   IF (illum >= 0.) THEN                                      !  .. Optically thin photolysis
-  IF(lcrsJ) THEN     
+  IF(lcrsJ) THEN
      DO na = 1, nabsJ
         DO nb = 1, nbrnchJ(na)
            nph = nph + 1
@@ -246,7 +246,7 @@ SUBROUTINE SOLDEP1
         END DO
      END DO
   END IF
-  ELSE 
+  ELSE
      DO na = 1, nabsJ
         DO nb = 1, nbrnchJ(na)
            nph = nph + 1
@@ -262,7 +262,7 @@ SUBROUTINE SOLDEP1
   nph = 0
   IF(lcrsA) THEN
   DO na = 1, nabsA
-     nm = loabA(na)  
+     nm = loabA(na)
      DO nb = 1, nbrnchA(na)
         nph = nph + 1
         IF(charge_stateA(nb,na) > zero) THEN
@@ -271,7 +271,7 @@ SUBROUTINE SOLDEP1
            DO nw = 1, ncrsA
               Ehv = (1.24E4_RP/wcrsA(nw))         ! Solar photon energy eV  (why do this everytime?)
               Eel = (Ehv - Eion)/charge_stateA(nb,na)
-              IF (Eel > zero) THEN                     
+              IF (Eel > zero) THEN
                  ne = FIND_BIN(elctreV,elctDeV,Eel)
                  fac = (Eel/elctreV(ne)/elctDeV(ne))*prtA(nw,nb,na)*charge_stateA(nb,na) ! why divide by elctreV?
                 DO nz = nibot, nlev
@@ -286,16 +286,16 @@ SUBROUTINE SOLDEP1
 
   IF(lcrsB) THEN
   DO na = 1, nabsB
-     nm = loabB(na)  
+     nm = loabB(na)
      DO nb = 1, nbrnchB(na)
         nph = nph + 1
         IF(charge_stateB(nb,na) > zero) THEN
            esrc(nph,:,:) = zero
-           Eion = (1.24E4_RP/enrgIB(nb,na))                      
+           Eion = (1.24E4_RP/enrgIB(nb,na))
            DO nw = 1, ncrsB
-              Ehv = (1.24E4_RP/wcrsB(nw))         
-              Eel = (Ehv - Eion)/charge_stateB(nb,na)           
-              IF (Eel > zero) THEN                     
+              Ehv = (1.24E4_RP/wcrsB(nw))
+              Eel = (Ehv - Eion)/charge_stateB(nb,na)
+              IF (Eel > zero) THEN
                  ne = FIND_BIN(elctreV,elctDeV,Eel)
                  fac = (Eel/elctreV(ne)/elctDeV(ne))*charge_stateB(nb,na)*prtB(nw,nb,na)
                  DO nz = nibot, nlev
@@ -310,16 +310,16 @@ SUBROUTINE SOLDEP1
 
   IF(lcrsC) THEN
   DO na = 1, nabsC
-     nm = loabC(na)  
+     nm = loabC(na)
      DO nb = 1, nbrnchC(na)
         nph = nph + 1
         IF(charge_stateC(nb,na) > zero) THEN
            esrc(nph,1:nlev,1:nelb) = zero
-           Eion = (1.24E4_RP/enrgIC(nb,na))                      
+           Eion = (1.24E4_RP/enrgIC(nb,na))
            DO nw = 1, ncrsC
-              Ehv = (1.24E4_RP/wcrsC(nw))         
-              Eel = (Ehv - Eion)/charge_stateC(nb,na)           
-              IF (Eel > zero) THEN                     
+              Ehv = (1.24E4_RP/wcrsC(nw))
+              Eel = (Ehv - Eion)/charge_stateC(nb,na)
+              IF (Eel > zero) THEN
                  ne = FIND_BIN(elctreV,elctDeV,Eel)
                  fac = Eel/elctreV(ne)/elctDeV(ne)
 !                 DO nz = nibot, nlev
@@ -341,31 +341,16 @@ SUBROUTINE SOLDEP1
      END DO
   END DO
 
-  Selsum(:) = zero ! total electrons produced in altitude bin
-  DO nz = nibot, nlev
-     sm = zero
-     DO ne = 1, nelb
-        sm = sm + elctDeV(ne)*Sel(nz,ne)
-     END DO
-     Selsum(nz) = sm
-  END DO
-
-  !
-  !  .. Write output files  .. move this to compout
-  !
-
-  OPEN(unit=60,file='esrc.out',status='unknown')
-     DO nz = nibot, nlev
-        WRITE(60,"(' z = ',F11.3,' S = ',ES11.3)") 1.E-5_RP*z(nz),Selsum(nz)
-        WRITE(60,"(10ES11.3)") (Sel(nz,ne),ne=1,nelb)
-     END DO
-  CLOSE(unit=60)
-
-  !
-  !  .. All Done
-  !
+!  Selsum(:) = zero ! total electrons produced in altitude bin
+!  DO nz = nibot, nlev
+!     sm = zero
+!     DO ne = 1, nelb
+!        sm = sm + elctDeV(ne)*Sel(nz,ne)
+!     END DO
+!     Selsum(nz) = sm
+!  END DO
 
   DEALLOCATE(clm)
-  
+
   RETURN
 END SUBROUTINE SOLDEP1
