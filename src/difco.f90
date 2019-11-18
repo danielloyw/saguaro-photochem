@@ -6,20 +6,20 @@ SUBROUTINE DIFCO
 
   !  .. Declarations
 
-  REAL(RP), ALLOCATABLE, DIMENSION(:) :: ekp, grvp, tnp, dtndr, dtpdr, tpl, tip, tep, dtpldr
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: htp, dfp
+  REAL(RP), ALLOCATABLE, DIMENSION(:) :: grvp, tnp, dtndr, dtpdr, tpl, tip, tep, dtpldr ! half step quantities
+  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: htp
   REAL(RP) :: dN2, dCO2, mN2, mCO2, rmN2, nuN2, bN2, rmCO2, nuCO2, bCO2, sigma, mu
   INTEGER :: nl, nx, nm
   CHARACTER(len=1) :: iret
-  
+
   !  .. Allocate External Arrays
 
-  ALLOCATE(df(nlev,nsp),alpha(nlev,ndiff),beta(nlev,ndiff),a(nlev,ndiff),b(nlev,ndiff),c(nlev,ndiff),    &
+  ALLOCATE(df(0:nlev,nsp),alpha(0:nlev,ndiff),beta(0:nlev,ndiff),a(nlev,ndiff),b(nlev,ndiff),c(nlev,ndiff),    &
        alphax(nlev,ndiff),betax(nlev,ndiff))
 
   !  .. Allocate Local Arrays
 
-  ALLOCATE(ekp(nlev),grvp(nlev),tnp(nlev),htp(nlev,0:nsp),dfp(nlev,nsp),dtndr(nlev),dtpdr(nlev),    &
+  ALLOCATE(ekp(0:nlev),grvp(0:nlev),tnp(0:nlev),htp(0:nlev,0:nsp),dfp(0:nlev,nsp),dtndr(0:nlev),dtpdr(nlev),    &
        tpl(nlev),tip(nlev),tep(nlev),dtpldr(nlev))
 
   !
@@ -47,15 +47,34 @@ SUBROUTINE DIFCO
     END DO
   END DO
 
-  !  .. Values at n+1/2 
+! ghost cell
+  nl = 0
+  DO nm = 1, neutrmax
+     df(0,nm) = df(1,nm)*df(1,nm)/df(2,nm)
+  END DO
 
+  !!!! should mass(nl) be on mid-points?
+
+  !  .. Values at n+1/2
+
+  nl = 0
+  tnp(nl) = tn(nl+1)
+  grvp(nl) = grv(nl+1)
+  dtndr(nl) = zero
+  htp(nl,0) = rkb*tnp(nl)/grvp(nl)/mass(1)/amu ! scale height
+  ekp(nl) = ek(nl+1)
+  DO nx = 1, ndiff
+     nm = ldcp(nx)
+     htp(nl,nm) = rkb*tnp(nl)/grvp(nl)/mmw(nm)/amu
+     dfp(nl,nm) = half*(df(nl+1,nm)+df(nl,nm))
+  END DO
+  
   DO nl = 1, nlev-1
      tnp(nl) = half*(tn(nl+1)+tn(nl))
      grvp(nl) = half*(grv(nl+1)+grv(nl))
      dtndr(nl) = (tn(nl+1)-tn(nl))/drp(nl)
      htp(nl,0) = rkb*tnp(nl)/grvp(nl)/mass(nl)/amu
      ekp(nl) = half*(ek(nl+1)+ek(nl))
-
      DO nx = 1, ndiff
         nm = ldcp(nx)
         htp(nl,nm) = rkb*tnp(nl)/grvp(nl)/mmw(nm)/amu
@@ -70,98 +89,86 @@ SUBROUTINE DIFCO
      nm = ldcp(nx)
 
      ! .. Bottom Boundary
-   
+
      IF(ibnd(nm,1) == 1) THEN                           ! Chemical Eq.
         bval(nm,1) = zero
-!     ELSE IF (ibnd(nm,1) == 2) THEN                     ! Max Velocity
-!        IF(bval(nm,1) /= zero) THEN
-!           bval(nm,1) = -ek(1)/ht(1,0)
-!        ELSE
-!           bval(nm,1) = zero
-!        END IF
+     ELSE IF (ibnd(nm,1) == 2) THEN                      ! max downward velocity
+        bval(nm,1) = -ek(1)/(rkb*tn(1)/grv(1)/mmw(nm)/amu)
      END IF
-     
+
      ! .. Top Boundary
-     
+
      IF(ibnd(nm,2) == 1) THEN                           ! Chemical Eq.
-        bval(nm,2) =    zero
+        bval(nm,2) = zero
      ELSE IF (ibnd(nm,2) == 2) THEN                     ! Jean's Velocity
-           bval(nm,2) = bval(nm,2)*WJEANS (mmw(nm), rz(nlev), tn(nlev)) ! bval(nm,2) = 1: escaping at Jeans rate
+        bval(nm,2) = bval(nm,2)*WJEANS (mmw(nm), rz(nlev), tn(nlev)) ! bval(nm,2) = 1: escaping at Jeans rate
      END IF
-     
+
   END DO
 
   ! Set up diffusion
 
   DO nx = 1, ndiff
      nm = ldcp(nx)
-     DO nl =1, nlev-1
-        alpha(nl,nx) = (dfp(nl,nm) + ekp(nl))/drp(nl)
+     DO nl =0, nlev-1
+        alpha(nl,nx) = (dfp(nl,nm) + ekp(nl))/drp(nl) ! (D+K)*dN/dr
         beta(nl,nx) = half*(dfp(nl,nm)/htp(nl,nm) + ekp(nl)/htp(nl,0)            &
-             + (dfp(nl,nm)+ekp(nl))*dtndr(nl)/tnp(nl))
+             + (dfp(nl,nm)+ekp(nl))*dtndr(nl)/tnp(nl)) ! Di*N*(1/Hi+dT/Tdr)+K*N*(1/H+dT/Tdr)
      END DO
   END DO
-  
-  
+
   DO nx = 1, ndiff
      nm = ldcp(nx)
-     
+
      !  .. Interior
 
-     DO nl = 2, nlev-1                  
+     DO nl = 1, nlev-1
         a(nl,nx) = -(alpha(nl-1,nx)-beta(nl-1,nx))*rm2(nl)/dr(nl)
         b(nl,nx) = ((alpha(nl,nx)-beta(nl,nx))*rp2(nl)/dr(nl)         &
              + (alpha(nl-1,nx)+beta(nl-1,nx))*rm2(nl)/dr(nl))
         c(nl,nx) = -(alpha(nl,nx)+beta(nl,nx))*rp2(nl)/dr(nl)
      END DO
-     
+
      !  .. Lower Boundary
-     
+
      nl = 1
      IF (ibnd(nm,1) == 1) THEN                   !  .. Chemical Equilibrium
-        b(nl,nx) = zero           
+        a(nl,nx) = zero
+        b(nl,nx) = zero
         c(nl,nx) = zero
-     ELSE IF (ibnd(nm,1) == 2) THEN              !  .. Fixed Velocity        
-        b(nl,nx) = -(-alpha(nl,nx)+beta(nl,nx)                              &
-             +half*bval(nm,1))/drp(nl)
-        c(nl,nx) = -(alpha(nl,nx)+beta(nl,nx)                               &
-             +half*bval(nm,1))/drp(nl)
+     ELSE IF (ibnd(nm,1) == 2) THEN              !  .. Fixed Velocity
+        a(nl,nx) = zero
+        b(nl,nx) =-two*bval(nm,1)/dr(nl) + two*rp2(nl)*(alpha(nl,nx)-beta(nl,nx))/dr(nl)
+        c(nl,nx) =-two*rp2(nl)*(alpha(nl,nx)+beta(nl,nx))/dr(nl)
      ELSE IF (ibnd(nm,1) == 3) THEN              !  .. Fixed Mole Fraction
-        b(nl,nx) = zero           
+        a(nl,nx) = zero
+        b(nl,nx) = zero
         c(nl,nx) = zero
      ELSE
         WRITE(*,*) ' DIFCO: ERROR IN LOWER B.C., EXITING ...'
         STOP
      END IF
-     
+
      !  .. Top Boundary
-     
+
      nl = nlev
      IF(ibnd(nm,2) == 1) THEN                     !  .. Chemical Equilibrium
         a(nl,nx) = zero
         b(nl,nx) = zero
-     ELSE IF(ibnd(nm,2) == 2) THEN                !  .. Jeans Velocity
-        a(nl,nx) = -(alpha(nl-1,nx)-beta(nl-1,nx)                           &
-             -half*bval(nm,2))*rm2(nl)/drp(nl-1)
-        b(nl,nx) = (alpha(nl-1,nx)+beta(nl-1,nx)                            &
-             +half*bval(nm,2))*rm2(nl)/drp(nl-1)
-     ELSE IF(ibnd(nm,2) == 3) THEN                !  .. Fixed Velocity
-        a(nl,nx) = -(alpha(nl-1,nx)-beta(nl-1,nx)                           &
-             -half*bval(nm,2))*rm2(nl)/drp(nl-1)
-        b(nl,nx) = (alpha(nl-1,nx)+beta(nl-1,nx)                            &
-             +half*bval(nm,2))*rm2(nl)/drp(nl-1)
+        c(nl,nx) = zero
+     ELSE IF ((ibnd(nm,2) == 2) .or. (ibnd(nm,2) == 3)) THEN                !  .. Jeans or Fixed Velocity
+        a(nl,nx) = -two*rm2(nl)*(alpha(nl-1,nx)-beta(nl-1,nx))/dr(nl)
+        b(nl,nx) = two*bval(nm,2)/dr(nl) + two*rm2(nl)*(alpha(nl-1,nx)+beta(nl-1,nx))/dr(nl)
+        c(nl,nx) = zero
      ELSE IF(ibnd(nm,2) == 4) THEN                !  .. Fixed Flux
-        a(nl,nx) = -(alpha(nl-1,nx)                                         &
-             -beta(nl-1,nx))*rm2(nl)/drp(nl-1)
-        b(nl,nx) = (alpha(nl-1,nx)                                          &
-             +beta(nl-1,nx))*rm2(nl)/drp(nl-1)
+        WRITE(*,"('DIFCO ERROR, this option not enabled')")
      ELSE
         WRITE(*,*) ' DIFCO: ERROR IN UPPER B.C., EXITING ...'
         STOP
      END IF
-     
+
   END DO
-  
+
   !
   !  .. Ions
   !
@@ -171,10 +178,10 @@ SUBROUTINE DIFCO
   tpl = ti + te
 
   !  .. Ion Molecular diffusion coefficients
-  
+
   DO nl = 1, nlev
      dN2 = den(nl,iN2)
-     dCO2 = den(nl,iCO2)    
+     dCO2 = den(nl,iCO2)
      mN2 = mmw(iN2)
      mCO2 = mmw(iCO2)
      DO nm = neutrmax+1, nsp-1
@@ -185,7 +192,7 @@ SUBROUTINE DIFCO
         nuCO2 = 3.33E-09_RP*SQRT(polCO2/rmCO2)*mCO2*dCO2/(mCO2+mmw(nm))
         bCO2 = rkb*ti(nl)/amu/mmw(nm)/nuCO2
         df(nl,nm) = one/(one/bN2+one/bCO2)
-     END DO    
+     END DO
   END DO
 
   !  .. Diffusion Coeff at n+1/2
@@ -221,17 +228,17 @@ SUBROUTINE DIFCO
 !  DO nx = 1, ndiff
 !     nm = lidf(nx)
 !     DO nl = 2, nlev-1
-!        alphax(nl,nx) = dfp(nl,nm)/drp(nl) 
+!        alphax(nl,nx) = dfp(nl,nm)/drp(nl)
 !        betax(nl,nx)=dfp(nl,nm)/htp(nl,nm)                                &
-!             + dfp(nl,nm)*dtpldr(nl)/tip(nl)                              
+!             + dfp(nl,nm)*dtpldr(nl)/tip(nl)
 !     END DO
 !  END DO
-  
+
 !  DO nx = 1, nidf
 !     nm = lidf(nx)
 
      ! .. Bottom Boundary
-   
+
 !     IF(ibnd(nm,1) == 1) THEN                           ! Chemical Eq.
 !        bval(nm,1) = zero
 !     ELSE IF (ibnd(nm,1) == 2) THEN                     ! Max Velocity
@@ -241,20 +248,20 @@ SUBROUTINE DIFCO
 !           bval(nm,1) = zero
 !        END IF
 !     END IF
-     
+
      ! .. Top Boundary
-     
+
 !     IF(ibnd(nm,2) == 1) THEN                           ! Chemical Eq.
 !        bval(nm,2) =    zero
 !     ELSE IF (ibnd(nm,2) == 2) THEN                     ! Jean's Velocity
 !        bval(nm,2) = WJEANS (GM, half*mmw(nm), rz(nlev), tn(nlev))
 !           bval(nm,2) = 1.E4_RP
 !     END IF
-     
+
 !  END DO
 
 
-  DEALLOCATE(ekp,grvp,tnp,htp,dfp,dtndr,dtpdr,tpl,tip,tep,dtpldr,alphax,betax)  
+  DEALLOCATE(grvp,tnp,htp,dtndr,dtpdr,tpl,tip,tep,dtpldr,alphax,betax)
 
   RETURN
 

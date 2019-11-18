@@ -17,6 +17,7 @@ MODULE GLOBAL_VARIABLES
 
   CHARACTER(len=3) :: runID
   LOGICAL :: lprnt
+  LOGICAL :: lcompo_sol, lchemeq_sol
   REAL(RP) :: ascl
   INTEGER :: iaer
   REAL(RP) :: tstep_chem, tstep_diff ! timesteps for reactions and diffusion
@@ -43,7 +44,7 @@ MODULE GLOBAL_VARIABLES
   REAL(RP), ALLOCATABLE, DIMENSION(:) :: sd_2       ! diffusion parameter s_2
   REAL(RP), ALLOCATABLE, DIMENSION(:) :: sd_3       ! diffusion parameter s_3
   INTEGER, ALLOCATABLE, DIMENSION(:,:) :: ibnd      ! boundary type (species #, bottom/top)
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: bval     ! boundary density value (species #, bottom/top)
+  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: bval     ! boundary velocity value (species #, bottom/top) +ve upward
   INTEGER, ALLOCATABLE, DIMENSION(:) :: ichrg       ! charge
   INTEGER, ALLOCATABLE, DIMENSION(:) :: locp        ! index conversion from list of chemical eqm species onto list of total species
   INTEGER, ALLOCATABLE, DIMENSION(:) :: lopc        ! index conversion from list of total species onto list of chemical eqm species
@@ -103,7 +104,9 @@ MODULE GLOBAL_VARIABLES
   REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: c            ! divergence coefficient for bin above
   REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: alphax
   REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: betax
-
+  REAL(RP), ALLOCATABLE, DIMENSION(:) :: ekp
+  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: dfp
+  
   !  .. RATECO
 
   REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: rt, rct      ! rate (reaction #, altitude bin #),

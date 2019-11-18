@@ -27,15 +27,15 @@ SUBROUTINE READ_ATMOS
   ALLOCATE(found(nsp))
   found(1:nsp) = .false.
   OPEN (unit=63,file='atm1D.in',status='old',action='read')
-  
+
      READ (63, *) nlev, nmol
      READ (63,'(A)') header
 
      !  .. Allocate Arrays
 
-     ALLOCATE(namex(nmol),indx_den(nmol),z(nlev),rz(nlev),grv(nlev),ek(nlev),tn(nlev),ti(nlev),     &
+     ALLOCATE(namex(nmol),indx_den(nmol),z(nlev),rz(0:nlev),grv(nlev),ek(nlev),tn(nlev),ti(nlev),     &
           te(nlev),prs(nlev),mass(nlev),rho(nlev),den(nlev,0:nsp),den_old(nlev,0:nsp),xmol(nlev,nsp))
-     
+
      !  .. Read Molecules names, associate with reactions.dat
 
      READ(63,"(10(2X,A12,1X))") (namex(nx),nx=1,nmol)
@@ -74,37 +74,19 @@ SUBROUTINE READ_ATMOS
         READ (63,'(A)') xname
         READ (63,*) (den(nz,nm), nz=1, nlev)
      END DO
-        
+
   CLOSE(unit=63)
 
-  ! ####################################################
-  !   scale CO density to 50 ppm
-  ! ####################################################
-!!!
-!  nm = FIND_NAME('H2           ',name)
-!  den(1:nlev,nm) = DMIN
-
-!  nm = FIND_NAME('H            ',name)
-!  den(1:nlev,nm) = DMIN
- 
-
-!  DO nm = 1, neutrmax
-!     IF(.not. found(nm)) THEN
-!        den(1:nlev,nm) = DMIN
-!        WRITE(*,"(' Assign density of ',ES11.3,' to ',A12)") DMIN, name(nm)
-!     END IF
-!  END DO
-!!!
-
+  !  .. Set density to boundary mole ratio value
   DO nx = 1, ndiff
      nm = ldcp(nx)
      IF(ibnd(nm,1) == 3) THEN
-        den(1,nm) = bval(nm,1)
+        den(1,nm) = bval(nm,1)*den(1,0)
      END IF
   END DO
 
   !  .. Set ion density = min val if species not found
-      
+
   DO nm = neutrmax+1, nsp-1
      IF(.not. found(nm)) THEN
         den(1:nlev,nm) = DMIN
@@ -141,6 +123,11 @@ SUBROUTINE READ_ATMOS
      END DO
   END DO
 
+  !  .. Gravity
+
+  DO nz = 1, nlev
+     grv(nz) = GM/rz(nz)**2
+  END DO
 
   !  .. Reset pressure to be consistent with N & T
 
@@ -149,7 +136,7 @@ SUBROUTINE READ_ATMOS
   END DO
 
   !  .. Calculate mass density, mean mass, and gas constant
-   
+
   DO nz = 1, nlev
      IF (nionsmax > 0) THEN
         rho(nz) = amu*DOT_PRODUCT(mmw(1:nsp),den(nz,1:nsp))
@@ -158,9 +145,7 @@ SUBROUTINE READ_ATMOS
         rho(nz) = amu*DOT_PRODUCT(mmw(1:nsp),den(nz,1:nsp))
         mass(nz) = rho(nz)/den(nz,0)/amu
      END IF
-  END DO  
-
-  CALL HYDROST
+  END DO
 
   ! ############################################################################
   ! #                                                                          #
@@ -169,21 +154,24 @@ SUBROUTINE READ_ATMOS
   ! ############################################################################
 
 
-  ALLOCATE(rmid(nlev),drp(nlev),dr(nlev),rp2(nlev),rm2(nlev),ht(nlev,0:nsp),   &
+  ALLOCATE(rmid(0:nlev),drp(0:nlev),dr(nlev),rp2(0:nlev),rm2(nlev),ht(nlev,0:nsp),   &
        col(nlev))
 
   !  .. Define some altitude-related arrays
 
-  DO nl = 1, nlev-1
+  rz(0) = rz(1) - (rz(2)-rz(1))
+  DO nl = 0, nlev-1
      rmid(nl) = half*(rz(nl+1)+rz(nl))
      drp(nl) = rz(nl+1)-rz(nl)
      rp2(nl) = (rmid(nl)/rz(nl))**2
   END DO
 
-  DO nl = 2, nlev
+  DO nl = 1, nlev
      dr(nl) = rmid(nl)-rmid(nl-1)
      rm2(nl) = (rmid(nl-1)/rz(nl))**2
   END DO
+
+  CALL HYDROST
 
   !  .. Calculate scale heights
 
