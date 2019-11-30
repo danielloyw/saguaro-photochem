@@ -33,7 +33,7 @@ SUBROUTINE READ_ATMOS
 
      !  .. Allocate Arrays
 
-     ALLOCATE(namex(nmol),indx_den(nmol),z(nlev),rz(0:nlev),grv(nlev),ek(nlev),tn(nlev),ti(nlev),     &
+     ALLOCATE(namex(nmol),indx_den(nmol),z(nlev),rz(0:nlev+1),grv(nlev),ek(nlev),tn(nlev),ti(nlev),     &
           te(nlev),prs(nlev),mass(nlev),rho(nlev),den(nlev,0:nsp),den_old(nlev,0:nsp),xmol(nlev,nsp))
 
      !  .. Read Molecules names, associate with reactions.dat
@@ -159,8 +159,9 @@ SUBROUTINE READ_ATMOS
 
   !  .. Define some altitude-related arrays
 
-  rz(0) = rz(1) - (rz(2)-rz(1))
-  DO nl = 0, nlev-1
+  rz(0) = two*rz(1) - rz(2)
+  rz(nlev+1) = two*rz(nlev) - rz(nlev-1)
+  DO nl = 0, nlev
      rmid(nl) = half*(rz(nl+1)+rz(nl))
      drp(nl) = rz(nl+1)-rz(nl)
      rp2(nl) = (rmid(nl)/rz(nl))**2
@@ -171,7 +172,7 @@ SUBROUTINE READ_ATMOS
      rm2(nl) = (rmid(nl-1)/rz(nl))**2
   END DO
 
-  CALL HYDROST
+  !CALL HYDROST
 
   !  .. Calculate scale heights
 
@@ -203,7 +204,8 @@ SUBROUTINE READ_ATMOS
 !     IF(ek(nz) > ed0) ek(nz) = ed0
 !  END DO
 
-   nibot = LOCATE(z,zbot)
+  nibot = LOCATE(z,zbot)
+  nibot = max(nibot,1)
 
   DEALLOCATE(namex,found,indx_den)
   RETURN

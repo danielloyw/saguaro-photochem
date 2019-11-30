@@ -32,7 +32,7 @@ SUBROUTINE COMPO
   REAL(RP) :: rr, r1, r2, pvap, pprs
 !  REAL(RP) :: Hi, Ha, Hh
   INTEGER :: nz
-!  REAL(RP) :: den0, flx0
+  REAL(RP) :: den0, flx0, flx1
   CHARACTER(len=1) :: iret
 
 
@@ -326,7 +326,7 @@ SUBROUTINE COMPO
         ELSE IF (ibnd(nm,1) == 3) THEN                !  .. Fixed mole fraction
            flx(nl,nm) = (alpha(nl,nx)-beta(nl,nx))*den(nl,nm)            &
                 - (alpha(nl,nx)+beta(nl,nx))*den(nl+1,nm)
-           div_flx(nl,nm) = zero
+           div_flx(nl,nm) = b(nl,nx)*den(nl,nm) + c(nl,nx)*den(nl+1,nm)
            dNdt(nl,nm) = tinv*(den(nl,nm)-bval(nm,1)*den(nl,0))
            fd(nx,nl) = -dNdt(nl,nm)
            fb(nx,nx,nl) = tinv
@@ -354,8 +354,8 @@ SUBROUTINE COMPO
            flx(nl,nm) = bval(nm,2)*den(nl,nm)
            div_flx(nl,nm) = a(nl,nx)*den(nl-1,nm)+b(nl,nx)*den(nl,nm)
            dNdt(nl,nm) = (den(nl,nm)-den_old(nl,nm))*tinv
-           fd(nx,nl) = -div_flx(nl,nm) - dNdt(nl,nm)
-           fdmax(nx,nl) = MAX(ABS(div_flx(nl,nm)),ABS(dNdt(nl,nm)))
+           fd(nx,nl)=pr(nl,nm)-rcdn(nl,nm)-ls(nl,nm)-div_flx(nl,nm)-dNdt(nl,nm)
+           fdmax(nx,nl) = MAX(ABS(pr(nl,nm)),ABS(rcdn(nl,nm)),ABS(ls(nl,nm)),ABS(div_flx(nl,nm)),ABS(dNdt(nl,nm)))
            fa(nx,nx,nl) = a(nl,nx)
            fb(nx,nx,nl) = tinv + b(nl,nx)
            DO nx1 = 1, ndiff
@@ -365,8 +365,8 @@ SUBROUTINE COMPO
            flx(nl,nm) = bval(nm,2)*den(nl,nm)
            div_flx(nl,nm) = a(nl,nx)*den(nl-1,nm)+b(nl,nx)*den(nl,nm)
            dNdt(nl,nm) = (den(nl,nm)-den_old(nl,nm))*tinv
-           fd(nx,nl) = -div_flx(nl,nm) - dNdt(nl,nm)
-           fdmax(nx,nl) = MAX(ABS(div_flx(nl,nm)),ABS(dNdt(nl,nm)))
+           fd(nx,nl)=pr(nl,nm)-rcdn(nl,nm)-ls(nl,nm)-div_flx(nl,nm)-dNdt(nl,nm)
+           fdmax(nx,nl) = MAX(ABS(pr(nl,nm)),ABS(rcdn(nl,nm)),ABS(ls(nl,nm)),ABS(div_flx(nl,nm)),ABS(dNdt(nl,nm)))
            fa(nx,nx,nl) = a(nl,nx)
            fb(nx,nx,nl) = tinv + b(nl,nx)
            DO nx1 = 1, ndiff
@@ -459,6 +459,10 @@ SUBROUTINE COMPO
            END IF
            den(nl,nm) = MAX(den(nl,nm) + del(nx,nl),eps)
         END DO
+     END DO
+
+     DO nl = 1, nlev
+        den(nl,0) = sum(den(nl,1:nsp))
      END DO
 
      !  .. Locate Max Change
@@ -651,10 +655,18 @@ SUBROUTINE COMPO
            div_flx(nl,nm) = b(nl,nx)*den(nl,nm) + c(nl,nx)*den(nl+1,nm)
            flx(nl,nm) = bval(nm,1)*den(nl,nm)
            dNdt(nl,nm) = (den(nl,nm)-den_old(nl,nm))*tinv
-        ELSE IF (ibnd(nm,1) == 3) THEN                !  .. Fixed density
-           flx(nl,nm) = (alpha(nl,nx)-beta(nl,nx))*den(nl,nm) - (alpha(nl,nx)+beta(nl,nx))*den(nl+1,nm)
-           div_flx(nl,nm) = zero
+        ELSE IF (ibnd(nm,1) == 3) THEN                !  .. Fixed mole fraction
+!           flx(nl,nm) = (alpha(nl,nx)-beta(nl,nx))*den(nl,nm) - (alpha(nl,nx)+beta(nl,nx))*den(nl+1,nm)
+!           pr(nl,nm) = zero
+!           ls(nl,nm) = zero
+!           div_flx(nl,nm) = zero
+           den0 = (pr(nl,nm)-ls(nl,nm)-b(nl,nx)*den(nl,nm)-c(nl,nx)*den(nl+1,nm))/a(nl,nx)
+           flx0 = (alpha(nl-1,nx)-beta(nl-1,nx))*den0 - (alpha(nl-1,nx)+beta(nl-1,nx))*den(nl,nm)
+           flx1 = (alpha(nl,nx)-beta(nl,nx))*den(nl,nm) - (alpha(nl,nx)+beta(nl,nx))*den(nl+1,nm)
+           flx(nl,nm) = half*(flx0+flx1)
            dNdt(nl,nm) = tinv*(den(nl,nm)-bval(nm,1)*den(nl,0))
+           div_flx(nl,nm) = pr(nl,nm)-ls(nl,nm)-dNdt(nl,nm)
+           WRITE(*,"(' COMPO: den0,flx0,flx1,flx,div_flx = ',10(2X,ES11.3))") den0, flx0, flx1, flx(nl,nm), div_flx(nl,nm)
         ELSE
            WRITE(*,*) ' COMPO: ERROR IN LOWER B.C., EXITING ...'
            STOP

@@ -430,14 +430,14 @@ SUBROUTINE COMPOUT
       DO nl = 1, nlev-1
          rfp=half*((rz(nl+1)/RPLANET)**2)*(rz(nl+1)-rz(nl))
          rfm=half*((rz(nl)/RPLANET)**2)*(rz(nl+1)-rz(nl))
-         sum0=sum0 + rfp*prext(nl,nm)+rfm*prext(nl+1,nm)
-         sum1=sum1 + rfp*pr_ph(nl,nm)+rfm*pr_ph(nl+1,nm)
-         sum2=sum2 + rfp*ls_ph(nl,nm)+rfm*ls_ph(nl+1,nm)
-         sum3=sum3 + rfp*pr_pe(nl,nm)+rfm*pr_pe(nl+1,nm)
-         sum4=sum4 + rfp*ls_pe(nl,nm)+rfm*ls_pe(nl+1,nm)
-         sum5=sum5 + rfp*pr_chem(nl,nm)+rfm*pr_chem(nl+1,nm)
-         sum6=sum6 + rfp*ls_chem(nl,nm)+rfm*ls_chem(nl+1,nm)
-         sum7=sum7 + rfp*rcdn(nl,nm)+rfm*rcdn(nl+1,nm)
+         sum0=sum0 + rfp*prext(nl+1,nm)+rfm*prext(nl,nm)
+         sum1=sum1 + rfp*pr_ph(nl+1,nm)+rfm*pr_ph(nl,nm)
+         sum2=sum2 + rfp*ls_ph(nl+1,nm)+rfm*ls_ph(nl,nm)
+         sum3=sum3 + rfp*pr_pe(nl+1,nm)+rfm*pr_pe(nl,nm)
+         sum4=sum4 + rfp*ls_pe(nl+1,nm)+rfm*ls_pe(nl,nm)
+         sum5=sum5 + rfp*pr_chem(nl+1,nm)+rfm*pr_chem(nl,nm)
+         sum6=sum6 + rfp*ls_chem(nl+1,nm)+rfm*ls_chem(nl,nm)
+         sum7=sum7 + rfp*rcdn(nl+1,nm)+rfm*rcdn(nl+1,nm)
          sum8=sum8 + rfp*div_flx(nl+1,nm)+rfm*div_flx(nl,nm)
 !         sum9=sum9 + rfp*(pr(nl+1,nm)-ls(nl+1,nm)-div_flx(nl+1,nm))+rfm*(pr(nl,nm)-ls(nl,nm)-div_flx(nl,nm))
          sum9=sum9 + rfp*(pr(nl+1,nm)-ls(nl+1,nm))+rfm*(pr(nl,nm)-ls(nl,nm))
@@ -455,11 +455,7 @@ SUBROUTINE COMPOUT
       ctp(nm) = -flx(nlev,nm)*rz(nlev)**2/RPLANET**2
       cdv(nm) = sum8
       chk(nm) =sum9
-      IF(ibnd(nm,1) == 2) THEN
-         cbt(nm) = bval(nm,1)*den(1,nm)
-      ELSE
-         cbt(nm) = flx(1,nm)*(RPLANET/(half*(rz(1)+rz(2))))**2
-      END IF
+      cbt(nm) = flx(1,nm)*(rz(1)/RPLANET)**2
       cbl(nm) = cprd_net(nm)+clss_net(nm)+crc(nm)+ctp(nm)+cbt(nm)
       csf(nm) = -crc(nm) - cbt(nm)
       tbal(nm) = cdens(nm)/abs(cbl(nm))
@@ -475,7 +471,7 @@ SUBROUTINE COMPOUT
       DO nx = nsp, 1, -1
          nm = indx(nx)
          IF(istat(nm) > 0) THEN
-         WRITE(64,"(A12,I3,10(2X,ES10.3))") name(nm),istat(nm),cdens(nm),cprd_ext(nm),cbt(nm),ctp(nm),cprd_net(nm),clss_net(nm), &
+         WRITE(64,"(A12,I3,20(2X,ES10.3))") name(nm),istat(nm),cdens(nm),cprd_ext(nm),cbt(nm),ctp(nm),cprd_net(nm),clss_net(nm), &
              crc(nm),cbl(nm),tbal(nm)
          END IF
       END DO
@@ -559,7 +555,7 @@ SUBROUTINE COMPOUT
          WRITE(65,"(ES15.7,' ;Surface Flux                ')") cbt(nm)
          WRITE(65,"(ES15.7,' ;Net Balance                 ')") cbl(nm)
 !         WRITE(65,"(ES15.7,' ;Integral of Divergence      ')") cdv(nm)
-!         WRITE(65,"(ES15.7,' ;Check                       ')") chk(nm)
+!         WRITE(65,"(ES15.7,' ;Production - Loss           ')") chk(nm)
          WRITE(65,932)
          DO nl = 1, nlev
             WRITE(65,933) cm_to_km*z(nl), den(nl,nm), den(nl,nm)/den(nl,0), flx(nl,nm),             &

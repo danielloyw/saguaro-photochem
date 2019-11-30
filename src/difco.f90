@@ -161,7 +161,10 @@ SUBROUTINE DIFCO
         b(nl,nx) = two*bval(nm,2)/dr(nl) + two*rm2(nl)*(alpha(nl-1,nx)+beta(nl-1,nx))/dr(nl)
         c(nl,nx) = zero
      ELSE IF(ibnd(nm,2) == 4) THEN                !  .. Fixed Flux
-        WRITE(*,"('DIFCO ERROR, this option not enabled')")
+        a(nl,nx) = -(alpha(nl-1,nx)                                         &
+             -beta(nl-1,nx))*rm2(nl)/drp(nl-1)
+        b(nl,nx) = (alpha(nl-1,nx)                                          &
+             +beta(nl-1,nx))*rm2(nl)/drp(nl-1)
      ELSE
         WRITE(*,*) ' DIFCO: ERROR IN UPPER B.C., EXITING ...'
         STOP
@@ -223,42 +226,6 @@ SUBROUTINE DIFCO
         htp(nl,nm) = rkb*tip(nl)/grvp(nl)/mmw(nm)/amu
      END DO
   END DO
-
-
-!  DO nx = 1, ndiff
-!     nm = lidf(nx)
-!     DO nl = 2, nlev-1
-!        alphax(nl,nx) = dfp(nl,nm)/drp(nl)
-!        betax(nl,nx)=dfp(nl,nm)/htp(nl,nm)                                &
-!             + dfp(nl,nm)*dtpldr(nl)/tip(nl)
-!     END DO
-!  END DO
-
-!  DO nx = 1, nidf
-!     nm = lidf(nx)
-
-     ! .. Bottom Boundary
-
-!     IF(ibnd(nm,1) == 1) THEN                           ! Chemical Eq.
-!        bval(nm,1) = zero
-!     ELSE IF (ibnd(nm,1) == 2) THEN                     ! Max Velocity
-!        IF(bval(nm,1) /= zero) THEN
-!           bval(nm,1) = -ek(1)/ht(1,0)
-!        ELSE
-!           bval(nm,1) = zero
-!        END IF
-!     END IF
-
-     ! .. Top Boundary
-
-!     IF(ibnd(nm,2) == 1) THEN                           ! Chemical Eq.
-!        bval(nm,2) =    zero
-!     ELSE IF (ibnd(nm,2) == 2) THEN                     ! Jean's Velocity
-!        bval(nm,2) = WJEANS (GM, half*mmw(nm), rz(nlev), tn(nlev))
-!           bval(nm,2) = 1.E4_RP
-!     END IF
-
-!  END DO
 
 
   DEALLOCATE(grvp,tnp,htp,dtndr,dtpdr,tpl,tip,tep,dtpldr,alphax,betax)
