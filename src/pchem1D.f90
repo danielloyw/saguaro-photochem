@@ -140,17 +140,6 @@ PROGRAM PCHEM1D
 
      END IF
 
-     ! ---------------------------------------------------------------------------------------------
-     !
-     !                                   DIFFUSING SPECIES
-     !
-     ! ---------------------------------------------------------------------------------------------
-
-     lcrsA = .true.; lcrsB = .false.; lcrsC = .true.; lcrsJ = .true.
-     CALL COMPO
-
-!     CALL HYDROST
-
       ! ---------------------------------------------------------------------------------------------
      !
      !                                 CHEMICAL EQUILIBRIUM SPECIES
@@ -176,7 +165,7 @@ PROGRAM PCHEM1D
 
         !  .. Check Convergence
 
-        test_chem = zero; nmn = locp(1); nln = 1
+        test_chem = zero; nmn = 1; nln = 1
         DO nx = 1, nchem
            nm = locp(nx)
            DO nl = 1, nlev
@@ -203,10 +192,21 @@ PROGRAM PCHEM1D
 
      END DO CHEM
 
+     ! ---------------------------------------------------------------------------------------------
+     !
+     !                                   DIFFUSING SPECIES
+     !
+     ! ---------------------------------------------------------------------------------------------
+
+     lcrsA = .true.; lcrsB = .false.; lcrsC = .true.; lcrsJ = .true.
+     CALL COMPO
+
+!     CALL HYDROST
      ! .. Update stuff
 
-     DO nm = 1, nsp
-        DO nl = 1, nlev
+     DO nl = 1, nlev
+        den(nl,0) = sum(den(nl,1:nsp))
+        DO nm = 1, nsp
            xmol(nl,nm) = den(nl,nm)/den(nl,0)
         END DO
      END DO

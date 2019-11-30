@@ -116,7 +116,6 @@ SUBROUTINE CHEMEQ
            END IF
         END DO
 
-     DO nl = 1, nlev
         DO nm = 1, nsp
            pr(nl,nm) = prext(nl,nm) + pr_ph(nl,nm) + pr_pe(nl,nm) + pr_chem(nl,nm)
            ls(nl,nm) = ls_ph(nl,nm) + ls_pe(nl,nm) + ls_chem(nl,nm)
@@ -302,6 +301,9 @@ SUBROUTINE CHEMEQ
            sm = sm + ichrg(nm)*den(nl,nm)
         END DO
         den(nl,nsp) = sm
+
+        !  .. Update Total Density
+        den(nl,0) = sum(den(nl,1:nsp))
 
         !  .. Locate Max Change
 
