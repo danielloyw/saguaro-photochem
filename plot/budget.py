@@ -12,6 +12,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 from read_molecules import read_molecules
 from read_rates import read_rates
 from read_summary import read_summary
+import math
 
 R = 3390
 colrates_lim = 0
@@ -42,14 +43,14 @@ crates = read_rates('../runs/'+srun+'/output/chemrates.out')
 prates = read_rates('../runs/'+srun+'/output/photorates.out')
 erates = read_rates('../runs/'+srun+'/output/elerates.out')
 alt = crates["alt"]
-nalt = size(alt)
+nalt = len(alt)
 
 title = prates["title"] + erates["title"] + crates["title"] 
-nrct = size(title)
+nrct = len(title)
 
-crct = np.asarray(crates["rct"], dtype=np.float)
-prct = np.asarray(prates["rct"], dtype=np.float)
-erct = np.asarray(erates["rct"], dtype=np.float)
+crct = np.asarray(crates["rct"], dtype=float)
+prct = np.asarray(prates["rct"], dtype=float)
+erct = np.asarray(erates["rct"], dtype=float)
 
 rct = np.concatenate((prct,erct,crct),axis=1)
 
@@ -83,7 +84,7 @@ for nr in range(0,nrct):
     sr2.append(stmp[2])
     sp1.append(stmp[4])
     sp2.append(stmp[6])
-    if (size(stmp)<10):
+    if (len(stmp)<10):
         sp3.append('')
     else:
         sp3.append(stmp[8])
@@ -105,8 +106,8 @@ for nr in range(0,nrct):
            nprd_list.append(nr)
 
 
-nprd = size(nprd_list)
-nlss = size(nlss_list)
+nprd = len(nprd_list)
+nlss = len(nlss_list)
 
 title = np.array(title)
 sr1 = np.array(sr1)
@@ -137,7 +138,7 @@ if (nprd > 0):
   stmp_p1 = sp1[nprd_indx]
   stmp_p2 = sp2[nprd_indx]
   stmp_p3 = sp3[nprd_indx]
-  sort_indx_prd = flipud(np.argsort(ftmp_prd))
+  sort_indx_prd = np.flipud(np.argsort(ftmp_prd))
   colrates_prd = ftmp_prd[sort_indx_prd]
   rates_prd = rtmp_prd[:,sort_indx_prd]
   title_prd = stmp_prd[sort_indx_prd]
@@ -163,7 +164,7 @@ if (nprd > 0):
   for n in range(1, nprd):
     lfind = np.bool_(1) # new reaction?
     m = 0 # reference reaction in consolidated array
-    while logical_and(np.less_equal(m,k),(lfind)):
+    while (np.less_equal(m,k) and (lfind)):
       l1 = (sr1_prd[n] == sr1_new[m])
       l2 = (sr2_prd[n] == sr2_new[m])
       l3 = (sp1_prd[n] == sp1_new[m])
@@ -171,10 +172,10 @@ if (nprd > 0):
       l5 = (sp3_prd[n] == sp3_new[m])
       lchk = np.logical_and(l1,l2)
       lchk = np.logical_and(lchk,l3)
-      if logical_and((sp2[n] != ''),(sp2[m] != '-')):
-          lchk = logical_and(lchk,l4)
-      if logical_and((sp3[n] != ''),(sp3[m] != '-')):
-          lchk = logical_and(lchk,l5)
+      if ((sp2[n] != '') and (sp2[m] != '-')):
+          lchk = (lchk and l4)
+      if ((sp3[n] != '') and (sp3[m] != '-')):
+          lchk = (lchk and l5)
       if(lchk):
           lfind = np.bool_(0)
           rates_new[:,m] = rates_new[:,m] + rates_prd[:,n]
@@ -214,7 +215,7 @@ if (nlss > 0):
   stmp_p1 = sp1[nlss_indx]
   stmp_p2 = sp2[nlss_indx]
   stmp_p3 = sp3[nlss_indx]
-  sort_indx_lss = flipud(np.argsort(ftmp_lss))
+  sort_indx_lss = np.flipud(np.argsort(ftmp_lss))
   colrates_lss = ftmp_lss[sort_indx_lss]
   rates_lss = rtmp_lss[:,sort_indx_lss]
   title_lss = stmp_lss[sort_indx_lss]
@@ -241,7 +242,7 @@ if (nlss > 0):
       
     lfind = np.bool_(1)
     m = 0
-    while logical_and(np.less_equal(m,k),(lfind)):
+    while (np.less_equal(m,k) and (lfind)):
       l1 = (sr1_lss[n] == sr1_new[m])
       l2 = (sr2_lss[n] == sr2_new[m])
       l3 = (sp1_lss[n] == sp1_new[m])
@@ -249,10 +250,10 @@ if (nlss > 0):
       l5 = (sp3_lss[n] == sp3_new[m])      
       lchk = np.logical_and(l1,l2)
       lchk = np.logical_and(lchk,l3)
-      if logical_and((sp2[n] != ''),(sp2[m] != '-')):
-          lchk = logical_and(lchk,l4)
-      if logical_and((sp3[n] != ''),(sp3[m] != '-')):
-          lchk = logical_and(lchk,l5)        
+      if ((sp2[n] != '') and (sp2[m] != '-')):
+          lchk = (lchk and l4)
+      if ((sp3[n] != '') and (sp3[m] != '-')):
+          lchk = (lchk and l5)        
       if(lchk):
           lfind = np.bool_(0)
           rates_new[:,m] = rates_new[:,m] + rates_lss[:,n]
@@ -340,30 +341,30 @@ ax3.text(0.8,0.95-0.32,"-del flx",color=clrs[3],transform=ax3.transAxes)
 
 # plot Fluxes, Lower right
 
-altflx = molsum["alt"]
-flx = molsum["flx"]
-if(np.nanmax(abs(flx))>1.E-10):
-    upalt = altflx[(flx>0)]
-    upflx = flx[(flx>0)]
-    dnalt = altflx[(flx<0)]
-    dnflx = -1*flx[(flx<0)]
-    if len(upflx):
-        umax = np.nanmax(upflx)
-    else:
-        umax = 0
-    if len(dnflx):
-        dmax = np.nanmax(dnflx)
-    else:
-        dmax = 0
-    xmax = np.nanmax([umax,dmax])
-    xmax = math.pow(10,int(math.log10(xmax))+1)
-    xmin = xmax/1.E10
-    ax4 = fig.add_subplot(2, 2, 4)
-    ax4.set_xlim(xmin,xmax)
-    ax4.set_ylim(ymin,ymax)
-    ax4.semilogx(upflx,upalt,color=clrs[0])
-    ax4.semilogx(dnflx,dnalt,color=clrs[1])
-    ax4.set_xlabel(r'Flux (cm$^{-2}$s$^{-1}$)')
+# altflx = molsum["alt"]
+# flx = molsum["flx"]
+# if(np.nanmax(abs(flx))>1.E-10):
+    # upalt = altflx[(flx>0)]
+    # upflx = flx[(flx>0)]
+    # dnalt = altflx[(flx<0)]
+    # dnflx = -1*flx[(flx<0)]
+    # if len(upflx):
+        # umax = np.nanmax(upflx)
+    # else:
+        # umax = 0
+    # if len(dnflx):
+        # dmax = np.nanmax(dnflx)
+    # else:
+        # dmax = 0
+    # xmax = np.nanmax([umax,dmax])
+    # xmax = math.pow(10,int(math.log10(xmax))+1)
+    # xmin = xmax/1.E10
+    # ax4 = fig.add_subplot(2, 2, 4)
+    # ax4.set_xlim(xmin,xmax)
+    # ax4.set_ylim(ymin,ymax)
+    # ax4.semilogx(upflx,upalt,color=clrs[0])
+    # ax4.semilogx(dnflx,dnalt,color=clrs[1])
+    # ax4.set_xlabel(r'Flux (cm$^{-2}$s$^{-1}$)')
 
 pdf.savefig(fig)
 plt.close()

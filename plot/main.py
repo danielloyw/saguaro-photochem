@@ -12,7 +12,7 @@ from matplotlib.pyplot import *
 from matplotlib.backends.backend_pdf import PdfPages
 from read_nmolecules import read_nmolecules
 from read_atm import read_atm
-
+import math
 
 
 srun = input('Enter run id > ')
