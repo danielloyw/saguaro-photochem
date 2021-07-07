@@ -6,9 +6,13 @@ HOSTNAME := $(shell hostname)
 #
 ifeq ($(UNAME), Linux)
 FC = ifort
-FCFLAGS = -I$(MKLROOT)/include/intel64/lp64 -L$(MKLROOT)/lib/intel64
+FCFLAGS = -C
 LDFLAGS = -m64 -lmkl_lapack95_lp64 -lmkl_intel_lp64 -lmkl_core -lmkl_sequential -lm
 
+# since hipas is missing this include folder for mkl
+ifeq ($(HOSTNAME), hipas.lpl.arizona.edu)
+FCFLAGS += -I$(MKLROOT)/include/em64t/lp64 -L$(MKLROOT)/lib/em64t
+endif
 endif
 
 

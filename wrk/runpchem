@@ -1,7 +1,17 @@
 # !/bin/bash
-#  
+
+# Load run data
+cp ../data/solar/solar_min_0-75nm_ap.dat ../data/solar/solar_fluxA.dat
+cp ../data/solar/solar_min_74-109nm_ap.dat ../data/solar/solar_fluxB.dat
+cp ../data/solar/solar_min_108-300nm_ap.dat ../data/solar/solar_fluxC.dat
+cp pchem1D_60deg.sol pchem1D.sol
+
+cp nmolecules-noH2O.dat nmolecules.dat
+
+cp atm1D_solar_min_ap.in atm1D.in
+#cp atm1D.out atm1D.in
+
 # put runid, time step, and iteration number into files
-#
 
 echo $1 > runid.out
 echo $2 $3 $4 $5 > tctl.out
@@ -14,9 +24,7 @@ mkdir -p ../runs/$1/output
 mkdir -p ../runs/$1/plots
 mkdir -p ../runs/$1/output/molecules
 
-#
 #  move input files to storage
-#
 
 cp nmolecules.dat ../runs/$1/input/.
 cp imolecules.dat ../runs/$1/input/.
@@ -39,4 +47,3 @@ cp atm1D.out ../runs/$1/output/.
 
 rm runid.out
 rm tctl.out
-

@@ -1,0 +1,4 @@
+#!/bin/bash
+
+source /opt/intel/oneapi/setvars.sh intel64 mod lp64
+. /opt/intel/oneapi/mkl/2021.3.0/env/vars.sh intel64 mod lp64
