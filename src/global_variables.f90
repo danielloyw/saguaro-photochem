@@ -95,7 +95,7 @@ MODULE GLOBAL_VARIABLES
   !  .. DIFCO
 
   REAL(RP), PARAMETER :: polN2 = 17.6E-25               ! Polarizability of N2
-  REAL(RP), PARAMETER :: polCO2 = 26.3E-26              ! Polarizability of CH4 = 26.0E-26, need to know CO2 = 26.3
+  REAL(RP), PARAMETER :: polCO2 = 2.63E-24              ! Polarizability of CO2
   REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: df           ! diffusion coefficient
   REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: alpha
   REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: beta
