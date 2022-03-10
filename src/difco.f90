@@ -68,7 +68,7 @@ SUBROUTINE DIFCO
      htp(nl,nm) = rkb*tnp(nl)/grvp(nl)/mmw(nm)/amu
      dfp(nl,nm) = half*(df(nl+1,nm)+df(nl,nm))
   END DO
-  
+
   DO nl = 1, nlev-1
      tnp(nl) = half*(tn(nl+1)+tn(nl))
      grvp(nl) = half*(grv(nl+1)+grv(nl))
@@ -93,7 +93,8 @@ SUBROUTINE DIFCO
      IF(ibnd(nm,1) == 1) THEN                           ! Chemical Eq.
         bval(nm,1) = zero
      ELSE IF (ibnd(nm,1) == 2) THEN                      ! max downward velocity
-        bval(nm,1) = -ek(1)/(rkb*tn(1)/grv(1)/mmw(nm)/amu)
+        bval(nm,1) = max(bval(nm,1), &
+            -ek(1)/(rkb*tn(1)/grv(1)/mmw(nm)/amu))
      END IF
 
      ! .. Top Boundary
@@ -111,7 +112,7 @@ SUBROUTINE DIFCO
   DO nx = 1, ndiff
      nm = ldcp(nx)
      DO nl =0, nlev-1
-        alpha(nl,nx) = (dfp(nl,nm) + ekp(nl))/drp(nl) ! (D+K)*dN/dr
+        alpha(nl,nx) = (dfp(nl,nm) + ekp(nl))/drp(nl) ! (D+K)/dr
         beta(nl,nx) = half*(dfp(nl,nm)/htp(nl,nm) + ekp(nl)/htp(nl,0)            &
              + (dfp(nl,nm)+ekp(nl))*dtndr(nl)/tnp(nl)) ! Di*N*(1/Hi+dT/Tdr)+K*N*(1/H+dT/Tdr)
      END DO
@@ -161,10 +162,9 @@ SUBROUTINE DIFCO
         b(nl,nx) = two*bval(nm,2)/dr(nl) + two*rm2(nl)*(alpha(nl-1,nx)+beta(nl-1,nx))/dr(nl)
         c(nl,nx) = zero
      ELSE IF(ibnd(nm,2) == 4) THEN                !  .. Fixed Flux
-        a(nl,nx) = -(alpha(nl-1,nx)                                         &
-             -beta(nl-1,nx))*rm2(nl)/drp(nl-1)
-        b(nl,nx) = (alpha(nl-1,nx)                                          &
-             +beta(nl-1,nx))*rm2(nl)/drp(nl-1)
+        a(nl,nx) = -(alpha(nl-1,nx)-beta(nl-1,nx))*rm2(nl-1)/drp(nl)
+        b(nl,nx) = (alpha(nl-1,nx)+beta(nl-1,nx))*rm2(nl-1)/drp(nl)
+        c(nl,nx) = zero
      ELSE
         WRITE(*,*) ' DIFCO: ERROR IN UPPER B.C., EXITING ...'
         STOP
