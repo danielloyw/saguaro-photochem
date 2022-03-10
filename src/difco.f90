@@ -145,6 +145,10 @@ SUBROUTINE DIFCO
         a(nl,nx) = zero
         b(nl,nx) = zero
         c(nl,nx) = zero
+     ELSE IF (ibnd(nm,1) == 4) THEN              !  .. Fixed Flux
+        a(nl,nx) = zero
+        b(nl,nx) = (alpha(nl,nx)-beta(nl,nx))*rm2(nl)/drp(nl)
+        c(nl,nx) = -(alpha(nl,nx)+beta(nl,nx))*rm2(nl)/drp(nl)
      ELSE
         WRITE(*,*) ' DIFCO: ERROR IN LOWER B.C., EXITING ...'
         STOP

@@ -302,16 +302,15 @@ SUBROUTINE COMPO
               nm1 = ldcp(nx1)
               fb(nx,nx1,nl) = fb(nx,nx1,nl)-rjac(nx,nx1,nl)
            END DO
-        ELSE IF (ibnd(nm,1) == 2) THEN               !  .. Fixed Velocity
+        ELSE IF (ibnd(nm,1) == 2) THEN               !  .. Specified Velocity
 !           den0 = ((two*bval(nm,1)+alpha(nl-1,nx)+beta(nl-1,nx)-alpha(nl,nx)+beta(nl,nx))/(alpha(nl-1,nx)-beta(nl-1,nx)))*den(nl,nm) &
 !                + ((alpha(nl,nx)+beta(nl,nx))/(alpha(nl-1,nx)-beta(nl-1,nx)))*den(nl+1,nm)
 !           div_flx(nl,nm) = a(nl,nx)*den0                             &
 !                          + b(nl,nx)*den(nl,nm)                               &
 !                          + c(nl,nx)*den(nl+1,nm)
 !           flx0 = (alpha(0,nx)-beta(0,nx))*den0-(alpha(0,nx)+beta(0,nx))*den(1,nm)
-           div_flx(nl,nm) = b(nl,nx)*den(nl,nm)                               &
-                          + c(nl,nx)*den(nl+1,nm)
            flx(nl,nm) = bval(nm,1)*den(nl,nm)
+           div_flx(nl,nm) = b(nl,nx)*den(nl,nm) + c(nl,nx)*den(nl+1,nm)
            dNdt(nl,nm) = (den(nl,nm)-den_old(nl,nm))*tinv
            fd(nx,nl) = pr(nl,nm)-rcdn(nl,nm)-ls(nl,nm)-div_flx(nl,nm) - dNdt(nl,nm)
            fdmax(nx,nl) = MAX(ABS(pr(nl,nm)),ABS(rcdn(nl,nm)),ABS(ls(nl,nm)),ABS(div_flx(nl,nm)),ABS(dNdt(nl,nm)))
@@ -332,6 +331,20 @@ SUBROUTINE COMPO
            fb(nx,nx,nl) = tinv
 
            fdmax(nx,nl) = ABS(dNdt(nl,nm))
+
+        ELSE IF (ibnd(nm,1) == 4) THEN                !  .. Specified flux
+           flx(nl,nm) = bval(nm,1)
+           div_flx(nl,nm) = flx(nl,nm)/rm2(nl)/drp(nl-1)+b(nl,nx)*den(nl,nm)+c(nl,nx)*den(nl+1,nm)
+           dNdt(nl,nm) = (den(nl,nm)-den_old(nl,nm))*tinv
+           fd(nx,nl) = -div_flx(nl,nm) - dNdt(nl,nm)
+           fdmax(nx,nl) = MAX(ABS(div_flx(nl,nm)),ABS(dNdt(nl,nm)))
+           fa(nx,nx,nl) = zero
+           fb(nx,nx,nl) = b(nl,nx)
+           fc(nx,nx,nl) = c(nl,nx)
+           DO nx1 = 1, ndiff
+              fb(nx,nx1,nl) = fb(nx,nx1,nl) - rjac(nx,nx1,nl)
+           END DO
+
         ELSE
            WRITE(*,*) ' COMPO: ERROR IN LOWER B.C., EXITING ...'
            STOP
@@ -667,6 +680,10 @@ SUBROUTINE COMPO
            dNdt(nl,nm) = tinv*(den(nl,nm)-bval(nm,1)*den(nl,0))
            div_flx(nl,nm) = pr(nl,nm)-ls(nl,nm)-dNdt(nl,nm)
            WRITE(*,"(' COMPO: den0,flx0,flx1,flx,div_flx = ',10(2X,ES11.3))") den0, flx0, flx1, flx(nl,nm), div_flx(nl,nm)
+        ELSE IF (ibnd(nm,1) == 4) THEN                !  .. Fixed flux
+           flx(nl,nm) = bval(nm,1)
+           div_flx(nl,nm) = flx(nl,nm)/rm2(nl)/drp(nl-1)+b(nl,nx)*den(nl,nm)+c(nl,nx)*den(nl+1,nm)
+           dNdt(nl,nm) = (den(nl,nm)-den_old(nl,nm))*tinv
         ELSE
            WRITE(*,*) ' COMPO: ERROR IN LOWER B.C., EXITING ...'
            STOP
