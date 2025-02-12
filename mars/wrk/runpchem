@@ -1,15 +1,15 @@
 # !/bin/bash
 
 # Load run data
-cp ../data/solar/solar_min_0-75nm_ap.dat ../data/solar/solar_fluxA.dat
-cp ../data/solar/solar_min_74-109nm_ap.dat ../data/solar/solar_fluxB.dat
-cp ../data/solar/solar_min_108-300nm_ap.dat ../data/solar/solar_fluxC.dat
+cp ../data/solar/solar_min_0-75nm_peri.dat ../data/solar/solar_fluxA.dat
+cp ../data/solar/solar_min_74-109nm_peri.dat ../data/solar/solar_fluxB.dat
+cp ../data/solar/solar_min_108-300nm_peri.dat ../data/solar/solar_fluxC.dat
 cp pchem1D_60deg.sol pchem1D.sol
 
-cp nmolecules-noH2O.dat nmolecules.dat
+#cp nmolecules-noH2O.dat nmolecules.dat
 
-cp atm1D_solar_min_ap.in atm1D.in
-#cp atm1D.out atm1D.in
+#cp atm1D_solar_min_peri.in atm1D.in
+cp atm1D.out atm1D.in
 
 # put runid, time step, and iteration number into files
 
@@ -47,3 +47,6 @@ cp atm1D.out ../runs/$1/output/.
 
 rm runid.out
 rm tctl.out
+
+paplay /usr/share/sounds/freedesktop/stereo/complete.oga
+notify-send 'photochem1D_Mars' 'Run complete.'

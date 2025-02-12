@@ -2,17 +2,19 @@
 ## User-defined
 #################
 
-runs/
+mars/runs/
 *.o
 *.mod
 .project
 P.dat
 T.dat
-H2O.txt
+mars/H2O.txt
 readT.m
 readDen.m
 readEle.m
-data/reactions/*table*
+pchem.x
+to_mat.m
+mars/data/reactions/*table*
 
 #################
 ## Eclipse
@@ -230,3 +232,4 @@ pip-log.txt
 
 #Mr Developer
 .mr.developer.cfg
+*.pyc
