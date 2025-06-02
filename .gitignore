@@ -15,6 +15,7 @@ readEle.m
 pchem.x
 to_mat.m
 mars/data/reactions/*table*
+mars/plot/old/
 
 #################
 ## Eclipse
