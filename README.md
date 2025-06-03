@@ -28,27 +28,27 @@ Output data files produced by _Saguaro_ are located in the `/runs/<run-name>/out
 
 ## Description of Output Files
 ### General
-| Filename         | Description  |
-| :---------       | :----------- |
+| Filename         | Description                                                                                                                         |
+| :---------       | :---------------------------------------------------------------------------------------------------------------------------------- |
 | `atm1D.out`      | Altitude profiles for key variables in the model, including the altitude grid, gravity, neutral and electron temperatures, pressure, mean molecular weight, eddy diffusion coefficient, and densities for each species. Same structure as input `atm1D.in` file. |
-| `atm1D.csv`      | Same as `atm1D.out`, except in comma-separated format, and mixing ratios for each species are provided instead of their densities. |
-| `solar_flux.out` | Solar flux as a function of wavelength and altitude. Units: photons cm<sup>-2</sup> s<sup>-1</sup> nm<sup>-1</sup>.                |
-| `eflux.out`      | Electron fluxes as a function of energy and altitude. Units: electrons cm<sup>-2</sup> s<sup>-1</sup> eV<sup>-1</sup>.             |
+| `atm1D.csv`      | Same as `atm1D.out`, except in comma-separated format, and mixing ratios for each species are provided instead of their densities.  |
+| `solar_flux.out` | Solar flux as a function of wavelength and altitude. Units: photons cm<sup>-2</sup> s<sup>-1</sup> nm<sup>-1</sup>.                 |
+| `eflux.out`      | Electron fluxes as a function of energy and altitude. Units: electrons cm<sup>-2</sup> s<sup>-1</sup> eV<sup>-1</sup>.              |
 | `balance.out`    | Overview of convergence for model species, with information about column number density (cm<sup>-2</sup>), production and loss rates (cm<sup>-2</sup> s<sup>-1</sup>), and fluxes at top and bottom (cm<sup>-2</sup> s<sup>-1</sup>). Balance (cm<sup>-2</sup> s<sup>-1</sup>) across the various contributing terms is calculated, and the stability time constant (s) is computed from dividing the balance with the column number density. |
-| `mcolrates.out`  | Same as `balance.out` without some columns.                                                                                        |
+| `mcolrates.out`  | Same as `balance.out` without some columns.                                                                                         |
 | `diff.csv`       | Diffusion coefficients for each species with altitude. The eddy diffusion coeffient (which applies to all species) is also provided. Units: cm<sup>2</sup> s<sup>-1</sup>. |
 
 
 ### Reaction Rates
-| Filename         | Description  |
-| :---------       | :----------- |
+| Filename         | Description                                                                                                                         |
+| :---------       | :---------------------------------------------------------------------------------------------------------------------------------- |
 | `ratecoeff.out`  | Reaction coefficients for each chemical reaction with altitude. Units: s<sup>-1</sup> for unimolecular reactions and cm<sup>3</sup> s<sup>-1</sup> for bimolecular reactions. |
-| `chemrates.out`  | Reaction rates for each chemical reaction with altitude. Units: cm<sup>-3</sup> s<sup>-1</sup>. |
-| `colrates.out`   | Table of column-integrated rates for each chemical reaction, sorted from highest to lowest. The columns of the table correspond to: (1) reaction index, (2) column-integrated rate down to , (3) column-integrate rate below , (4) total column-integrated rate, and (5) reaction. |
-| `photorates.out` | Reaction rates for each photo reaction with altitude. Units: cm<sup>-3</sup> s<sup>-1</sup>. |
-| `pcolrates.out`  |
-| `elerates.out`   | Reaction rates for each electron reaction with altitude. Units: cm<sup>-3</sup> s<sup>-1</sup>. |
-| `ecolrates.out`  |
+| `chemrates.out`  | Reaction rates for each chemical reaction with altitude. Units: cm<sup>-3</sup> s<sup>-1</sup>.                                     |
+| `colrates.out`   | Table of column-integrated rates for each chemical reaction, sorted from highest to lowest. The columns of the table correspond to: (1) reaction index, (2) column-integrated rate down to opaque layer (not applicable to Mars), (3) column-integrate rate below opaque layer (should be 0), (4) total column-integrated rate, and (5) reaction. |
+| `photorates.out` | Reaction rates for each photo reaction with altitude. Units: cm<sup>-3</sup> s<sup>-1</sup>.                                        |
+| `pcolrates.out`  | Table of column-integrated rates for each photo reaction, sorted from highest to lowest. The columns of the table correspond to: (1) reaction index, (2) column-integrated rate down to opaque layer (not applicable to Mars), (3) column-integrate rate below opaque layer (should be 0), (4) total column-integrated rate, and (5) reaction. |
+| `elerates.out`   | Reaction rates for each electron reaction with altitude. Units: cm<sup>-3</sup> s<sup>-1</sup>.                                     |
+| `ecolrates.out`  | Table of column-integrated rates for each electron reaction, sorted from highest to lowest. The columns of the table correspond to: (1) reaction index, (2) column-integrated rate down to opaque layer (not applicable to Mars), (3) column-integrate rate below opaque layer (should be 0), (4) total column-integrated rate, and (5) reaction. |
 
 ### Species-Specific Files
 Additonal information about each calculated species in the model is available in `/molecules/<species-name>.out`, where `<species-name>` represents the described species. 
