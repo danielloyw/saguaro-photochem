@@ -305,7 +305,7 @@ def eflux(filename):
         # read in altitude blocks
         for i_alt in range(0, n_alt):
             # read altitude
-            alt.append(f.readline().strip())
+            alt.append(float(f.readline().strip()))
             
             t_block = ''
             for i_line in range(0, n_lines):
@@ -318,6 +318,6 @@ def eflux(filename):
             t_block = np.array(t_block.split())
             flux[i_alt, :] = t_block.astype(float)
     
-    eflux = {'Altitude':alt, 'Energy':energy, 'Flux':flux}
+    eflux = {'Altitude':np.array(alt), 'Energy':energy, 'Flux':flux}
     
     return eflux
