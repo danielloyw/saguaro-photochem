@@ -103,7 +103,7 @@ SUBROUTINE READ_REACTIONS
            irct(i,nr) = FIND_NAME(fn(i),name)
            IF (irct(i,nr) <= 0) THEN
               WRITE(*,"(I6,':',2X,A)") nr,ctitle(nr)
-              WRITE(*,"(' REACTION',I6,' REACTANT',I2,' NOT FOUND: ',A12)"),nr,i,fn(i)
+              WRITE(*,"(' REACTION',I6,' REACTANT',I2,' NOT FOUND: ',A12)") nr,i,fn(i)
               STOP
            END IF
 
@@ -113,7 +113,7 @@ SUBROUTINE READ_REACTIONS
               irct(i,nr) = FIND_NAME(fn(i),name)
               IF (irct(i,nr) <= 0) THEN
                  WRITE(*,"(I6,':',2X,A)") nr,ctitle(nr)
-                 WRITE(*,"(' REACTION',I6,' REACTANT',I2,' NOT FOUND: ',A12)"),nr,i,fn(i)
+                 WRITE(*,"(' REACTION',I6,' REACTANT',I2,' NOT FOUND: ',A12)") nr,i,fn(i)
                  STOP
               END IF
            END DO
@@ -123,7 +123,7 @@ SUBROUTINE READ_REACTIONS
               irct(i,nr) = FIND_NAME(fn(i),name)
               IF (irct(i,nr) <= 0) THEN
                  WRITE(*,"(I6,':',2X,A)") nr,ctitle(nr)
-                 WRITE(*,"(' REACTION',I6,' REACTANT',I2,' NOT FOUND: ',A12)"),nr,i,fn(i)
+                 WRITE(*,"(' REACTION',I6,' REACTANT',I2,' NOT FOUND: ',A12)") nr,i,fn(i)
                  STOP
               END IF
            END DO
@@ -149,7 +149,7 @@ SUBROUTINE READ_REACTIONS
            irct(i,nr) = FIND_NAME(fn(i),name)
            IF (irct(i,nr) <= 0) THEN
               WRITE(*,"(I6,':',2X,A)") nr,ctitle(nr)
-              WRITE(*,"(' REACTION',I6,' REACTANT',I2,' NOT FOUND: ',A12)"),nr,i,fn(i)
+              WRITE(*,"(' REACTION',I6,' REACTANT',I2,' NOT FOUND: ',A12)") nr,i,fn(i)
               STOP
            END IF
         END IF
@@ -178,7 +178,7 @@ SUBROUTINE READ_REACTIONS
            irct(i,nr) = FIND_NAME(fn(i),name)
            IF (irct(i,nr) <= 0) THEN
               WRITE(*,"(I6,':',2X,A)") nr,ctitle(nr)
-              WRITE(*,"(' REACTION',I6,' REACTANT',I2,' NOT FOUND: ',A12)"),nr,i,fn(i)
+              WRITE(*,"(' REACTION',I6,' REACTANT',I2,' NOT FOUND: ',A12)") nr,i,fn(i)
               STOP
            END IF
 
@@ -188,7 +188,7 @@ SUBROUTINE READ_REACTIONS
               irct(i,nr) = FIND_NAME(fn(i),name)
               IF (irct(i,nr) <= 0) THEN
                  WRITE(*,"(I6,':',2X,A)") nr,ctitle(nr)
-                 WRITE(*,"(' REACTION',I6,' REACTANT',I2,' NOT FOUND: ',A12)"),nr,i,fn(i)
+                 WRITE(*,"(' REACTION',I6,' REACTANT',I2,' NOT FOUND: ',A12)") nr,i,fn(i)
                  STOP
               END IF
            END DO
@@ -198,7 +198,7 @@ SUBROUTINE READ_REACTIONS
               irct(i,nr) = FIND_NAME(fn(i),name)
               IF (irct(i,nr) <= 0) THEN
                  WRITE(*,"(I6,':',2X,A)") nr,ctitle(nr)
-                 WRITE(*,"(' REACTION',I6,' REACTANT',I2,' NOT FOUND: ',A12)"),nr,i,fn(i)
+                 WRITE(*,"(' REACTION',I6,' REACTANT',I2,' NOT FOUND: ',A12)") nr,i,fn(i)
                  STOP
               END IF
            END DO
@@ -225,7 +225,7 @@ SUBROUTINE READ_REACTIONS
            irct(i,nr) = FIND_NAME(fn(i),name)
            IF (irct(i,nr) <= 0) THEN
               WRITE(*,"(I6,':',2X,A)") nr,ctitle(nr)
-              WRITE(*,"(' REACTION',I6,' REACTANT',I2,' NOT FOUND: , ABORTING ... ',A12)"),nr,i,fn(i)
+              WRITE(*,"(' REACTION',I6,' REACTANT',I2,' NOT FOUND: , ABORTING ... ',A12)") nr,i,fn(i)
               STOP
            END IF
         END IF

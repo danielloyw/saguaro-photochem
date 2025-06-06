@@ -1,0 +1,2 @@
+source /opt/intel/oneapi/setvars.sh
+. /opt/intel/oneapi/mkl/2025.1/env/vars.sh

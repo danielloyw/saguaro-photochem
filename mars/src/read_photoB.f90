@@ -182,7 +182,12 @@ SUBROUTINE READ_PHOTOB(name,nbrnchB,loabB,loprB,ionizeB,enrgIB,charge_stateB,phr
 
   na = nabs + 3
   nbrnchB(na) = 2
-  ALLOCATE(wav_co(nwav_coA+nwav_coB),crs_co_diss(nwav_coA+nwav_coB),crs_co_tot(nwav_coA+nwav_coB),brat_co(nwav_coA+nwav_coB,nbrnchB(na)))
+  ALLOCATE( &
+    wav_co(nwav_coA+nwav_coB), &
+    crs_co_diss(nwav_coA+nwav_coB), &
+    crs_co_tot(nwav_coA+nwav_coB), &
+    brat_co(nwav_coA+nwav_coB, nbrnchB(na)) &
+  )
   OPEN(Unit=67,file='../data/photons/photoB-12C16O_300K_75-91.2.dat',status='old',action='read')
      READ(67,"(A)") header
      READ(67,"(A)") header
