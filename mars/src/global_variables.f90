@@ -1,207 +1,347 @@
-MODULE GLOBAL_VARIABLES
+! Defines all global variables that are used in program
+module global_variables
+  use types, only: wp => dp
+  use constants
 
-  USE PRECISION
+  !-----------------------------------------------------------------------------
+  !  Planet Parameters
+  !-----------------------------------------------------------------------------
 
-  !  .. Planet Parameters
+  ! Planet = Mars
+  real(wp), parameter :: m_planet = 6.417E26    ! planet mass
+  real(wp), parameter :: GM = Gcnst * m_planet  ! grav const * planet mass
+  real(wp), parameter :: RPLANET = 3389.5E5     ! planet radius
+  real(wp), parameter :: DH = 1.520_wp          ! orbit semimajor axis in AU
 
-  REAL(RP), PARAMETER :: GM = 4.283E19            !  Grav Const X Planet Mass      
-  REAL(RP), PARAMETER :: RPLANET = 3389.5E5        !  Radius of Planet              
-  REAL(RP), PARAMETER :: DH = 1.5200_RP           !  Planet Heliocentric Distance (AU)
+  !-----------------------------------------------------------------------------
+  !  Run Parameters
+  !-----------------------------------------------------------------------------
 
   !  .. Photolysis averaging
 
-  REAL(RP) :: cos_sza 
-  REAL(RP) :: diurnal_average
+  real(wp) :: cos_sza
+  real(wp) :: diurnal_average
 
   !  .. Run control parameters
 
-  CHARACTER(len=3) :: runID
-  LOGICAL :: lprnt
-  LOGICAL :: lcompo_sol, lchemeq_sol
-  REAL(RP) :: ascl
-  INTEGER :: iaer
-  REAL(RP) :: tstep_chem, tstep_diff ! timesteps for reactions and diffusion
+  character(len=3) :: runID
+  logical :: lprnt
+  logical :: lcompo_sol, lchemeq_sol
+  real(wp) :: ascl
+  integer :: iaer
+  real(wp) :: tstep_chem, tstep_diff ! timesteps for reactions and diffusion
 
-  ! .. Molecules
+  !-----------------------------------------------------------------------------
+  !  Species
+  !-----------------------------------------------------------------------------
 
-  INTEGER :: neutrmax   ! number of neutrals
-  INTEGER :: nionsmax   ! number of ions
-  INTEGER :: nsp        ! total species
-  INTEGER :: nchem      ! total species in chem eqm
-  INTEGER :: ndiff      ! total species in diffusion eqm
-  CHARACTER(len=12), ALLOCATABLE, DIMENSION(:) :: name  ! name of species
-  INTEGER, ALLOCATABLE, DIMENSION(:) :: istat       ! how is species treated in model
-  REAL(RP), ALLOCATABLE, DIMENSION(:) :: mmw        ! molecular weight (in amu)
-  INTEGER, ALLOCATABLE, DIMENSION(:) :: nhyd        ! number of H
-  INTEGER, ALLOCATABLE, DIMENSION(:) :: ncar        ! number of C
-  INTEGER, ALLOCATABLE, DIMENSION(:) :: n14n        ! number of N-14
-  INTEGER, ALLOCATABLE, DIMENSION(:) :: n15n        ! number of N-15
-  INTEGER, ALLOCATABLE, DIMENSION(:) :: noxy        ! number of O
-  INTEGER, ALLOCATABLE, DIMENSION(:) :: dtype       ! how is diffusion treated
-  REAL(RP), ALLOCATABLE, DIMENSION(:) :: ad         ! diffusion parameter A
-  REAL(RP), ALLOCATABLE, DIMENSION(:) :: sd         ! diffusion parameter s_1
-  REAL(RP), ALLOCATABLE, DIMENSION(:) :: phi        ! diffusion parameter phi
-  REAL(RP), ALLOCATABLE, DIMENSION(:) :: sd_2       ! diffusion parameter s_2
-  REAL(RP), ALLOCATABLE, DIMENSION(:) :: sd_3       ! diffusion parameter s_3
-  INTEGER, ALLOCATABLE, DIMENSION(:,:) :: ibnd      ! boundary type (species #, bottom/top)
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: bval     ! boundary velocity value (species #, bottom/top) +ve upward
-  INTEGER, ALLOCATABLE, DIMENSION(:) :: ichrg       ! charge
-  INTEGER, ALLOCATABLE, DIMENSION(:) :: locp        ! index conversion from list of chemical eqm species onto list of total species
-  INTEGER, ALLOCATABLE, DIMENSION(:) :: lopc        ! index conversion from list of total species onto list of chemical eqm species
-  INTEGER, ALLOCATABLE, DIMENSION(:) :: ldcp        ! index conversion from list of diffusing species onto list of total species
-  INTEGER, ALLOCATABLE, DIMENSION(:) :: ldpc        ! index conversion from list of total species onto list of diffusing species
-  INTEGER :: iN2, iCO2, iELE                        ! index of N2, CO2 and e
-  LOGICAL :: lions      ! are there ions in the model?
+  ! number of neutrals
+  integer :: n_neu
+  ! number of ions
+  integer :: n_ion
+  ! total number of species (neutrals + ions + electrons)
+  integer :: n_sp
+  ! total species in chemical equilibrium
+  integer :: n_chem
+  ! total species in diffusive equilibrium
+  integer :: n_diff
+  ! species name (0th index = total)
+  character(len=12), allocatable, dimension(:) :: sp_name
+  ! how is species treated in model
+  integer, allocatable, dimension(:) :: istat
+  ! molecular weight (in amu)
+  real(wp), allocatable, dimension(:) :: mmw
+  ! number of H, C, N-14, N-15, O in species
+  integer, allocatable, dimension(:) :: nhyd, ncar, n14n, n15n, noxy
 
-  !  .. Reactions 
+  ! how is diffusion treated
+  integer, allocatable, dimension(:) :: dtype
+  ! diffusion parameters A, s_1, phi, s_2, s_3
+  real(wp), allocatable, dimension(:) :: Ad, sd, phi, sd_2, sd_3
 
-  CHARACTER(len=73), ALLOCATABLE, DIMENSION(:) :: ctitle        ! chemical equation
-  INTEGER :: nrct   ! number of reactions
-  INTEGER, ALLOCATABLE, DIMENSION(:) :: itype           ! reaction type
-  INTEGER, ALLOCATABLE, DIMENSION(:,:) :: irct          ! reactant index (reactant #, reaction #)
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: rck          ! reaction rate constants (constant 1-10, reaction #)
-  INTEGER, ALLOCATABLE, DIMENSION(:) :: ntab            ! number of tabulated reactions
-  INTEGER, ALLOCATABLE, DIMENSION(:) :: ntmp_rct
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: tmp_rct
-  INTEGER, ALLOCATABLE, DIMENSION(:) :: nprs_rct
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: plog_rct
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:,:) :: rct_tab
-
-  !  .. Atmosphere
-
-  INTEGER :: nlev, nibot            ! number of elevation bins, index of zbot
-  REAL(RP) :: zbot                  ! lower altitude bound for model
-  REAL(RP) :: ed1,ed0,pk0,gek       ! coefficients for calculating eddy coefficient
-  REAL(RP), ALLOCATABLE, DIMENSION(:) :: z              ! altitude
-  REAL(RP), ALLOCATABLE, DIMENSION(:) :: rz             ! radius
-  REAL(RP), ALLOCATABLE, DIMENSION(:) :: grv            ! gravity
-  REAL(RP), ALLOCATABLE, DIMENSION(:) :: tn             ! neutral temp
-  REAL(RP), ALLOCATABLE, DIMENSION(:) :: ti             ! ion temp
-  REAL(RP), ALLOCATABLE, DIMENSION(:) :: te             ! electron temp
-  REAL(RP), ALLOCATABLE, DIMENSION(:) :: prs            ! pressure
-  REAL(RP), ALLOCATABLE, DIMENSION(:) :: mass           ! mean molecular weight
-  REAL(RP), ALLOCATABLE, DIMENSION(:) :: rho            ! mass density
-  REAL(RP), ALLOCATABLE, DIMENSION(:) :: ek             ! eddy coeff
-  REAL(RP), ALLOCATABLE, DIMENSION(:) :: col            ! column density
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: den, den_old ! number density
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: xmol         ! mole density
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: ht           ! scale height
-  REAL(RP), ALLOCATABLE, DIMENSION(:) :: rmid           ! middle of rz bins
-  REAL(RP), ALLOCATABLE, DIMENSION(:) :: dr             ! rmid(i)-rmid(i-1)
-  REAL(RP), ALLOCATABLE, DIMENSION(:) :: drp            ! rz(i)-rz(i-1)
-  REAL(RP), ALLOCATABLE, DIMENSION(:) :: rp2            ! (rmid(nl)/rz(nl))**2
-  REAL(RP), ALLOCATABLE, DIMENSION(:) :: rm2            ! (rmid(nl-1)/rz(nl))**2
-
-  !  .. DIFCO
-
-  REAL(RP), PARAMETER :: polN2 = 17.6E-25               ! Polarizability of N2
-  REAL(RP), PARAMETER :: polCO2 = 2.63E-24              ! Polarizability of CO2
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: df           ! diffusion coefficient
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: alpha
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: beta
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: a            ! divergence coefficient for bin below
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: b            ! divergence coefficient for bin
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: c            ! divergence coefficient for bin above
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: alphax
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: betax
-  REAL(RP), ALLOCATABLE, DIMENSION(:) :: ekp
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: dfp
+  ! boundary type (species #, bottom/top)
+  integer, allocatable, dimension(:,:) :: ibnd
+  ! boundary velocity value (species #, bottom/top) +ve upward
+  real(wp), allocatable, dimension(:,:) :: bval
+  ! charge
+  integer, allocatable, dimension(:) :: ichrg
   
-  !  .. RATECO
-
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: rt, rct      ! rate (reaction #, altitude bin #),
-
-  !  .. PATHS
-
-  REAL(RP) :: RSHADOW   ! planet radius + zbot
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: ds           ! path through atmosphere for RT (altitude, tangent altitude)
-  INTEGER :: illum, nbot                                ! day(1)/twilight(0)/night(-1), index of lowest illuminated altitude
-  INTEGER, ALLOCATABLE, DIMENSION(:) :: ntan            ! altitude index for tangent altitude
-
-  !  .. Aerosols
-
-  INTEGER :: naer, nawv, ihetero
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: kaer, tau_aer
-  REAL(RP), ALLOCATABLE, DIMENSION(:) :: surfarea
-
-
-  !  .. Rayleigh Scattering
- 
-  REAL(RP), ALLOCATABLE, DIMENSION(:) :: crs_ray ! scattering cross-section in spectral range C
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: tau_ray ! tau (altitude, wavelength)
-
-  !  .. External Production
-
-  INTEGER :: next
-  CHARACTER(len=12), ALLOCATABLE, DIMENSION(:) :: name_ext
-  REAL(RP), ALLOCATABLE, DIMENSION(:) :: zext, hext, fext
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: prext ! external production
-   
-  !  .. PHOTO
-
-  LOGICAL :: lcrsA, lcrsB, lcrsC, lcrsJ                 ! calculate photolysis?
-  INTEGER :: nphrt                                      ! total number of photolysis reactions
-  INTEGER :: ncrsA, ncrsB, ncrsB_low, ncrsC                        ! number of wavelength bins for spectral ranges A, B and C
-  INTEGER :: nabsA, nabsB, nabsC, nabsJ                 ! number of species for spectral ranges A, B and C
-  INTEGER :: nbrmaxA, nbrmaxB, nbrmaxC, nbrmaxJ         ! maximum number of branches for each species
-  INTEGER, ALLOCATABLE, DIMENSION(:) :: loabA, loabB, loabC, loabJ                      ! photolyzed species index
-  INTEGER, ALLOCATABLE, DIMENSION(:) :: nbrnchA, nbrnchB, nbrnchC, nbrnchJ              ! number of photo reactions/branches
-  REAL(RP), ALLOCATABLE, DIMENSION(:) :: wcrsA, wcrsB, wcrsB_low, wcrsC                            ! wavelength scale
-  REAL(RP), ALLOCATABLE, DIMENSION(:) :: fsolA, fsolB, fsolC                            ! solar flux for spectral ranges A, B and C
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: trnA, trnB, trnC                            ! transmission of solar flux for spectral ranges A, B and C
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:,:) :: prtA, prtB, prtC                            ! non-diurnally averaged photo rate for spectral ranges A, B and C (wavelength, branch #, species #)
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: xcrsA, xcrsB, xcrsC                          ! total absorption cross sections (wavelength, species #)
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:,:) :: bratA, bratB, bratC                        ! branch ratio (wavelength, branch #, species #)
-  LOGICAL, ALLOCATABLE, DIMENSION(:,:) :: ionizeA, ionizeB, ionizeC                     ! are there any ions?
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: enrgIA, enrgIB, enrgIC                       ! threshold energy (branch #, species #) in angstroms
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: charge_stateA, charge_stateB, charge_stateC  ! number of ions (branch #, species #)
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: srateJ                                       ! specified optically thin photolysis rates
-  CHARACTER(len=87), ALLOCATABLE, DIMENSION(:) :: ptitle                                ! formula for each photolysis reaction
-  INTEGER, ALLOCATABLE, DIMENSION(:,:) :: irpt                                          ! indices for reactants/products
-
-  !  .. Variables used in ELCTRN, ELDEP1
-
-  INTEGER :: nabs_el_thk, nabs_el_thn, nelb, nert ! number of species (thick), number of species (thin), number of bins, number of electron impact reactions
-  REAL(RP), ALLOCATABLE, DIMENSION(:) :: elctreV ! mean bin energy
-  REAL(RP), ALLOCATABLE, DIMENSION(:) :: elctDeV ! bin width
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: eCS_tot_elast ! elastic cross section (energy bin, species)
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: eCS_tot_inelast ! inelastic cross section (energy bin, species)
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:,:) :: eCS ! cross-sections (energy bin, species, state)
-  CHARACTER(len=10), ALLOCATABLE, DIMENSION(:,:) :: state ! name of excited state (species, state)
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: enrgE ! energy level of excited state (species, state)
-  INTEGER, ALLOCATABLE, DIMENSION(:,:) :: ipath ! number of states (species, excited/dissociation/ionization)
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: Sel ! electron production/source (altitude, bin)
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: eCS_exc ! total cross-section for excitation and dissociation
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: eCS_ion ! total cross-section for ionization
-  REAL(RP), ALLOCATABLE, DIMENSION(:) :: pS ! 0?
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:,:) :: brat_el ! cross section for thin?
-  INTEGER, ALLOCATABLE, DIMENSION(:) :: nbrnch_el ! number of branches for dissociation + ionization (species)
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: crs_tot_inel ! total cross section for thin
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:,:) :: sum_cs_rees_ion
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:,:) :: sum_cs_rees_sec ! total cross-section for secondary electron production
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:,:) :: esrc ! electron production rate (reaction, altitude, energy bin)
-  CHARACTER(len=87), ALLOCATABLE, DIMENSION(:) :: etitle ! equation (reaction)
-  INTEGER, ALLOCATABLE, DIMENSION(:,:) :: iert ! reactant/product index (reactant/product #, reaction)
+  ! are there ions in the model?
+  logical :: l_ion
   
-  ! .. SOLDEP1
+  ! Index mapping between lists
+  ! List of chemical species -> list of all species
+  integer, allocatable, dimension(:) :: im_chem_all
+  ! List of all species -> list of chemical species
+  integer, allocatable, dimension(:) :: im_all_chem
+  ! List of diffusing species -> list of all species
+  integer, allocatable, dimension(:) :: im_diff_all
+  ! List of all species -> list of diffusing species
+  integer, allocatable, dimension(:) :: im_all_diff
+  
+  ! index of N2, CO2 and e
+  integer :: iN2, iCO2, iELE
 
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: rph, rpt ! absorption rate per molecule (reaction, altitude), total absorption rate (reaction, altitude)
- 
-  !  .. ELDEP1
+  !-----------------------------------------------------------------------------
+  !  Reactions
+  !-----------------------------------------------------------------------------
 
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: eflux, eph, rpe
+  ! chemical equation
+  character(len=73), allocatable, dimension(:) :: ctitle
+  ! number of reactions
+  integer :: nrct
+  ! reaction type
+  integer, allocatable, dimension(:) :: itype
+  ! reactant index (reactant #, reaction #)
+  integer, allocatable, dimension(:,:) :: irct
+  ! reaction rate constants (constant 1-10, reaction #)
+  real(wp), allocatable, dimension(:,:) :: rck
+  ! number of tabulated reactions
+  integer, allocatable, dimension(:) :: ntab
+  !
+  integer, allocatable, dimension(:) :: ntmp_rct
+  !
+  real(wp), allocatable, dimension(:,:) :: tmp_rct
+  !
+  integer, allocatable, dimension(:) :: nprs_rct
+  !
+  real(wp), allocatable, dimension(:,:) :: plog_rct
+  !
+  real(wp), allocatable, dimension(:,:,:) :: rct_tab
 
-  !  .. CHEMEQ & COMPO
+  !-----------------------------------------------------------------------------
+  !  Atmosphere
+  !-----------------------------------------------------------------------------
 
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: pr_chem, ls_chem !  Production and Loss from chemical processes
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: rcdn             !  Condensation loss
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: pr_ph, ls_ph     !  Production and Loss from photon processes
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: pr_pe, ls_pe     !  Production and Loss from electron processes
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: pr, ls           !  Net production and loss
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: flx              !  Flux
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: div_flx          !  Flux divergence
-  REAL(RP), ALLOCATABLE, DIMENSION(:,:) :: dNdt             !  Net balance
+  ! number of elevation bins, index of zbot
+  integer :: nlev, nibot
+  ! altitude to opaque atmosphere layer
+  real(wp) :: zbot
+  ! coefficients for calculating eddy coefficient
+  real(wp) :: ed1,ed0,pk0,gek
+  real(wp), allocatable, dimension(:) :: z              ! altitude
+  real(wp), allocatable, dimension(:) :: rz             ! radius
+  real(wp), allocatable, dimension(:) :: grv            ! gravity
+  real(wp), allocatable, dimension(:) :: tn             ! neutral temp
+  real(wp), allocatable, dimension(:) :: ti             ! ion temp
+  real(wp), allocatable, dimension(:) :: te             ! electron temp
+  real(wp), allocatable, dimension(:) :: prs            ! pressure
+  real(wp), allocatable, dimension(:) :: mass           ! mean molecular weight
+  real(wp), allocatable, dimension(:) :: rho            ! mass density
+  real(wp), allocatable, dimension(:) :: ek             ! eddy coeff
+  real(wp), allocatable, dimension(:) :: col            ! column density
+  real(wp), allocatable, dimension(:,:) :: den, den_old ! number density
+  real(wp), allocatable, dimension(:,:) :: xmol         ! mole density
+  real(wp), allocatable, dimension(:,:) :: ht           ! scale height
+  real(wp), allocatable, dimension(:) :: rmid           ! middle of rz bins
+  real(wp), allocatable, dimension(:) :: dr             ! rmid(i)-rmid(i-1)
+  real(wp), allocatable, dimension(:) :: drp            ! rz(i)-rz(i-1)
+  real(wp), allocatable, dimension(:) :: rp2            ! (rmid(nl)/rz(nl))**2
+  real(wp), allocatable, dimension(:) :: rm2            ! (rmid(nl-1)/rz(nl))**2
 
-  !  .. COMPOUT
+  !-----------------------------------------------------------------------------
+  !  DIFCO
+  !-----------------------------------------------------------------------------
 
-END MODULE GLOBAL_VARIABLES
+  real(wp), parameter :: polN2 = 17.6E-25               ! Polarizability of N2
+  real(wp), parameter :: polCO2 = 2.63E-24              ! Polarizability of CO2
+  real(wp), allocatable, dimension(:,:) :: df           ! diffusion coefficient
+  !
+  real(wp), allocatable, dimension(:,:) :: alpha
+  !
+  real(wp), allocatable, dimension(:,:) :: beta
+  ! divergence coefficient for bin below
+  real(wp), allocatable, dimension(:,:) :: a
+  ! divergence coefficient for bin
+  real(wp), allocatable, dimension(:,:) :: b
+  ! divergence coefficient for bin above
+  real(wp), allocatable, dimension(:,:) :: c
+  !
+  real(wp), allocatable, dimension(:,:) :: alphax
+  !
+  real(wp), allocatable, dimension(:,:) :: betax
+  !
+  real(wp), allocatable, dimension(:) :: ekp
+  !
+  real(wp), allocatable, dimension(:,:) :: dfp
+
+  !-----------------------------------------------------------------------------
+  !  RATECO
+  !-----------------------------------------------------------------------------
+
+  ! rate (reaction #, altitude bin #),
+  real(wp), allocatable, dimension(:,:) :: rt, rct
+
+  !-----------------------------------------------------------------------------
+  !  PATHS
+  !-----------------------------------------------------------------------------
+
+  ! planet radius + zbot
+  real(wp) :: RSHADOW
+  ! path through atmosphere for RT (altitude, tangent altitude)
+  real(wp), allocatable, dimension(:,:) :: ds
+  ! illumination condition: 1=day, 0=twilight, -1=night
+  integer :: illum
+  ! index of lowest illuminated altitude
+  integer :: nbot
+  ! altitude index for tangent altitude
+  integer, allocatable, dimension(:) :: ntan
+
+  !-----------------------------------------------------------------------------
+  !  Aerosols
+  !-----------------------------------------------------------------------------
+
+  integer :: naer, nawv, ihetero
+  real(wp), allocatable, dimension(:,:) :: kaer, tau_aer
+  real(wp), allocatable, dimension(:) :: surfarea
+
+  !-----------------------------------------------------------------------------
+  !  Rayleigh Scattering
+  !-----------------------------------------------------------------------------
+
+  ! scattering cross-section in spectral range C
+  real(wp), allocatable, dimension(:) :: crs_ray
+  ! tau (altitude, wavelength)
+  real(wp), allocatable, dimension(:,:) :: tau_ray
+
+  !-----------------------------------------------------------------------------
+  !  External Production
+  !-----------------------------------------------------------------------------
+
+  integer :: next
+  character(len=12), allocatable, dimension(:) :: name_ext
+  real(wp), allocatable, dimension(:) :: zext, hext, fext
+  real(wp), allocatable, dimension(:,:) :: prext ! external production
+
+  !-----------------------------------------------------------------------------
+  !  PHOTO
+  !-----------------------------------------------------------------------------
+
+  ! calculate photolysis?
+  logical :: lcrsA, lcrsB, lcrsC, lcrsJ
+  ! total number of photolysis reactions
+  integer :: nphrt
+  ! number of wavelength bins for spectral ranges A, B and C
+  integer :: ncrsA, ncrsB, ncrsB_low, ncrsC
+  ! number of species for spectral ranges A, B and C
+  integer :: nabsA, nabsB, nabsC, nabsJ
+  ! maximum number of branches for each species
+  integer :: nbrmaxA, nbrmaxB, nbrmaxC, nbrmaxJ
+  ! photolyzed species index
+  integer, allocatable, dimension(:) :: loabA, loabB, loabC, loabJ
+  ! number of photo reactions/branches
+  integer, allocatable, dimension(:) :: nbrnchA, nbrnchB, nbrnchC, nbrnchJ
+  ! wavelength scale
+  real(wp), allocatable, dimension(:) :: wcrsA, wcrsB, wcrsB_low, wcrsC
+  ! solar flux for spectral ranges A, B and C
+  real(wp), allocatable, dimension(:) :: fsolA, fsolB, fsolC
+  ! transmission of solar flux for spectral ranges A, B and C
+  real(wp), allocatable, dimension(:,:) :: trnA, trnB, trnC
+  ! non-diurnally averaged photo rate for spectral ranges A, B and C
+  ! (wavelength, branch #, species #)
+  real(wp), allocatable, dimension(:,:,:) :: prtA, prtB, prtC
+  ! total absorption cross sections (wavelength, species #)
+  real(wp), allocatable, dimension(:,:) :: xcrsA, xcrsB, xcrsC
+  ! branch ratio (wavelength, branch #, species #)
+  real(wp), allocatable, dimension(:,:,:) :: bratA, bratB, bratC
+  ! are there any ions?
+  logical, allocatable, dimension(:,:) :: ionizeA, ionizeB, ionizeC
+  ! threshold energy (branch #, species #) in angstroms
+  real(wp), allocatable, dimension(:,:) :: enrgIA, enrgIB, enrgIC
+  ! number of ions (branch #, species #)
+  real(wp), allocatable, dimension(:,:) :: charge_stateA
+  real(wp), allocatable, dimension(:,:) :: charge_stateB
+  real(wp), allocatable, dimension(:,:) :: charge_stateC
+  ! specified optically thin photolysis rates
+  real(wp), allocatable, dimension(:,:) :: srateJ
+  ! formula for each photolysis reaction
+  character(len=87), allocatable, dimension(:) :: ptitle
+  ! indices for reactants/products
+  integer, allocatable, dimension(:,:) :: irpt
+
+  !-----------------------------------------------------------------------------
+  !  ELCTRN, ELDEP1
+  !-----------------------------------------------------------------------------
+
+  ! number of species (thick), number of species (thin)
+  integer :: nabs_el_thk, nabs_el_thn
+  ! number of bins, number of electron impact reactions
+  integer :: nelb, nert
+  ! mean bin energy
+  real(wp), allocatable, dimension(:) :: elctreV
+  ! bin width
+  real(wp), allocatable, dimension(:) :: elctDeV
+  ! elastic cross section (energy bin, species)
+  real(wp), allocatable, dimension(:,:) :: eCS_tot_elast
+  ! inelastic cross section (energy bin, species)
+  real(wp), allocatable, dimension(:,:) :: eCS_tot_inelast
+  ! cross-sections (energy bin, species, state)
+  real(wp), allocatable, dimension(:,:,:) :: eCS
+  ! name of excited state (species, state)
+  character(len=10), allocatable, dimension(:,:) :: state
+  ! energy level of excited state (species, state)
+  real(wp), allocatable, dimension(:,:) :: enrgE
+  ! number of states (species, excited/dissociation/ionization)
+  integer, allocatable, dimension(:,:) :: ipath
+  ! electron production/source (altitude, bin)
+  real(wp), allocatable, dimension(:,:) :: Sel
+  ! total cross-section for excitation and dissociation
+  real(wp), allocatable, dimension(:,:) :: eCS_exc
+  ! total cross-section for ionization
+  real(wp), allocatable, dimension(:,:) :: eCS_ion
+  ! 0?
+  real(wp), allocatable, dimension(:) :: pS
+  ! cross section for thin?
+  real(wp), allocatable, dimension(:,:,:) :: brat_el
+  ! number of branches for dissociation + ionization (species)
+  integer, allocatable, dimension(:) :: nbrnch_el
+  ! total cross section for thin
+  real(wp), allocatable, dimension(:,:) :: crs_tot_inel
+  !
+  real(wp), allocatable, dimension(:,:,:) :: sum_cs_rees_ion
+  ! total cross-section for secondary electron production
+  real(wp), allocatable, dimension(:,:,:) :: sum_cs_rees_sec
+  ! electron production rate (reaction, altitude, energy bin)
+  real(wp), allocatable, dimension(:,:,:) :: esrc
+  ! equation (reaction)
+  character(len=87), allocatable, dimension(:) :: etitle
+  ! reactant/product index (reactant/product #, reaction)
+  integer, allocatable, dimension(:,:) :: iert
+
+  !-----------------------------------------------------------------------------
+  !  SOLDEP1
+  !-----------------------------------------------------------------------------
+
+  ! absorption rate per molecule (reaction, altitude)
+  real(wp), allocatable, dimension(:,:) :: rph
+  ! total absorption rate (reaction, altitude)
+  real(wp), allocatable, dimension(:,:) :: rpt
+
+  !-----------------------------------------------------------------------------
+  !  ELDEP1
+  !-----------------------------------------------------------------------------
+
+  real(wp), allocatable, dimension(:,:) :: eflux, eph, rpe
+
+  !-----------------------------------------------------------------------------
+  !  CHEMEQ & COMPO
+  !-----------------------------------------------------------------------------
+
+  !  Production and Loss from chemical processes
+  real(wp), allocatable, dimension(:,:) :: pr_chem, ls_chem
+  !  Condensation loss
+  real(wp), allocatable, dimension(:,:) :: rcdn
+  !  Production and Loss from photon processes
+  real(wp), allocatable, dimension(:,:) :: pr_ph, ls_ph
+  !  Production and Loss from electron processes
+  real(wp), allocatable, dimension(:,:) :: pr_pe, ls_pe
+  !  Net production and loss
+  real(wp), allocatable, dimension(:,:) :: pr, ls
+  !  Flux
+  real(wp), allocatable, dimension(:,:) :: flx
+  !  Flux divergence
+  real(wp), allocatable, dimension(:,:) :: div_flx
+  !  Net balance
+  real(wp), allocatable, dimension(:,:) :: dNdt
+
+end module global_variables
