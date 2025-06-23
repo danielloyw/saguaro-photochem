@@ -13,7 +13,7 @@ deng = egrid(1:neng,2);
 %  Total Elastic Cross Section
 %
 
-data = csvread('datafiles/Total_Elastic.csv',1,0);
+data = csvread('references/Total_Elastic.csv',1,0);
 ndat = size(data,1);
 
 crs_tot_elastic = zeros(neng,1);
@@ -32,13 +32,13 @@ ethreshold = zeros(19,1);
 %  Read fit parameters from Bhardwaj & Jain
 %
 
-params_tbl4 = csvread('datafiles/Bhardwaj_table4.csv',1,1,[1,1,19,7]);
+params_tbl4 = csvread('references/Bhardwaj Table 4.csv',1,1,[1,1,19,7]);
 
 %
 %  Read V1 data from Itikawa
 %
 
-pv1 = csvread('datafiles/CO2_V1.csv',1,0);
+pv1 = csvread('references/Itikawa Fig 5 CO2 (100).csv',1,0);
 nd1 = size(pv1,1);
 ed1 = pv1(1:nd1,1);
 cd1 = 1.E-16*pv1(1:nd1,2);
@@ -60,7 +60,7 @@ ethreshold(1) = W;
 %  Read V2 data from Itikawa
 %
 
-pv2 = csvread('datafiles/CO2_V2.csv',1,0);
+pv2 = csvread('references/Itikawa Fig 6 CO2 (010).csv',1,0);
 nd2 = size(pv2,1);
 ed2 = pv2(1:nd2,1);
 cd2 = 1.E-16*pv2(1:nd2,2);
@@ -82,7 +82,7 @@ ethreshold(2) = W;
 %  Read V3 data from Itikawa
 %
 
-pv3 = csvread('datafiles/CO2_V3.csv',1,0);
+pv3 = csvread('references/Itikawa Fig 7 CO2 (001).csv',1,0);
 nd3 = size(pv3,1);
 ed3 = pv3(1:nd3,1);
 cd3 = 1.E-16*pv3(1:nd3,2);
@@ -104,7 +104,7 @@ ethreshold(3) = W;
 %  Excitation of electronic states
 %
 
-params_tbl4 = csvread('datafiles/Bhardwaj_table4.csv',1,1,[1,1,19,7]);
+params_tbl4 = csvread('references/Bhardwaj Table 4.csv',1,1,[1,1,19,7]);
 for ns=4:19
     W = params_tbl4(ns,1);
     alpha = params_tbl4(ns,2);
@@ -131,7 +131,7 @@ ithreshold = zeros(10,1);
 %  Fits from Bhardwaj & Jain
 %
 
-params_tbl3 = csvread('datafiles/Bhardwaj_table3.csv',1,1,[1,1,14,11]);
+params_tbl3 = csvread('references/Bhardwaj Table 3.csv',1,1,[1,1,14,11]);
 [nstates_ioniz, nparams_tbl3] = size(params_tbl3);
 
 ilist = [2,5,6,7,8,9,10,11];
@@ -164,7 +164,7 @@ end
 %  assum 39.6:38.3:22.1 % for X:A:B states
 %
 
-pinz = csvread('datafiles/Itikawa_table12.csv',1,0);
+pinz = csvread('references/Itikawa Table 12.csv',1,0);
 ndat = size(pinz,1);
 edat = pinz(1:ndat,1);
 
