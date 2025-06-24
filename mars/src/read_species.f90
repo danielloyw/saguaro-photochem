@@ -45,7 +45,7 @@ subroutine read_species
   n_sp = n_neu + n_ion + 1 ! total number of species (neutrals+ions+electrons)
 
   ! allocate variables in preparation for population with file read
-  allocate(species_list(0:n_sp), istat(n_sp), chrg(n_sp), mmw(n_sp), &
+  allocate(sp_list(0:n_sp), istat(n_sp), chrg(n_sp), mmw(n_sp), &
     nhyd(n_sp), ncar(n_sp), n14n(n_sp), n15n(n_sp), noxy(n_sp), &
     dtype(n_sp), ad(n_sp), sd(n_sp), phi(n_sp), sd_2(n_sp), sd_3(n_sp), &
     ibnd(n_sp,2), bval(n_sp,2))
@@ -54,7 +54,7 @@ subroutine read_species
   read(fid_neu,"(A)") ts_header ! column headers
   do i_sp = 1, n_neu
     read(fid_neu,961) tn1, &
-      species_list(i_sp), istat(i_sp), chrg(i_sp), mmw(i_sp), &
+      sp_list(i_sp), istat(i_sp), chrg(i_sp), mmw(i_sp), &
       nhyd(i_sp), ncar(i_sp), n14n(i_sp), n15n(i_sp), noxy(i_sp), &
       dtype(i_sp), ad(i_sp), sd(i_sp), phi(i_sp), sd_2(i_sp), sd_3(i_sp), &
       ibnd(i_sp,1), bval(i_sp,1), ibnd(i_sp,2), bval(i_sp,2)
@@ -71,7 +71,7 @@ subroutine read_species
   ichk = 0
   do i_sp = n_neu+1, n_neu+n_ion
      read(fid_ion,962) tn1, &
-      species_list(i_sp), istat(i_sp), chrg(i_sp), mmw(i_sp), &
+      sp_list(i_sp), istat(i_sp), chrg(i_sp), mmw(i_sp), &
       nhyd(i_sp), ncar(i_sp), n14n(i_sp), n15n(i_sp), noxy(i_sp), &
       ibnd(i_sp,1), bval(i_sp,1), ibnd(i_sp,2), bval(i_sp,2)
     if(istat(i_sp) == 1) ichk = ichk + 1
@@ -85,8 +85,8 @@ subroutine read_species
   close(unit=fid_neu)
   close(unit=fid_ion)
 
-  species_list(0)    = '            ' ! for total
-  species_list(n_sp) = 'E           ' ! electrons
+  sp_list(0)    = '            ' ! for total
+  sp_list(n_sp) = 'E           ' ! electrons
   mmw(n_sp) = zero
 
   !----------------------------------------------------------------------------
@@ -138,7 +138,7 @@ subroutine read_species
 
   write(*,"('DIFFUSING SPECIES')")
   if(size(im_diff_all) > 0) then
-    write(*,"(10(2X,A12,1X))") (species_list(im_diff_all(nd)), nd=1, n_diff)
+    write(*,"(10(2X,A12,1X))") (sp_list(im_diff_all(nd)), nd=1, n_diff)
   else
     write(*,"('  NONE')")
   end if
@@ -163,7 +163,7 @@ subroutine read_species
   ! print list of chemical species to screen
   write(*,"('CHEMICAL SPECIES')")
   if(size(im_chem_all) > 0) then
-    write(*,"(10(2X,A12,1X))") (species_list(im_chem_all(nc)), nc=1, n_chem)
+    write(*,"(10(2X,A12,1X))") (sp_list(im_chem_all(nc)), nc=1, n_chem)
   else
     write(*,"('  NONE')")
   end if
@@ -172,8 +172,8 @@ subroutine read_species
   !  Determine indices of key species
   !----------------------------------------------------------------------------
   
-  iN2  = find_name('N2          ', species_list)
-  iCO2 = find_name('CO2         ', species_list)
-  iELE = find_name('E           ', species_list)
+  iN2  = find_name('N2          ', sp_list)
+  iCO2 = find_name('CO2         ', sp_list)
+  iELE = find_name('E           ', sp_list)
 
 end subroutine read_species

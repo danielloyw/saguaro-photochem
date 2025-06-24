@@ -20,20 +20,20 @@ module subs
   
   contains
   
-  integer pure function find_name(xname, species_list)
+  integer pure function find_name(xname, sp_list)
   ! This functions finds the index of a species with name "xname" in the list 
-  ! of all model species "species_list". 
-  ! Note: species_list starts at index 0.
+  ! of all model species "sp_list". 
+  ! Note: sp_list starts at index 0.
     implicit none
     character(len=12), intent(in) :: xname
-    character(len=12), intent(in), dimension(0:) :: species_list
-    integer :: n_sp ! size of species_list
+    character(len=12), intent(in), dimension(0:) :: sp_list
+    integer :: n_sp ! size of sp_list
     integer :: i_sp ! loop variable
 
-    n_sp = size(species_list,1)-1 ! -1 because index starts at 0
+    n_sp = size(sp_list,1)-1 ! -1 because index starts at 0
     find_name = 0
     do i_sp = 0, n_sp
-      if(trim(adjustl(xname)) == trim(adjustl(species_list(i_sp)))) then
+      if(trim(adjustl(xname)) == trim(adjustl(sp_list(i_sp)))) then
         find_name = i_sp
         exit
       end if
@@ -292,20 +292,20 @@ module subs
    end subroutine intrp
 
 
-! Calculates the vapor pressure of species_list at temperature T.
+! Calculates the vapor pressure of sp_list at temperature T.
 
-  function VAPOR( species_list, T)
+  function VAPOR( sp_list, T)
     use types, only: wp => dp
     implicit none
     real(wp), intent(in) :: T
-    CHARACTER(LEN=*), intent(in) :: species_list
+    CHARACTER(LEN=*), intent(in) :: sp_list
     real(wp) :: VAPOR
 
-    if(TRIM(species_list) == 'C2H2') then
+    if(TRIM(sp_list) == 'C2H2') then
 !  based on Tickner & Losing 1951 data
        VAPOR = 1.333_wp*10._wp**(9.25_wp-1201.75_wp/T)
        return
-    else if(TRIM(species_list) == 'C2H4') then
+    else if(TRIM(sp_list) == 'C2H4') then
        if (T < 104._wp) then
        VAPOR = 1333._wp*10._wp**(8.724_wp - 901.6_wp/(T-2.555_wp))
        else if ((T >= 104._wp) .AND. (T < 120._wp)) then
@@ -314,81 +314,81 @@ module subs
        VAPOR = 1333._wp*10._wp**(6.74756_wp-585._wp/(T-18.16_wp))
        end if
        return
-    else if(TRIM(species_list) == 'C2H6') then
+    else if(TRIM(sp_list) == 'C2H6') then
        if (T < 90._wp) then
        VAPOR = 1333._wp*10._wp**(10.01_wp - 1085._wp/(T-0.561_wp))
        else if (T > 90.) then
        VAPOR = 1333._wp*10._wp**(5.9366_wp-1086.17_wp/T+3.83464_wp*LOG10(1000._wp/T))
        end if
        return
-    else if(TRIM(species_list) == 'C3H8') then
+    else if(TRIM(sp_list) == 'C3H8') then
 !  based on Tickner & Losing 1951 data
        VAPOR = 1333._wp*10._wp**(8.16173_wp-1176._wp/T)
        return
-    else if(TRIM(species_list) == 'C4H2') then
+    else if(TRIM(sp_list) == 'C4H2') then
 !  from Moses 1992
        VAPOR = 1333._wp*10._wp**(5.3817_wp-3300.5_wp/T + 16.63415_wp*LOG10(1000._wp/T))
        return
-    else if(TRIM(species_list) == 'C4H6') then
+    else if(TRIM(sp_list) == 'C4H6') then
 !  from Moses 1992
 !       WRITE(*,*) ' CALCULATE C4H10 VP, T = ',T
 !       WRITE(*,*) ' CALCULATE C4H10 VP, ARG = ',8.446_wp-1461.2_wp/T
        VAPOR = 1333._wp*10._wp**(8.032581_wp-1441.42_wp/T)
        return
-    else if(TRIM(species_list) == 'C4H10') then
+    else if(TRIM(sp_list) == 'C4H10') then
 !  from Moses 1992
        VAPOR = 1333._wp*10._wp**(8.446_wp-1461.2_wp/T)
        return
-    else if(TRIM(species_list) == 'C6H6') then
+    else if(TRIM(sp_list) == 'C6H6') then
        VAPOR = 10._wp*EXP(26._wp-7640._wp/(T+30._wp))
        return
-    else if(TRIM(species_list) == 'C7H8') then
+    else if(TRIM(sp_list) == 'C7H8') then
        VAPOR = 10._wp*EXP(26._wp-7640._wp/(T+30._wp))
        return
-    else if(TRIM(species_list) == 'C8H10') then
+    else if(TRIM(sp_list) == 'C8H10') then
        VAPOR = 10._wp*EXP(26._wp-7640._wp/(T+30._wp))
        return
-    else if(TRIM(species_list) == 'RinG') then
+    else if(TRIM(sp_list) == 'RinG') then
        VAPOR = 10._wp*EXP(26._wp-7640._wp/(T+30._wp))
        return
-    else if(TRIM(species_list) == 'H2O') then
+    else if(TRIM(sp_list) == 'H2O') then
 !  from Moses 1992
 !       VAPOR = 1333._wp*10._wp**(9.184_wp-0.2185*10999.398_wp/T)
        VAPOR = 1333.22368_wp*10._wp**(-2445.5646_wp/T+8.2312_wp*LOG10(T)-0.01677006_wp*T+1.20514E-5_wp*(T**2)-6.757169_wp)
        return
-    else if(TRIM(species_list) == 'CO2') then
+    else if(TRIM(sp_list) == 'CO2') then
 !  from Moses 1992
        VAPOR = 1333._wp*EXP(2.13807649E+01_wp-2.57064700E+03_wp/T-7.78129489E+04_wp/T**2  &
             +4.32506256E+06_wp/T**3-1.20671368E+08_wp/T**4+1.34966306E+09_wp/T**5)
        return
-    else if(TRIM(species_list) == 'HCN') then
+    else if(TRIM(sp_list) == 'HCN') then
        VAPOR = 10._wp**(12.54747_wp-(1893.068_wp/(T+0.309_wp)))
        return
-    else if(TRIM(species_list) == 'HNC') then
+    else if(TRIM(sp_list) == 'HNC') then
        VAPOR = 10._wp**(12.54747_wp-(1893.068_wp/(T+0.309_wp)))
        return
-    else if(TRIM(species_list) == 'HC3N') then
+    else if(TRIM(sp_list) == 'HC3N') then
        VAPOR =10._wp**(13.305_wp-(2210._wp/(T)))
        return
-    else if(TRIM(species_list) == 'HC5N') then
+    else if(TRIM(sp_list) == 'HC5N') then
        VAPOR = 10._wp**(13.305_wp-(2210._wp/(T)))  ! assumed same as HC3N
        return
-    else if(TRIM(species_list) == 'CH3CN') then
+    else if(TRIM(sp_list) == 'CH3CN') then
        VAPOR = 10._wp**(10.52111_wp-(1492.375_wp/(T-24.208_wp)))
        return
-    else if(TRIM(species_list) == 'C3H3N') then
+    else if(TRIM(sp_list) == 'C3H3N') then
        VAPOR = 10._wp**(8.9178_wp-(706.474_wp/(T-109.392_wp)))
        return
-    else if(TRIM(species_list) == 'C4H3N') then
+    else if(TRIM(sp_list) == 'C4H3N') then
        VAPOR = 10._wp**(8.9178_wp-(706.474_wp/(T-109.392_wp)))  !  assumed same as C3H3N
        return
-    else if(TRIM(species_list) == 'C5H5N') then
+    else if(TRIM(sp_list) == 'C5H5N') then
        VAPOR = 10._wp**(8.9178_wp-(706.474_wp/(T-109.392_wp)))  !  assumed same as C3H3N
        return
-    else if(TRIM(species_list) == 'C2N2') then
+    else if(TRIM(sp_list) == 'C2N2') then
        VAPOR = 10._wp**(12.53784_wp-(1566.647_wp/(T-10.461_wp)))
        return
-    else if(TRIM(species_list) == 'C4N2') then
+    else if(TRIM(sp_list) == 'C4N2') then
        VAPOR = 10._wp**(14.73702_wp-(3722.003_wp/(T+3.036_wp)))
        return
     else

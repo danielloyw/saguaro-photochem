@@ -100,8 +100,8 @@ subroutine read_reactions
   rewind(unit=fid_irct)
 
   ! now allocate global variables and actually populate them
-  allocate(ctitle(n_rct), chem_type(n_rct), rk(10,n_rct), irct(5,n_rct), & 
-    ntab(n_rct))
+  allocate(ctitle(n_rct), chem_type(n_rct), rk(10,n_rct), irct(5,n_rct))
+  ! allocate(ntab(n_rct))
 
   ! neutral reactions
   read (fid_nrct,'(A)') ts_line
@@ -118,7 +118,7 @@ subroutine read_reactions
         ts_species(3)//' + '//ts_species(4)//' + '//ts_species(5)
       ! determine indices for products
       do i = 3, 5
-        irct(i,nr) = find_name(ts_species(i), species_list)
+        irct(i,nr) = find_name(ts_species(i), sp_list)
       end do
       
       ! determine indices for reactants
@@ -126,7 +126,7 @@ subroutine read_reactions
       if (abs(chem_type(nr)) == 1) then
         rk(:,nr) = t_rk
         i = 1
-        irct(i,nr) = find_name(ts_species(i), species_list)
+        irct(i,nr) = find_name(ts_species(i), sp_list)
         if (irct(i,nr) <= 0) then
           write(*,"(I6,':',2X,A)") nr, ctitle(nr)
           write(*,"('Error: Reactant ',I2,' not found: ',A12)") & 
@@ -138,7 +138,7 @@ subroutine read_reactions
       else if ((abs(chem_type(nr)) > 1) .and. (abs(chem_type(nr)) < 6)) then
         rk(:,nr) = t_rk
         do i = 1, 2
-          irct(i,nr) = find_name(ts_species(i), species_list)
+          irct(i,nr) = find_name(ts_species(i), sp_list)
           if (irct(i,nr) <= 0) then
             write(*,"(I6,':',2X,A)") nr, ctitle(nr)
             write(*,"('Error: Reactant ',I2,' not found: ',A12)") & 
@@ -150,7 +150,7 @@ subroutine read_reactions
       ! Tabulated reaction rates (deactivated for now)
       ! else if(abs(chem_type(nr)) == 6) then
         ! do i = 1, 2
-          ! irct(i,nr) = find_name(ts_species(i), species_list)
+          ! irct(i,nr) = find_name(ts_species(i), sp_list)
           ! if (irct(i,nr) <= 0) then
             ! write(*,"(I6,':',2X,A)") nr, ctitle(nr)
             ! write(*,"('Error: Reactant ',I2,' not found: ',A12)") & 
@@ -178,7 +178,7 @@ subroutine read_reactions
       else if(ABS(chem_type(nr)) == 7) then
         rk(:,nr) = t_rk
         i = 1
-        irct(i,nr) = find_name(ts_species(i), species_list)
+        irct(i,nr) = find_name(ts_species(i), sp_list)
         if (irct(i,nr) <= 0) then
           write(*,"(I6,':',2X,A)") nr, ctitle(nr)
           write(*,"('Error: Reactant ',I2,' not found: ',A12)") & 
@@ -204,7 +204,7 @@ subroutine read_reactions
         ts_species(3)//' + '//ts_species(4)//' + '//ts_species(5)
       ! determine indices for products
       do i = 3, 5
-        irct(i,nr) = find_name(ts_species(i), species_list)
+        irct(i,nr) = find_name(ts_species(i), sp_list)
       end do
       
       ! determine indices for reactants
@@ -212,7 +212,7 @@ subroutine read_reactions
       if (abs(chem_type(nr)) == 1) then
         rk(:,nr) = t_rk
         i = 1
-        irct(i,nr) = find_name(ts_species(i), species_list)
+        irct(i,nr) = find_name(ts_species(i), sp_list)
         if (irct(i,nr) <= 0) then
           write(*,"(I6,':',2X,A)") nr, ctitle(nr)
           write(*,"('Error: Reactant ',I2,' not found: ',A12)") &
@@ -224,7 +224,7 @@ subroutine read_reactions
       else if ((abs(chem_type(nr)) > 1) .and. (abs(chem_type(nr)) < 6)) then
         rk(:,nr) = t_rk
         do i = 1, 2
-          irct(i,nr) = find_name(ts_species(i), species_list)
+          irct(i,nr) = find_name(ts_species(i), sp_list)
           if (irct(i,nr) <= 0) then
             write(*,"(I6,':',2X,A)") nr, ctitle(nr)
             write(*,"('Error: Reactant ',I2,' not found: ',A12)") & 
@@ -236,7 +236,7 @@ subroutine read_reactions
       ! Tabulated reaction rates (deactivated for now)
       ! else if(ABS(chem_type(nr)) == 6) then
         ! do i = 1, 2
-          ! irct(i,nr) = FIND_NAME(ts_species(i),species_list)
+          ! irct(i,nr) = FIND_NAME(ts_species(i),sp_list)
             ! if (irct(i,nr) <= 0) then
               ! write(*,"(I6,':',2X,A)") nr,ctitle(nr)
               ! write(*,"(' REACTION',I6,' REACTANT',I2,' NOT FOUND: ',A12)") nr,i,ts_species(i)
@@ -264,7 +264,7 @@ subroutine read_reactions
       else if(ABS(chem_type(nr)) == 7) then
         rk(:,nr) = t_rk
         i = 1
-        irct(i,nr) = find_name(ts_species(i), species_list)
+        irct(i,nr) = find_name(ts_species(i), sp_list)
         if (irct(i,nr) <= 0) then
           write(*,"(I6,':',2X,A)") nr, ctitle(nr)
           write(*,"('Error: Reactant ',I2,' not found: ',A12)") & 
