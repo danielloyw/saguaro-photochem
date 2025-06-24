@@ -3,9 +3,9 @@ module global_variables
   use types, only: wp => dp
   use constants
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
   !  Planet Parameters
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
 
   ! Planet = Mars
   real(wp), parameter :: m_planet = 6.417E26    ! planet mass
@@ -13,9 +13,9 @@ module global_variables
   real(wp), parameter :: RPLANET = 3389.5E5     ! planet radius
   real(wp), parameter :: DH = 1.520_wp          ! orbit semimajor axis in AU
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
   !  Run Parameters
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
 
   !  .. Photolysis averaging
 
@@ -31,9 +31,9 @@ module global_variables
   integer :: iaer
   real(wp) :: tstep_chem, tstep_diff ! timesteps for reactions and diffusion
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
   !  Species
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
 
   ! number of neutrals
   integer :: n_neu
@@ -46,7 +46,7 @@ module global_variables
   ! total species in diffusive equilibrium
   integer :: n_diff
   ! species name (0th index = total)
-  character(len=12), allocatable, dimension(:) :: sp_name
+  character(len=12), allocatable, dimension(:) :: species_list
   ! how is species treated in model
   integer, allocatable, dimension(:) :: istat
   ! molecular weight (in amu)
@@ -64,7 +64,7 @@ module global_variables
   ! boundary velocity value (species #, bottom/top) +ve upward
   real(wp), allocatable, dimension(:,:) :: bval
   ! charge
-  integer, allocatable, dimension(:) :: ichrg
+  integer, allocatable, dimension(:) :: chrg
   
   ! are there ions in the model?
   logical :: have_ions
@@ -82,36 +82,33 @@ module global_variables
   ! index of N2, CO2 and e
   integer :: iN2, iCO2, iELE
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
   !  Reactions
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
 
   ! chemical equation
   character(len=73), allocatable, dimension(:) :: ctitle
   ! number of reactions
-  integer :: nrct
+  integer :: n_rct
   ! reaction type
-  integer, allocatable, dimension(:) :: itype
+  integer, allocatable, dimension(:) :: chem_type
   ! reactant index (reactant #, reaction #)
   integer, allocatable, dimension(:,:) :: irct
   ! reaction rate constants (constant 1-10, reaction #)
-  real(wp), allocatable, dimension(:,:) :: rck
+  real(wp), allocatable, dimension(:,:) :: rk
   ! number of tabulated reactions
   integer, allocatable, dimension(:) :: ntab
-  !
-  integer, allocatable, dimension(:) :: ntmp_rct
-  !
-  real(wp), allocatable, dimension(:,:) :: tmp_rct
-  !
-  integer, allocatable, dimension(:) :: nprs_rct
-  !
-  real(wp), allocatable, dimension(:,:) :: plog_rct
-  !
-  real(wp), allocatable, dimension(:,:,:) :: rct_tab
+ 
+  ! Tabulated reaction rates variables (deactivated)
+  ! integer, allocatable, dimension(:) :: nprs_rct
+  ! integer, allocatable, dimension(:) :: ntmp_rct
+  ! real(wp), allocatable, dimension(:,:) :: plog_rct
+  ! real(wp), allocatable, dimension(:,:) :: tmp_rct
+  ! real(wp), allocatable, dimension(:,:,:) :: rct_tab
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
   !  Atmosphere
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
 
   ! number of elevation bins, index of zbot
   integer :: nlev, nibot
@@ -139,9 +136,9 @@ module global_variables
   real(wp), allocatable, dimension(:) :: rp2            ! (rmid(nl)/rz(nl))**2
   real(wp), allocatable, dimension(:) :: rm2            ! (rmid(nl-1)/rz(nl))**2
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
   !  DIFCO
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
 
   real(wp), parameter :: polN2 = 17.6E-25               ! Polarizability of N2
   real(wp), parameter :: polCO2 = 2.63E-24              ! Polarizability of CO2
@@ -165,16 +162,16 @@ module global_variables
   !
   real(wp), allocatable, dimension(:,:) :: dfp
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
   !  RATECO
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
 
   ! rate (reaction #, altitude bin #),
   real(wp), allocatable, dimension(:,:) :: rt, rct
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
   !  PATHS
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
 
   ! planet radius + zbot
   real(wp) :: RSHADOW
@@ -187,35 +184,35 @@ module global_variables
   ! altitude index for tangent altitude
   integer, allocatable, dimension(:) :: ntan
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
   !  Aerosols
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
 
   integer :: naer, nawv, ihetero
   real(wp), allocatable, dimension(:,:) :: kaer, tau_aer
   real(wp), allocatable, dimension(:) :: surfarea
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
   !  Rayleigh Scattering
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
 
   ! scattering cross-section in spectral range C
   real(wp), allocatable, dimension(:) :: crs_ray
   ! tau (altitude, wavelength)
   real(wp), allocatable, dimension(:,:) :: tau_ray
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
   !  External Production
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
 
   integer :: next
   character(len=12), allocatable, dimension(:) :: name_ext
   real(wp), allocatable, dimension(:) :: zext, hext, fext
   real(wp), allocatable, dimension(:,:) :: prext ! external production
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
   !  PHOTO
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
 
   ! calculate photolysis?
   logical :: lcrsA, lcrsB, lcrsC, lcrsJ
@@ -259,9 +256,9 @@ module global_variables
   ! indices for reactants/products
   integer, allocatable, dimension(:,:) :: irpt
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
   !  ELCTRN, ELDEP1
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
 
   ! number of species (thick), number of species (thin)
   integer :: nabs_el_thk, nabs_el_thn
@@ -308,24 +305,24 @@ module global_variables
   ! reactant/product index (reactant/product #, reaction)
   integer, allocatable, dimension(:,:) :: iert
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
   !  SOLDEP1
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
 
   ! absorption rate per molecule (reaction, altitude)
   real(wp), allocatable, dimension(:,:) :: rph
   ! total absorption rate (reaction, altitude)
   real(wp), allocatable, dimension(:,:) :: rpt
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
   !  ELDEP1
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
 
   real(wp), allocatable, dimension(:,:) :: eflux, eph, rpe
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
   !  CHEMEQ & COMPO
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
 
   !  Production and Loss from chemical processes
   real(wp), allocatable, dimension(:,:) :: pr_chem, ls_chem
