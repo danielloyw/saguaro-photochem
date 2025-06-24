@@ -3,18 +3,18 @@
 ! variables. 
 subroutine read_species
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
   !  Modules
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
 
   use types, only: wp => dp
   use constants
   use global_variables
   use subs, only : find_name
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
   !  Local variables
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
 
   implicit none
   ! file unit numbers for neutral and ion settings
@@ -26,33 +26,35 @@ subroutine read_species
   
   ! loop variables
   integer :: i_sp, nc, nd
-  ! dummy variables
-  integer :: n_dum
-  character(len=140) :: header
+  ! temporary / dummy variables
+  integer :: tn1
+  character(len=140) :: ts_header
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
   !  Read settings for neutral and ionic species
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
 
-  open(newunit=fid_neu, file='nmolecules.settings', status='old', action='read')
-  open(newunit=fid_ion, file='imolecules.settings', status='old', action='read')
+  open(newunit=fid_neu, file='nmolecules.settings', &
+    status='old', action='read')
+  open(newunit=fid_ion, file='imolecules.settings', &
+    status='old', action='read')
 
   read(fid_neu,*) n_neu ! number of neutral species
   read(fid_ion,*) n_ion ! number of ion species
 
-  n_sp = n_neu + n_ion + 1 ! total number of species (neutrals, ions, electrons)
+  n_sp = n_neu + n_ion + 1 ! total number of species (neutrals+ions+electrons)
 
   ! allocate variables in preparation for population with file read
-  allocate(sp_name(0:n_sp), istat(n_sp), ichrg(n_sp), mmw(n_sp), &
+  allocate(species_list(0:n_sp), istat(n_sp), chrg(n_sp), mmw(n_sp), &
     nhyd(n_sp), ncar(n_sp), n14n(n_sp), n15n(n_sp), noxy(n_sp), &
     dtype(n_sp), ad(n_sp), sd(n_sp), phi(n_sp), sd_2(n_sp), sd_3(n_sp), &
     ibnd(n_sp,2), bval(n_sp,2))
   
   ! read in settings for neutrals
-  read(fid_neu,"(A)") header ! column headers
+  read(fid_neu,"(A)") ts_header ! column headers
   do i_sp = 1, n_neu
-    read(fid_neu,961) n_dum, &
-      sp_name(i_sp), istat(i_sp), ichrg(i_sp), mmw(i_sp), &
+    read(fid_neu,961) tn1, &
+      species_list(i_sp), istat(i_sp), chrg(i_sp), mmw(i_sp), &
       nhyd(i_sp), ncar(i_sp), n14n(i_sp), n15n(i_sp), noxy(i_sp), &
       dtype(i_sp), ad(i_sp), sd(i_sp), phi(i_sp), sd_2(i_sp), sd_3(i_sp), &
       ibnd(i_sp,1), bval(i_sp,1), ibnd(i_sp,2), bval(i_sp,2)
@@ -65,11 +67,11 @@ subroutine read_species
       I1, 2X, ES10.3, 3X, I1, 2X, ES10.3)
   
   ! read in settings for ions
-  read(fid_ion,"(A)") header
+  read(fid_ion,"(A)") ts_header
   ichk = 0
   do i_sp = n_neu+1, n_neu+n_ion
-     read(fid_ion,962) n_dum, &
-      sp_name(i_sp), istat(i_sp), ichrg(i_sp), mmw(i_sp), &
+     read(fid_ion,962) tn1, &
+      species_list(i_sp), istat(i_sp), chrg(i_sp), mmw(i_sp), &
       nhyd(i_sp), ncar(i_sp), n14n(i_sp), n15n(i_sp), noxy(i_sp), &
       ibnd(i_sp,1), bval(i_sp,1), ibnd(i_sp,2), bval(i_sp,2)
     if(istat(i_sp) == 1) ichk = ichk + 1
@@ -83,19 +85,19 @@ subroutine read_species
   close(unit=fid_neu)
   close(unit=fid_ion)
 
-  sp_name(0)    = '            ' ! for total
-  sp_name(n_sp) = 'E           ' ! electrons
+  species_list(0)    = '            ' ! for total
+  species_list(n_sp) = 'E           ' ! electrons
   mmw(n_sp) = zero
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
   !  Create lists of species in chemical and diffusive equilibrium
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
 
   ! count number of species in chemical and diffusive equilibrium
   nc = 0; nd = 0
   do i_sp = 1, n_sp-1
-    if(istat(i_sp) == 1) nc=nc+1 ! species in chemical equilibrium
-    if(istat(i_sp) == 2) nd=nd+1 ! species diffusive equilibrium
+    if(istat(i_sp) == 1) nc = nc + 1 ! species in chemical equilibrium
+    if(istat(i_sp) == 2) nd = nd + 1 ! species diffusive equilibrium
   end do
   n_chem = nc
   n_diff = nd
@@ -136,7 +138,7 @@ subroutine read_species
 
   write(*,"('DIFFUSING SPECIES')")
   if(size(im_diff_all) > 0) then
-    write(*,"(10(2X,A12,1X))") (sp_name(im_diff_all(nd)), nd=1, n_diff)
+    write(*,"(10(2X,A12,1X))") (species_list(im_diff_all(nd)), nd=1, n_diff)
   else
     write(*,"('  NONE')")
   end if
@@ -161,17 +163,17 @@ subroutine read_species
   ! print list of chemical species to screen
   write(*,"('CHEMICAL SPECIES')")
   if(size(im_chem_all) > 0) then
-    write(*,"(10(2X,A12,1X))") (sp_name(im_chem_all(nc)), nc=1, n_chem)
+    write(*,"(10(2X,A12,1X))") (species_list(im_chem_all(nc)), nc=1, n_chem)
   else
     write(*,"('  NONE')")
   end if
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
   !  Determine indices of key species
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
   
-  iN2  = find_name('N2          ', sp_name)
-  iCO2 = find_name('CO2         ', sp_name)
-  iELE = find_name('E           ', sp_name)
+  iN2  = find_name('N2          ', species_list)
+  iCO2 = find_name('CO2         ', species_list)
+  iELE = find_name('E           ', species_list)
 
 end subroutine read_species
