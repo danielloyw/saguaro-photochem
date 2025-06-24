@@ -67,7 +67,7 @@ module global_variables
   integer, allocatable, dimension(:) :: ichrg
   
   ! are there ions in the model?
-  logical :: l_ion
+  logical :: have_ions
   
   ! Index mapping between lists
   ! List of chemical species -> list of all species

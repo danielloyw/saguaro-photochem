@@ -102,10 +102,10 @@ subroutine read_species
   
 
   if(ichk > 0) then
-    l_ion = .true.
+    have_ions = .true.
     n_chem_e = n_chem + 1 ! with electrons
   else
-    l_ion = .false.
+    have_ions = .false.
     n_chem_e = n_chem
   end if
 
@@ -153,7 +153,7 @@ subroutine read_species
   end do
   
   ! entry for electrons
-  if(l_ion) then
+  if(have_ions) then
     im_chem_all(n_chem_e) = n_sp
     im_all_chem(n_sp) = n_chem_e
   end if
