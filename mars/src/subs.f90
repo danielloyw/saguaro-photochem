@@ -20,7 +20,7 @@ module subs
   
   contains
   
-  integer function find_name(xname, sp_name)
+  integer pure function find_name(xname, sp_name)
   ! This functions finds the index of a species with name "xname" in the list 
   ! of all model species "sp_name". 
   ! Note: sp_name starts at index 0.
