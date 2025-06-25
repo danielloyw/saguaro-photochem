@@ -117,7 +117,7 @@ subroutine read_reactions
       ctitle(nr) = ts_species(1)//' + '//ts_species(2)//' = '// & 
         ts_species(3)//' + '//ts_species(4)//' + '//ts_species(5)
       ! determine indices for products
-      do i = 3, 5
+      do concurrent (i = 3:5)
         irct(i,nr) = find_name(ts_species(i), sp_list)
       end do
       
@@ -203,7 +203,7 @@ subroutine read_reactions
       ctitle(nr) = ts_species(1)//' + '//ts_species(2)//' = '// & 
         ts_species(3)//' + '//ts_species(4)//' + '//ts_species(5)
       ! determine indices for products
-      do i = 3, 5
+      do concurrent (i = 3:5)
         irct(i,nr) = find_name(ts_species(i), sp_list)
       end do
       
