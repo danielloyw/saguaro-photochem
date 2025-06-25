@@ -138,7 +138,7 @@ subroutine read_species
 
   write(*,"('DIFFUSING SPECIES')")
   if(size(im_diff_all) > 0) then
-    write(*,"(10(2X,A12,1X))") (sp_list(im_diff_all(nd)), nd=1, n_diff)
+    write(*,"(10(1X,A12))") (sp_list(im_diff_all(nd)), nd=1, n_diff)
   else
     write(*,"('  NONE')")
   end if
@@ -163,7 +163,7 @@ subroutine read_species
   ! print list of chemical species to screen
   write(*,"('CHEMICAL SPECIES')")
   if(size(im_chem_all) > 0) then
-    write(*,"(10(2X,A12,1X))") (sp_list(im_chem_all(nc)), nc=1, n_chem)
+    write(*,"(10(1X,A12))") (sp_list(im_chem_all(nc)), nc=1, n_chem)
   else
     write(*,"('  NONE')")
   end if
