@@ -10,7 +10,7 @@ module global_variables
   ! Planet = Mars
   real(wp), parameter :: m_planet = 6.417E26    ! planet mass
   real(wp), parameter :: GM = Gcnst * m_planet  ! grav const * planet mass
-  real(wp), parameter :: RPLANET = 3389.5E5     ! planet radius
+  real(wp), parameter :: rPlanet = 3389.5E5     ! planet radius
   real(wp), parameter :: DH = 1.520_wp          ! orbit semimajor axis in AU
 
   !----------------------------------------------------------------------------
@@ -27,7 +27,7 @@ module global_variables
   character(len=3) :: runID
   logical :: lprnt
   logical :: lcompo_sol, lchemeq_sol
-  real(wp) :: ascl
+  real(wp) :: ascl ! not used
   integer :: iaer
   real(wp) :: tstep_chem, tstep_diff ! timesteps for reactions and diffusion
 
@@ -46,37 +46,37 @@ module global_variables
   ! total species in diffusive equilibrium
   integer :: n_diff
   ! species name (0th index = total)
-  character(len=12), allocatable, dimension(:) :: species_list
-  ! how is species treated in model
+  character(len=12), allocatable, dimension(:) :: sp_list
+  ! how is species treated in model: dim=(species #)
   integer, allocatable, dimension(:) :: istat
-  ! molecular weight (in amu)
+  ! molecular weight (in amu): dim=(species #)
   real(wp), allocatable, dimension(:) :: mmw
-  ! number of H, C, N-14, N-15, O in species
+  ! number of H, C, N-14, N-15, O in species: dim=(species #)
   integer, allocatable, dimension(:) :: nhyd, ncar, n14n, n15n, noxy
 
-  ! how is diffusion treated
+  ! how is diffusion treated: dim=(species #)
   integer, allocatable, dimension(:) :: dtype
-  ! diffusion parameters A, s_1, phi, s_2, s_3
+  ! diffusion parameters A, s_1, phi, s_2, s_3: dim=(species #)
   real(wp), allocatable, dimension(:) :: Ad, sd, phi, sd_2, sd_3
 
-  ! boundary type (species #, bottom/top)
+  ! boundary type: dim=(species #, bottom/top)
   integer, allocatable, dimension(:,:) :: ibnd
-  ! boundary velocity value (species #, bottom/top) +ve upward
+  ! boundary velocity value (+ve upward): dim=(species #, bottom/top) 
   real(wp), allocatable, dimension(:,:) :: bval
-  ! charge
+  ! charge: dim=(species #)
   integer, allocatable, dimension(:) :: chrg
   
   ! are there ions in the model?
   logical :: have_ions
   
   ! Index mapping between lists
-  ! List of chemical species -> list of all species
+  ! list of chemical species -> list of all species: dim=(chemical species #)
   integer, allocatable, dimension(:) :: im_chem_all
-  ! List of all species -> list of chemical species
+  ! list of all species -> list of chemical species: dim=(species #)
   integer, allocatable, dimension(:) :: im_all_chem
-  ! List of diffusing species -> list of all species
+  ! list of diffusing species -> list of all species: dim=(diffusive species #)
   integer, allocatable, dimension(:) :: im_diff_all
-  ! List of all species -> list of diffusing species
+  ! list of all species -> list of diffusing species: dim=(species #)
   integer, allocatable, dimension(:) :: im_all_diff
   
   ! index of N2, CO2 and e
@@ -86,20 +86,19 @@ module global_variables
   !  Reactions
   !----------------------------------------------------------------------------
 
-  ! chemical equation
-  character(len=73), allocatable, dimension(:) :: ctitle
   ! number of reactions
   integer :: n_rct
-  ! reaction type
+  ! chemical equation: dim=(reaction #)
+  character(len=73), allocatable, dimension(:) :: ctitle
+  ! reaction type: dim=(reaction #)
   integer, allocatable, dimension(:) :: chem_type
-  ! reactant index (reactant #, reaction #)
+  ! reactant index: dim=(reactant #, reaction #)
   integer, allocatable, dimension(:,:) :: irct
-  ! reaction rate constants (constant 1-10, reaction #)
+  ! reaction rate constants: dim=(constant 1-10, reaction #)
   real(wp), allocatable, dimension(:,:) :: rk
-  ! number of tabulated reactions
-  integer, allocatable, dimension(:) :: ntab
- 
+  
   ! Tabulated reaction rates variables (deactivated)
+  ! integer, allocatable, dimension(:) :: ntab
   ! integer, allocatable, dimension(:) :: nprs_rct
   ! integer, allocatable, dimension(:) :: ntmp_rct
   ! real(wp), allocatable, dimension(:,:) :: plog_rct
@@ -110,31 +109,52 @@ module global_variables
   !  Atmosphere
   !----------------------------------------------------------------------------
 
-  ! number of elevation bins, index of zbot
-  integer :: nlev, nibot
-  ! altitude to opaque atmosphere layer
-  real(wp) :: zbot
+  ! number of elevation bins
+  integer :: n_z
+  ! altitude to opaque atmosphere layer (e.g., aerosols)
+  real(wp) :: z_bot
+  ! index of z_bot in n_z
+  integer :: iz_bot
   ! coefficients for calculating eddy coefficient
   real(wp) :: ed1,ed0,pk0,gek
-  real(wp), allocatable, dimension(:) :: z              ! altitude
-  real(wp), allocatable, dimension(:) :: rz             ! radius
-  real(wp), allocatable, dimension(:) :: grv            ! gravity
-  real(wp), allocatable, dimension(:) :: tn             ! neutral temp
-  real(wp), allocatable, dimension(:) :: ti             ! ion temp
-  real(wp), allocatable, dimension(:) :: te             ! electron temp
-  real(wp), allocatable, dimension(:) :: prs            ! pressure
-  real(wp), allocatable, dimension(:) :: mass           ! mean molecular weight
-  real(wp), allocatable, dimension(:) :: rho            ! mass density
-  real(wp), allocatable, dimension(:) :: ek             ! eddy coeff
-  real(wp), allocatable, dimension(:) :: col            ! column density
-  real(wp), allocatable, dimension(:,:) :: den, den_old ! number density
-  real(wp), allocatable, dimension(:,:) :: xmol         ! mole density
-  real(wp), allocatable, dimension(:,:) :: ht           ! scale height
-  real(wp), allocatable, dimension(:) :: rmid           ! middle of rz bins
-  real(wp), allocatable, dimension(:) :: dr             ! rmid(i)-rmid(i-1)
-  real(wp), allocatable, dimension(:) :: drp            ! rz(i)-rz(i-1)
-  real(wp), allocatable, dimension(:) :: rp2            ! (rmid(nl)/rz(nl))**2
-  real(wp), allocatable, dimension(:) :: rm2            ! (rmid(nl-1)/rz(nl))**2
+  ! altitude: unit=cm; dim=(altitude level)
+  real(wp), allocatable, dimension(:) :: z
+  ! radius (altitude + rPlanet): unit=cm; dim=(altitude level)
+  real(wp), allocatable, dimension(:) :: rz
+  ! gravity: unit=cm s-2; dim=(altitude level)
+  real(wp), allocatable, dimension(:) :: grv
+  ! neutral temperature: unit=K; dim=(altitude level)
+  real(wp), allocatable, dimension(:) :: Tn
+  ! ion temperature: unit=K; dim=(altitude level)
+  real(wp), allocatable, dimension(:) :: Ti
+  ! electron temperature: unit=K; dim=(altitude level)
+  real(wp), allocatable, dimension(:) :: Te
+  ! pressure: unit=dyne cm-2 | 0.1 Pa | 1E-6 bar; dim=(altitude level)
+  real(wp), allocatable, dimension(:) :: prs
+  ! mass density: unit=g cm-3; dim=(altitude level)
+  real(wp), allocatable, dimension(:) :: rho
+  ! mean molecular weight: unit=amu; dim=(altitude level)
+  real(wp), allocatable, dimension(:) :: mass
+  ! eddy diffusion coefficient: unit=cm2 s-1; dim=(altitude level)
+  real(wp), allocatable, dimension(:) :: eK
+  ! column density above specified altitude: unit=cm-2; dim=(altitude level)
+  real(wp), allocatable, dimension(:) :: col
+  ! number density: unit=cm-3; dim=(altitude level, species #)
+  real(wp), allocatable, dimension(:,:) :: den, den_old
+  ! volume mixing ratio: unit=unitless; dim=(altitude level, species #)
+  real(wp), allocatable, dimension(:,:) :: vmr
+  ! scale height: unit=cm; dim=(altitude level, species #)
+  real(wp), allocatable, dimension(:,:) :: Ht
+  ! middle of rz bins: unit=cm; dim=(# of altitude levels)
+  real(wp), allocatable, dimension(:) :: rmid
+  ! rmid(i)-rmid(i-1): unit=cm; dim=(# of altitude levels)
+  real(wp), allocatable, dimension(:) :: dr
+  ! rz(i)-rz(i-1): unit=cm; dim=(# of altitude levels)
+  real(wp), allocatable, dimension(:) :: drp
+  ! (rmid(nl)/rz(nl))**2: unit=cm; dim=(# of altitude levels)
+  real(wp), allocatable, dimension(:) :: rp2
+  ! (rmid(nl-1)/rz(nl))**2: unit=cm; dim=(# of altitude levels)
+  real(wp), allocatable, dimension(:) :: rm2
 
   !----------------------------------------------------------------------------
   !  DIFCO
@@ -173,7 +193,7 @@ module global_variables
   !  PATHS
   !----------------------------------------------------------------------------
 
-  ! planet radius + zbot
+  ! planet radius + z_bot
   real(wp) :: RSHADOW
   ! path through atmosphere for RT (altitude, tangent altitude)
   real(wp), allocatable, dimension(:,:) :: ds
@@ -188,7 +208,7 @@ module global_variables
   !  Aerosols
   !----------------------------------------------------------------------------
 
-  integer :: naer, nawv, ihetero
+  integer :: naer, nawv, ihetero !ihetero not used
   real(wp), allocatable, dimension(:,:) :: kaer, tau_aer
   real(wp), allocatable, dimension(:) :: surfarea
 
