@@ -27,8 +27,6 @@ module global_variables
   character(len=3) :: runID
   logical :: lprnt
   logical :: lcompo_sol, lchemeq_sol
-  real(wp) :: ascl ! not used
-  integer :: iaer
   real(wp) :: tstep_chem, tstep_diff ! timesteps for reactions and diffusion
 
   !----------------------------------------------------------------------------
@@ -115,8 +113,6 @@ module global_variables
   real(wp) :: z_bot
   ! index of z_bot in n_z
   integer :: iz_bot
-  ! coefficients for calculating eddy coefficient
-  real(wp) :: ed1,ed0,pk0,gek
   ! altitude: unit=cm; dim=(altitude level)
   real(wp), allocatable, dimension(:) :: z
   ! radius (altitude + rPlanet): unit=cm; dim=(altitude level)
@@ -205,14 +201,6 @@ module global_variables
   integer, allocatable, dimension(:) :: ntan
 
   !----------------------------------------------------------------------------
-  !  Aerosols
-  !----------------------------------------------------------------------------
-
-  integer :: naer, nawv, ihetero !ihetero not used
-  real(wp), allocatable, dimension(:,:) :: kaer, tau_aer
-  real(wp), allocatable, dimension(:) :: surfarea
-
-  !----------------------------------------------------------------------------
   !  Rayleigh Scattering
   !----------------------------------------------------------------------------
 
@@ -220,15 +208,6 @@ module global_variables
   real(wp), allocatable, dimension(:) :: crs_ray
   ! tau (altitude, wavelength)
   real(wp), allocatable, dimension(:,:) :: tau_ray
-
-  !----------------------------------------------------------------------------
-  !  External Production
-  !----------------------------------------------------------------------------
-
-  integer :: next
-  character(len=12), allocatable, dimension(:) :: name_ext
-  real(wp), allocatable, dimension(:) :: zext, hext, fext
-  real(wp), allocatable, dimension(:,:) :: prext ! external production
 
   !----------------------------------------------------------------------------
   !  PHOTO
