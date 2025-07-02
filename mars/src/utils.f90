@@ -1,190 +1,161 @@
-module subs
+module utils
   
-  interface
-    subroutine gauleg(x1, x2, x, w)
-      use types, only: wp => dp
-      real(wp), intent(in) :: x1, x2
-      real(wp), dimension(:), intent(out) :: x, w
-    end subroutine gauleg
-  
-    function difcs_rees(w,ep)
-      use types, only: wp => dp
-      implicit none
-      real(wp) :: ep, w, term1, term2, difcs_rees
-    end function difcs_rees
-  
-    subroutine wait
-    end subroutine wait
-  end interface
-  
-  
-  contains
-  
-  integer pure function find_name(xname, sp_list)
-  ! This functions finds the index of a species with name "xname" in the list 
-  ! of all model species "sp_list". 
-  ! Note: sp_list starts at index 0.
-    implicit none
-    character(len=12), intent(in) :: xname
-    character(len=12), intent(in), dimension(0:) :: sp_list
-    integer :: n_sp ! size of sp_list
-    integer :: i_sp ! loop variable
-
-    n_sp = size(sp_list,1)-1 ! -1 because index starts at 0
-    find_name = 0
-    do i_sp = 0, n_sp
-      if(trim(adjustl(xname)) == trim(adjustl(sp_list(i_sp)))) then
-        find_name = i_sp
-        exit
-      end if
-    end do
-  end function find_name
-
-
-  function locate(xtab, x)
-  ! This function locates the value x in a sorted list xtab. The earlier index will be picked.
+interface
+  subroutine gauleg(x1, x2, x, w)
     use types, only: wp => dp
-    implicit none
-    real(wp), dimension(:), intent(in) :: xtab
-    real(wp), intent(in) :: x
-    integer :: locate
-    integer :: n,jl,jm,ju
-    logical :: ascnd ! is list ascending?
-    n=size(xtab)
-    ascnd = (xtab(n) >= xtab(1))
-    jl=0
-    ju=n+1
-    do
-      if (ju-jl <= 1) exit
-      jm=(ju+jl)/2
-      if (ascnd .eqv. (x >= xtab(jm))) then
-        jl=jm
+    real(wp), intent(in) :: x1, x2
+    real(wp), dimension(:), intent(out) :: x, w
+  end subroutine gauleg
+
+end interface
+  
+  
+contains
+  
+integer pure function find_name(sp_name, sp_list)
+! This function finds the index of a species with name "sp_name" in the list
+! of all model species "sp_list". 
+! Note: sp_list starts at index 0.
+  implicit none
+  character(len=12), intent(in) :: sp_name
+  character(len=12), intent(in), dimension(0:) :: sp_list
+  integer :: n_sp ! size of sp_list
+  integer :: i_sp ! loop variable
+
+  n_sp = size(sp_list,1)-1 ! -1 because index starts at 0
+  find_name = -1
+  do i_sp = 0, n_sp
+    if(trim(adjustl(sp_name)) == trim(adjustl(sp_list(i_sp)))) then
+      find_name = i_sp
+      exit
+    end if
+  end do
+end function find_name
+
+integer pure function locate(x, x_list)
+! This function finds the index of the element in x_list that is nearest in
+! value to x. x_list is monotonically increasing or decreasing.
+! Uses a binary search algorithm. x is tested against the mid-point of the
+! search window, and then the upper or lower window is picked. 
+! Returns -1 if x_list is empty. Returns extreme values if x is out of range.
+  use types, only: wp => dp
+  implicit none
+  real(wp), intent(in) :: x
+  real(wp), intent(in), dimension(:) :: x_list
+  logical :: is_increasing ! is list ascending?
+  integer :: low, high, mid ! index bounds of search window
+
+  ! initialize result to 'not found' and handle empty list
+  locate = -1
+  if (size(x_list) == 0) return
+
+  ! get actual bounds of the array
+  low = lbound(x_list, 1)
+  high = ubound(x_list, 1)
+
+  ! determine if increasing
+  is_increasing = (x_list(low) <= x_list(high))
+
+  ! handle x when out of x_list range (also handles single-element x_list)
+  if (is_increasing) then
+    if (x <= x_list(low)) then
+      locate = low
+      return
+    end if
+    if (x >= x_list(high)) then
+      locate = high
+      return
+    end if
+  else
+    if (x >= x_list(low)) then
+      locate = low
+      return
+    end if
+    if (x <= x_list(high)) then
+      locate = high
+      return
+    end if
+  end if
+
+  ! binary search to find indices bracketing x
+  do while (high - low > 1) ! low and high not adjacent indices
+    mid = (high + low) / 2
+
+    ! exact match found
+    if (x_list(mid) == x) then
+      locate = mid 
+      return
+    end if
+
+    if (is_increasing) then
+      if (x_list(mid) < x) then
+        low = mid
       else
-        ju=jm
+        high = mid
       end if
-    end do
-    if (x == xtab(1)) then
-      locate=1
-    else if (x == xtab(n)) then
-      locate=n-1 !?
     else
-      locate=jl
+      if (x_list(mid) > x) then
+        low = mid
+      else
+        high = mid
+      end if
     end if
-  end function locate
+  end do
 
+  ! now x is between x_list(low) and x_list(high)
+  ! find whether x_list(low) and x_list(high) is closer to x
+  if (abs(x - x_list(low)) <= abs(x - x_list(high))) then
+    locate = low
+  else
+    locate = high
+  end if
 
-  subroutine LUBKSB(a, indx, b)
-    use types, only: wp => dp
-    implicit none
+end function locate
+  
 
-    real(wp), intent(in), dimension(:,:) :: a
-    integer, intent(in), dimension(:) :: indx
-    real(wp), intent(inout), dimension(:) :: b
-
-    integer :: i,ii,ll,j,n
-    real(wp) :: sum
-
-    n = SIZE(b)
-    ii = 0
-    do 12 i = 1, n
-    ll = indx(i)
-    sum = b(ll)
-    b(ll) = b(i)
-    if (ii .ne. 0) then
-    do 11 j = ii, i - 1
-    sum = sum - (a(i,j) * b(j))
- 11 continue
-    else if (sum .ne. 0._wp) then
-    ii = i
+subroutine intrp(xp, yp, x, y)
+! This subroutine calculate the values y at sample points x using a linear
+! interpolation of points (xp, yp). xp needs to be monotonically increasing. 
+! The extreme yp values are returned when sampled beyond the range spanned by
+! xp.
+  use types, only: wp => dp
+  implicit none
+  real(wp), intent(in), dimension(:) :: xp, yp
+  real(wp), intent(in), dimension(:) :: x
+  real(wp), intent(out), dimension(:) :: y
+  integer :: n_xp, n_x
+  integer :: bound_low, bound_high
+  ! indices of points on the two sides of x, xp(n1)<x<xp(n2)
+  integer :: n1, n2 
+  ! loop variables
+  integer :: i
+  
+  n_xp = size(xp)
+  n_x = size(x)
+  
+  do i = 1, n_x
+    ! outside low range
+    if (x(i) <= xp(1)) then
+      y(i) = yp(1)
+    ! outside high range
+    else if (x(i) >= xp(n_xp)) then
+      y(i) = yp(n_xp)
+    else
+      ! determine adjacent xp values
+      n1 = locate(x(i), xp)
+      if (x(i) - xp(n1) >= 0) then
+        n2 = n1 + 1
+      else
+        n2 = n1
+        n1 = n2 - 1
+      end if
+      y(i) = yp(n1) + (yp(n2)-yp(n1)) / (xp(n2)-xp(n1)) * (x(i)-xp(n1))
     end if
-    b(i) = sum
- 12 continue
-    do 14 i = n, 1, -1
-    sum = b(i)
-    if (i .lt. n) then
-    do 13 j = i + 1, n
-    sum = sum - (a(i,j) * b(j))
- 13 continue
-    end if
-    b(i) = sum / a(i,i)
- 14 continue
-    return 
-  end subroutine LUBKSB
+  end do
+
+end subroutine intrp
 
 
-
-  subroutine LUDCMP(a, indx, d)
-    use types, only: wp => dp
-    implicit none
-    real(wp), intent(inout), dimension(:,:) :: a
-    integer, intent(out) :: indx(:)
-    real(wp), intent(out) :: d
-
-    real(wp), parameter :: tiny = 1.E-60_wp
-    integer i,j,k,imax,n
-    real(wp) vv(SIZE(a,1)),aamax,sum,dum
-
-    intrinsic ABS
-    
-    n = SIZE(a,1)
-    d = 1._wp
-    do 12 i = 1, n
-    aamax = 0._wp
-    do 11 j = 1, n
-      if (abs(a(i,j)) > aamax) aamax = ABS(a(i,j))
- 11  continue
-     if (aamax == 0._wp) stop 'Singular matrix.'
-     vv(i) = 1._wp / aamax
- 12  continue
-       do 19 j = 1, n
-         if (j .gt. 1) then
-            do 14 i = 1, j - 1
-               sum = a(i,j)
-               if (i > 1) then
-                  do 13 k = 1, i - 1
-                     sum = sum - (a(i,k) * a(k,j))
-13                continue
-                  a(i,j) = sum
-               end if
-14          continue
-         end if
-         aamax = 0._wp
-         do 16 i = j, n
-            sum = a(i,j)
-            if (j .gt. 1) then
-               do 15 k = 1, j - 1
-                  sum = sum - (a(i,k) * a(k,j))
-15             continue
-               a(i,j) = sum
-            end if
-            dum = vv(i) * abs(sum)
-            if (dum .ge. aamax) then
-               imax = i
-               aamax = dum
-            end if
-16       continue
-         if (j .ne. imax) then
-            do 17 k = 1, n
-               dum = a(imax,k)
-               a(imax,k) = a(j,k)
-               a(j,k) = dum
-17          continue
-            d = - d
-            vv(imax) = vv(j)
-         end if
-         indx(j) = imax
-         if (j .ne. n) then
-            if (a(j,j) == 0._wp) a(j,j) = tiny
-            dum = 1._wp / a(j,j)
-            do 18 i = j + 1, n
-               a(i,j) = a(i,j) * dum
-18          continue
-          end if
-19     continue
-       if (a(n,n) == 0._wp) a(n,n) = tiny
-       return
-  end subroutine LUDCMP
-                         
 
   subroutine inDEXX(arrin, indx)
     use types, only: wp => dp
@@ -234,62 +205,6 @@ module subs
   end subroutine inDEXX
 
 
-
-  subroutine TRIDAG (a, b, c, r, u)
-    use types, only: wp => dp
-    implicit none
-
-    real(wp), intent(in), dimension(:) ::  a, b, c, r
-    real(wp), intent(out), dimension(:) ::  u
-    integer :: n, j
-    real(wp), dimension(SIZE(a)) :: gam
-    real(wp) :: bet
-    real(wp), parameter :: zero=0.
-
-    n = SIZE(a)
-    u = zero
-
-    if (b(1) == zero) STOP 'tridag: error'
-    bet=b(1)
-    u(1)=r(1)/bet
-    do j = 2, n
-      gam(j)=c(j-1)/bet
-      bet=b(j)-a(j)*gam(j)
-      if (bet == zero) STOP 'tridag failed'
-      u(j)=(r(j)-a(j)*u(j-1))/bet
-    end do
-    do j = n-1, 1, -1
-      u(j)=u(j)-gam(j+1)*u(j+1)
-    end do
-
-    return
-  end subroutine TRIDAG
-
-
-! This function interpolates linearly to find yval values at various xval values given the ascending list (xtab, ytab).
-! Values beyond the range spanned by xtab are given the extreme ytab values.
-  subroutine intrp(xtab,ytab,xval,yval)
-    use types, only: wp => dp
-    implicit none
-    real(wp), intent(in), dimension(:) :: xtab, ytab, xval
-    real(wp), intent(out), dimension(:) :: yval
-    integer :: ntab, nval, nv, l1, l2
-    ntab = SIZE(xtab)
-    nval = SIZE(xval)
-    do nv = 1, nval
-      if (xval(nv) <= xtab(1)) then
-            yval(nv) = ytab(1)
-        else if (xval(nv) >= xtab(ntab)) then
-            yval(nv) = ytab(ntab)
-        else
-           l1 = LOCATE(xtab,xval(nv))
-           l2 = l1 + 1
-           yval(nv)=ytab(l1)+(xval(nv)-xtab(l1))*(ytab(l2)-ytab(l1))/   &
-                (xtab(l2)-xtab(l1))
-        end if
-     end do
-     return
-   end subroutine intrp
 
 
 ! Calculates the vapor pressure of sp_list at temperature T.
@@ -441,4 +356,4 @@ module subs
   end function find_bin
 
 
-end module subs
+end module utils

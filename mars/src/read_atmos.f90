@@ -9,7 +9,7 @@ subroutine read_atmos
   use types, only: wp => dp
   use constants
   use global_variables
-  use subs, only : find_name
+  use utils, only : find_name, locate
 
   !----------------------------------------------------------------------------
   !  Local variables
@@ -96,7 +96,7 @@ subroutine read_atmos
   
   ! altitude to opaque atmosphere layer (e.g., aerosols)
   z_bot = 0.E5_wp
-  iz_bot = findloc(z, z_bot, 1)
+  iz_bot = locate(z_bot, z)
   
   !----------------------------------------------------------------------------
   !  Recalculate quanitites to ensure consistency
@@ -171,20 +171,18 @@ subroutine read_atmos
   !  Auxillary altitude arrays
   !----------------------------------------------------------------------------
 
-  allocate(rmid(0:n_z), drp(0:n_z), dr(n_z), rp2(0:n_z), rm2(n_z))
+  allocate(rz_mid(0:n_z), dr_mid(0:n_z), dr(n_z))
   allocate(Ht(n_z,0:n_sp), col(n_z))
 
   rz(0) = rz(1) - (rz(2) - rz(1))
   rz(n_z+1) = rz(n_z) + (rz(n_z) - rz(n_z-1))
   do concurrent (i_z = 0:n_z)
-    rmid(i_z) = half * (rz(i_z+1) + rz(i_z))
-    drp(i_z) = rz(i_z+1)-rz(i_z)
-    rp2(i_z) = (rmid(i_z) / rz(i_z))**2
+    rz_mid(i_z) = half * (rz(i_z+1) + rz(i_z))
+    dr_mid(i_z) = rz(i_z+1) - rz(i_z)
   end do
 
   do concurrent (i_z = 1:n_z)
-    dr(i_z) = rmid(i_z) - rmid(i_z-1)
-    rm2(i_z) = (rmid(i_z-1) / rz(i_z))**2
+    dr(i_z) = rz_mid(i_z) - rz_mid(i_z-1)
   end do
 
   !----------------------------------------------------------------------------
@@ -207,7 +205,7 @@ subroutine read_atmos
 
   col(n_z) = den(n_z,0) * Ht(n_z,0)
   do i_z = n_z-1, 1, -1
-    col(i_z) = col(i_z+1) + half * (den(i_z,0) + den(i_z+1,0)) * drp(i_z)
+    col(i_z) = col(i_z+1) + half * (den(i_z,0) + den(i_z+1,0)) * dr_mid(i_z)
   end do
 
   deallocate(sp_atm, im_atm_list, has_den)

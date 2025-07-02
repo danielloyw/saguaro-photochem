@@ -10,7 +10,7 @@ subroutine read_species
   use types, only: wp => dp
   use constants
   use global_variables
-  use subs, only : find_name
+  use utils, only : find_name
 
   !----------------------------------------------------------------------------
   !  Local variables
@@ -47,7 +47,7 @@ subroutine read_species
   ! allocate variables in preparation for population with file read
   allocate(sp_list(0:n_sp), istat(n_sp), chrg(n_sp), mmw(n_sp), &
     nhyd(n_sp), ncar(n_sp), n14n(n_sp), n15n(n_sp), noxy(n_sp), &
-    dtype(n_sp), ad(n_sp), sd(n_sp), phi(n_sp), sd_2(n_sp), sd_3(n_sp), &
+    dtype(n_sp), ad(n_sp), sd1(n_sp), phi(n_sp), sd2(n_sp), sd3(n_sp), &
     ibnd(n_sp,2), bval(n_sp,2))
   
   ! read in settings for neutrals
@@ -56,7 +56,7 @@ subroutine read_species
     read(fid_neu,961) tn1, &
       sp_list(i_sp), istat(i_sp), chrg(i_sp), mmw(i_sp), &
       nhyd(i_sp), ncar(i_sp), n14n(i_sp), n15n(i_sp), noxy(i_sp), &
-      dtype(i_sp), ad(i_sp), sd(i_sp), phi(i_sp), sd_2(i_sp), sd_3(i_sp), &
+      dtype(i_sp), ad(i_sp), sd1(i_sp), phi(i_sp), sd2(i_sp), sd3(i_sp), &
       ibnd(i_sp,1), bval(i_sp,1), ibnd(i_sp,2), bval(i_sp,2)
   end do
 

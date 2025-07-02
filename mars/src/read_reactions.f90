@@ -8,7 +8,7 @@ subroutine read_reactions
   
   use types, only: wp => dp
   use global_variables
-  use subs, only : find_name
+  use utils, only : find_name
 
   !----------------------------------------------------------------------------
   !  Local variables
