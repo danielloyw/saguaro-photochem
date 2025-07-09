@@ -116,15 +116,13 @@ end function locate
 subroutine intrp(xp, yp, x, y)
 ! This subroutine calculate the values y at sample points x using a linear
 ! interpolation of points (xp, yp). xp needs to be monotonically increasing. 
-! The extreme yp values are returned when sampled beyond the range spanned by
-! xp.
+! 0 is returned when extrapolated beyond the range spanned by xp.
   use types, only: wp => dp
   implicit none
   real(wp), intent(in), dimension(:) :: xp, yp
   real(wp), intent(in), dimension(:) :: x
   real(wp), intent(out), dimension(:) :: y
   integer :: n_xp, n_x
-  integer :: bound_low, bound_high
   ! indices of points on the two sides of x, xp(n1)<x<xp(n2)
   integer :: n1, n2 
   ! loop variables
@@ -135,11 +133,11 @@ subroutine intrp(xp, yp, x, y)
   
   do i = 1, n_x
     ! outside low range
-    if (x(i) <= xp(1)) then
-      y(i) = yp(1)
+    if (x(i) < xp(1)) then
+      y(i) = 0
     ! outside high range
-    else if (x(i) >= xp(n_xp)) then
-      y(i) = yp(n_xp)
+    else if (x(i) > xp(n_xp)) then
+      y(i) = 0
     else
       ! determine adjacent xp values
       n1 = locate(x(i), xp)
