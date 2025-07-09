@@ -1,13 +1,16 @@
+module read_species_mod
+
+contains
+
+subroutine read_species
 ! This subroutine reads in the settings for neutral and ion species 
 ! (nmolecules.settings, imolecules.settings), then allocate the relevant
 ! variables. 
-subroutine read_species
 
   !----------------------------------------------------------------------------
   !  Modules
   !----------------------------------------------------------------------------
 
-  use types, only: wp => dp
   use constants
   use global_variables
   use utils, only : find_name
@@ -46,7 +49,7 @@ subroutine read_species
 
   ! allocate variables in preparation for population with file read
   allocate(sp_list(0:n_sp), istat(n_sp), chrg(n_sp), mmw(n_sp), &
-    nhyd(n_sp), ncar(n_sp), n14n(n_sp), n15n(n_sp), noxy(n_sp), &
+    nhyd(n_sp), ncar(n_sp), n14N(n_sp), n15N(n_sp), noxy(n_sp), &
     dtype(n_sp), ad(n_sp), sd1(n_sp), phi(n_sp), sd2(n_sp), sd3(n_sp), &
     ibnd(n_sp,2), bval(n_sp,2))
   
@@ -55,7 +58,7 @@ subroutine read_species
   do i_sp = 1, n_neu
     read(fid_neu,961) tn1, &
       sp_list(i_sp), istat(i_sp), chrg(i_sp), mmw(i_sp), &
-      nhyd(i_sp), ncar(i_sp), n14n(i_sp), n15n(i_sp), noxy(i_sp), &
+      nhyd(i_sp), ncar(i_sp), n14N(i_sp), n15N(i_sp), noxy(i_sp), &
       dtype(i_sp), ad(i_sp), sd1(i_sp), phi(i_sp), sd2(i_sp), sd3(i_sp), &
       ibnd(i_sp,1), bval(i_sp,1), ibnd(i_sp,2), bval(i_sp,2)
   end do
@@ -72,7 +75,7 @@ subroutine read_species
   do i_sp = n_neu+1, n_neu+n_ion
      read(fid_ion,962) tn1, &
       sp_list(i_sp), istat(i_sp), chrg(i_sp), mmw(i_sp), &
-      nhyd(i_sp), ncar(i_sp), n14n(i_sp), n15n(i_sp), noxy(i_sp), &
+      nhyd(i_sp), ncar(i_sp), n14N(i_sp), n15N(i_sp), noxy(i_sp), &
       ibnd(i_sp,1), bval(i_sp,1), ibnd(i_sp,2), bval(i_sp,2)
     if(istat(i_sp) == 1) ichk = ichk + 1
   end do
@@ -177,3 +180,5 @@ subroutine read_species
   iELE = find_name('E           ', sp_list)
 
 end subroutine read_species
+
+end module

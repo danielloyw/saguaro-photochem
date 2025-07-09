@@ -1,6 +1,10 @@
+module read_reactions_mod
+
+contains
+
+subroutine read_reactions
 ! This subroutine reads in the list of reactions and their rate constants in 
 ! nreactions.csv and ireactions.csv. 
-subroutine read_reactions
 
   !----------------------------------------------------------------------------
   !  Modules
@@ -265,3 +269,5 @@ subroutine read_reactions
   ! deallocate(itab_rct)
 
 end subroutine read_reactions
+
+end module

@@ -2,7 +2,7 @@ SUBROUTINE READ_RAYLEIGH
 
   !  .. Modules
 
-  USE PRECISION
+  use types, only: wp => dp
   USE CONSTANTS
   USE GLOBAL_VARIABLES
   USE SUBS, ONLY : INTRP
@@ -22,12 +22,12 @@ SUBROUTINE READ_RAYLEIGH
      END DO
   CLOSE(unit=64)
      
-  ALLOCATE(crs_ray(ncrsC),tau_ray(nlev,ncrsC))
-  CALL INTRP(wrtab,crtab,wcrsC,crs_ray)
+  ALLOCATE(crs_ray(ncrsC),tau_ray(n_z,ncrsC))
+  CALL INTRP(wrtab,crtab,waveC,crs_ray)
 
   DO nw = 1, ncrsC
-     DO nl = 1, nlev
-        IF(wcrsC(nw) > 500._RP) THEN
+     DO nl = 1, n_z
+        IF(waveC(nw) > 500._RP) THEN
            tau_ray(nl,nw) = crs_ray(nw)*col(nl)
         ELSE
            tau_ray(nl,nw) = zero

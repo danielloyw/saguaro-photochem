@@ -1,6 +1,10 @@
+module read_atmos_mod
+
+contains
+
+subroutine read_atmos
 ! This subroutine reads in the model atmosphere from atm1D.in, and calculates 
 ! other atmospheric state quantities. 
-subroutine read_atmos
 
   !----------------------------------------------------------------------------
   !  Modules
@@ -210,3 +214,5 @@ subroutine read_atmos
 
   deallocate(sp_atm, im_atm_list, has_den)
 end subroutine read_atmos
+
+end module
