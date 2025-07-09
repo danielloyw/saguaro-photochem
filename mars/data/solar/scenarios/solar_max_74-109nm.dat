@@ -1,5 +1,7 @@
-; High solar activity reference from solar maximum over Jan 1979 to 1982 Jan (solar cycle 21). Stitched from FISM (1-115 nm) and NRLSSI2 (115-2398 nm). 
-; wav (A)   flx (ph cm-2 s-1 nm-1)
+35
+; High solar activity reference based on solar maximum over 1979 Jan to 1982 Jan (solar cycle 21). Stitched from FISM (1-115 nm) and NRLSSI2 (115-2398 nm). 
+; Values are as measured at Earth. 
+; wave (A)   flux (photons cm-2 s-1 nm-1)
   745.0    1.807E+08
   755.0    2.392E+08
   765.0    5.585E+08

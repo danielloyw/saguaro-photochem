@@ -1,5 +1,7 @@
-; High solar activity reference from solar maximum over Jan 1979 to 1982 Jan (solar cycle 21). Stitched from FISM (1-115 nm) and NRLSSI2 (115-2398 nm). *1.52^2/1.6660^2 for aphelion
-; wav (A)   flx (ph cm-2 s-1 nm-1)
+35
+; High solar activity reference based on solar maximum over 1979 Jan to 1982 Jan (solar cycle 21). Stitched from FISM (1-115 nm) and NRLSSI2 (115-2398 nm). 
+; Values are as measured at Earth, but scaled *1.52^2/1.6660^2 for Mars aphelion. 
+; wave (A)   flux (photons cm-2 s-1 nm-1)
   745.0    1.504E+08
   755.0    1.991E+08
   765.0    4.649E+08

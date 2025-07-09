@@ -1,5 +1,7 @@
-; Whole Heliosphere Interval reference solar spectrum for low solar activity
-; wav (A)   flx (ph cm-2 s-1 nm-1)
+35
+; Whole Heliosphere Interval reference solar spectrum for low solar activity.
+; Values are as measured at Earth. 
+; wave (A)   flux (photons cm-2 s-1 nm-1)
   745.0    1.651E+08
   755.0    2.451E+08
   765.0    7.461E+08

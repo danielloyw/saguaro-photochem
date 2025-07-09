@@ -1,5 +1,7 @@
-; Average EUVM spectrum over 20161005-20170110 *1.52^2.
-; wav (A)   flx (ph cm-2 s-1 nm-1)
+35
+; Average EUVM spectrum over 20170912-20180109.
+; Values are scaled by *1.52^2 for model. 
+; wave (A)   flux (photons cm-2 s-1 nm-1)
   745.0    2.054E+08
   755.0    2.452E+08
   765.0    7.063E+08

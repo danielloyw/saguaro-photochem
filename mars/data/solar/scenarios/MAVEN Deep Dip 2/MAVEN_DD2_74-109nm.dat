@@ -1,5 +1,7 @@
-; MAVEN EUVM average during DD2, *1.52^2
-; wav (A)   flx (ph cm-2 s-1 nm-1)
+35
+; MAVEN EUVM average during Deep Dip 2
+; Values are scaled by *1.52^2 for model. 
+; wave (A)   flux (photons cm-2 s-1 nm-1)
   745.0    1.651E+08
   755.0    3.808E+08
   765.0    1.037E+09

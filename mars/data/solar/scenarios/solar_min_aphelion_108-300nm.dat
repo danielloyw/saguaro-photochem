@@ -1,5 +1,7 @@
-; Whole Heliosphere Interval reference solar spectrum for low solar activity, *1.52^2/1.6660^2 for aphelion
-; wav (A)   flx (ph cm-2 s-1 nm-1)
+192
+; Whole Heliosphere Interval reference solar spectrum for low solar activity.
+; Values are as measured at Earth, but scaled *1.52^2/1.6660^2 for Mars aphelion. 
+; wave (A)   flux (photons cm-2 s-1 nm-1)
  1085.0    7.164E+08
  1095.0    4.816E+08
  1105.0    6.328E+08

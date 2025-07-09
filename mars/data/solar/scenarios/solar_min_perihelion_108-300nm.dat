@@ -1,5 +1,7 @@
-; Whole Heliosphere Interval reference solar spectrum for low solar activity, *1.52^2/1.3814^2 for perihelion
-; wav (A)   flx (ph cm-2 s-1 nm-1)
+192
+; Whole Heliosphere Interval reference solar spectrum for low solar activity.
+; Values are as measured at Earth, but scaled *1.52^2/1.3814^2 for perihelion.
+; wave (A)   flux (photons cm-2 s-1 nm-1)
  1085.0    1.042E+09
  1095.0    7.005E+08
  1105.0    9.204E+08

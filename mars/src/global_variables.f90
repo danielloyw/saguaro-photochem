@@ -50,12 +50,12 @@ module global_variables
   ! molecular weight (in amu): dim=(species #)
   real(wp), allocatable, dimension(:) :: mmw
   ! number of H, C, N-14, N-15, O in species: dim=(species #)
-  integer, allocatable, dimension(:) :: nhyd, ncar, n14n, n15n, noxy
+  integer, allocatable, dimension(:) :: nhyd, ncar, n14N, n15N, noxy
 
   ! how is diffusion treated: dim=(species #)
   integer, allocatable, dimension(:) :: dtype
-  ! diffusion parameters A, s_1, phi, s_2, s_3: dim=(species #)
-  real(wp), allocatable, dimension(:) :: Ad, sd, phi, sd_2, sd_3
+  ! parameters for calculating diffusion constant: dim=(species #)
+  real(wp), allocatable, dimension(:) :: Ad, sd1, phi, sd2, sd3
 
   ! boundary type: dim=(species #, bottom/top)
   integer, allocatable, dimension(:,:) :: ibnd
@@ -141,42 +141,93 @@ module global_variables
   real(wp), allocatable, dimension(:,:) :: vmr
   ! scale height: unit=cm; dim=(altitude level, species #)
   real(wp), allocatable, dimension(:,:) :: Ht
-  ! middle of rz bins: unit=cm; dim=(# of altitude levels)
-  real(wp), allocatable, dimension(:) :: rmid
-  ! rmid(i)-rmid(i-1): unit=cm; dim=(# of altitude levels)
+  ! middle of rz bins: unit=cm; dim=(altitude level)
+  real(wp), allocatable, dimension(:) :: rz_mid
+  ! rz_mid(i)-rz_mid(i-1): unit=cm; dim=(altitude level)
   real(wp), allocatable, dimension(:) :: dr
-  ! rz(i)-rz(i-1): unit=cm; dim=(# of altitude levels)
-  real(wp), allocatable, dimension(:) :: drp
-  ! (rmid(nl)/rz(nl))**2: unit=cm; dim=(# of altitude levels)
-  real(wp), allocatable, dimension(:) :: rp2
-  ! (rmid(nl-1)/rz(nl))**2: unit=cm; dim=(# of altitude levels)
-  real(wp), allocatable, dimension(:) :: rm2
+  ! rz(i)-rz(i-1): unit=cm; dim=(altitude level)
+  real(wp), allocatable, dimension(:) :: dr_mid
 
   !----------------------------------------------------------------------------
-  !  DIFCO
+  !  Photo
   !----------------------------------------------------------------------------
 
-  real(wp), parameter :: polN2 = 17.6E-25               ! Polarizability of N2
-  real(wp), parameter :: polCO2 = 2.63E-24              ! Polarizability of CO2
-  real(wp), allocatable, dimension(:,:) :: df           ! diffusion coefficient
-  !
-  real(wp), allocatable, dimension(:,:) :: alpha
-  !
-  real(wp), allocatable, dimension(:,:) :: beta
-  ! divergence coefficient for bin below
+  ! calculate photolysis?
+  logical :: lcrsA, lcrsB, lcrsC, lcrsJ
+  ! total number of photolysis reactions
+  integer :: n_prct
+  ! wavelength scale for spectral regions A, B, C (lres for low-resolution): 
+  ! unit=angstrom;  dim=(wavelength bin)
+  real(wp), allocatable, dimension(:) :: waveA, waveB, waveB_lres, waveC
+  ! number of wavelength bins for spectral regions A, B, C (lres for
+  ! low-resolution)
+  integer :: n_waveA, n_waveB, n_waveB_lres, n_waveC
+  ! number of photo species for spectral regions A, B, C, and specified
+  ! reactions
+  integer :: n_sp_photoA, n_sp_photoB, n_sp_photoC, n_sp_photoJ
+  ! maximum number of branches for each species
+  integer :: n_branch_maxA, n_branch_maxB, n_branch_maxC, n_branch_maxJ
+  ! index mapping from list of photo species -> list of all species: 
+  ! dim=(photolyzed species #)
+  integer, allocatable, dimension(:) :: im_photoA_all, im_photoB_all
+  integer, allocatable, dimension(:) :: im_photoC_all, im_photoJ_all
+  ! number of photo reactions/branches: dim=(photolyzed species #)
+  integer, allocatable, dimension(:) :: n_branchA, n_branchB
+  integer, allocatable, dimension(:) :: n_branchC, n_branchJ
+  ! equation for photo reaction: dim=(photo reaction #)
+  character(len=87), allocatable, dimension(:) :: ptitle
+  ! index mapping from list of species in photo reactions -> list of all
+  ! species: dim=(photo reaction #, species # in reaction)
+  integer, allocatable, dimension(:,:) :: im_photo_all
+  ! threshold energy: unit=angstrom; dim=(branch #, photolyzed species #)
+  real(wp), allocatable, dimension(:,:) :: enrgIA, enrgIB, enrgIC
+  ! are any ions produced in reaction?: dim=(branch #, photolyzed species #)
+  logical, allocatable, dimension(:,:) :: is_ionizationA
+  logical, allocatable, dimension(:,:) :: is_ionizationB
+  logical, allocatable, dimension(:,:) :: is_ionizationC
+  ! number of ions produced in reaction (branch #, photolyzed species #)
+  real(wp), allocatable, dimension(:,:) :: charge_stateA
+  real(wp), allocatable, dimension(:,:) :: charge_stateB
+  real(wp), allocatable, dimension(:,:) :: charge_stateC
+  ! total absorption cross sections: unit=cm2
+  ! dim=(wavelength bin, photolyzed species #)
+  real(wp), allocatable, dimension(:,:) :: crsA, crsB, crsC
+  ! branch ratio: dim=(wavelength bin, branch #, photolyzed species #)
+  real(wp), allocatable, dimension(:,:,:) :: branch_ratioA
+  real(wp), allocatable, dimension(:,:,:) :: branch_ratioB
+  real(wp), allocatable, dimension(:,:,:) :: branch_ratioC
+  ! specified optically thin photolysis rates: unit=
+  ! dim=(branch #, photolyzed species #)
+  real(wp), allocatable, dimension(:,:) :: srateJ
+  
+  ! solar flux for spectral ranges A, B, C: unit=photons cm-2 s-1 bin-1
+  ! dim=(wavelength bin)
+  real(wp), allocatable, dimension(:) :: sol_fluxA, sol_fluxB, sol_fluxC
+  ! transmission of solar flux for spectral regions A, B, C: unit=unitless;
+  ! dim=(wavelength bin, altitude bin)
+  real(wp), allocatable, dimension(:,:) :: trnA, trnB, trnC
+  ! non-diurnally averaged photo rate for spectral regions A, B, C: unit = 
+  ! dim=(wavelength bin, branch #, species #)
+  real(wp), allocatable, dimension(:,:,:) :: prtA, prtB, prtC
+  
+  !----------------------------------------------------------------------------
+  !  Diffusion
+  !----------------------------------------------------------------------------
+
+  ! diffusion coefficient: unit=cm2 s-1; dim(altitude level, species #)
+  real(wp), allocatable, dimension(:,:) :: Df
+  ! flux equation constants: unit=cm s-1; 
+  ! dim(altitude level, diffusive species #)
+  real(wp), allocatable, dimension(:,:) :: alpha, beta
+  ! divergence coefficient for bin below: unit=s-1; 
+  ! dim(altitude level, diffusive species #)
   real(wp), allocatable, dimension(:,:) :: a
-  ! divergence coefficient for bin
+  ! divergence coefficient for bin: unit=s-1; 
+  ! dim(altitude level, diffusive species #)
   real(wp), allocatable, dimension(:,:) :: b
-  ! divergence coefficient for bin above
+  ! divergence coefficient for bin above: unit=s-1; 
+  ! dim(altitude level, diffusive species #)
   real(wp), allocatable, dimension(:,:) :: c
-  !
-  real(wp), allocatable, dimension(:,:) :: alphax
-  !
-  real(wp), allocatable, dimension(:,:) :: betax
-  !
-  real(wp), allocatable, dimension(:) :: ekp
-  !
-  real(wp), allocatable, dimension(:,:) :: dfp
 
   !----------------------------------------------------------------------------
   !  RATECO
@@ -209,58 +260,14 @@ module global_variables
   ! tau (altitude, wavelength)
   real(wp), allocatable, dimension(:,:) :: tau_ray
 
-  !----------------------------------------------------------------------------
-  !  PHOTO
-  !----------------------------------------------------------------------------
 
-  ! calculate photolysis?
-  logical :: lcrsA, lcrsB, lcrsC, lcrsJ
-  ! total number of photolysis reactions
-  integer :: nphrt
-  ! number of wavelength bins for spectral ranges A, B and C
-  integer :: ncrsA, ncrsB, ncrsB_low, ncrsC
-  ! number of species for spectral ranges A, B and C
-  integer :: nabsA, nabsB, nabsC, nabsJ
-  ! maximum number of branches for each species
-  integer :: nbrmaxA, nbrmaxB, nbrmaxC, nbrmaxJ
-  ! photolyzed species index
-  integer, allocatable, dimension(:) :: loabA, loabB, loabC, loabJ
-  ! number of photo reactions/branches
-  integer, allocatable, dimension(:) :: nbrnchA, nbrnchB, nbrnchC, nbrnchJ
-  ! wavelength scale
-  real(wp), allocatable, dimension(:) :: wcrsA, wcrsB, wcrsB_low, wcrsC
-  ! solar flux for spectral ranges A, B and C
-  real(wp), allocatable, dimension(:) :: fsolA, fsolB, fsolC
-  ! transmission of solar flux for spectral ranges A, B and C
-  real(wp), allocatable, dimension(:,:) :: trnA, trnB, trnC
-  ! non-diurnally averaged photo rate for spectral ranges A, B and C
-  ! (wavelength, branch #, species #)
-  real(wp), allocatable, dimension(:,:,:) :: prtA, prtB, prtC
-  ! total absorption cross sections (wavelength, species #)
-  real(wp), allocatable, dimension(:,:) :: xcrsA, xcrsB, xcrsC
-  ! branch ratio (wavelength, branch #, species #)
-  real(wp), allocatable, dimension(:,:,:) :: bratA, bratB, bratC
-  ! are there any ions?
-  logical, allocatable, dimension(:,:) :: ionizeA, ionizeB, ionizeC
-  ! threshold energy (branch #, species #) in angstroms
-  real(wp), allocatable, dimension(:,:) :: enrgIA, enrgIB, enrgIC
-  ! number of ions (branch #, species #)
-  real(wp), allocatable, dimension(:,:) :: charge_stateA
-  real(wp), allocatable, dimension(:,:) :: charge_stateB
-  real(wp), allocatable, dimension(:,:) :: charge_stateC
-  ! specified optically thin photolysis rates
-  real(wp), allocatable, dimension(:,:) :: srateJ
-  ! formula for each photolysis reaction
-  character(len=87), allocatable, dimension(:) :: ptitle
-  ! indices for reactants/products
-  integer, allocatable, dimension(:,:) :: irpt
 
   !----------------------------------------------------------------------------
   !  ELCTRN, ELDEP1
   !----------------------------------------------------------------------------
 
   ! number of species (thick), number of species (thin)
-  integer :: nabs_el_thk, nabs_el_thn
+  integer :: n_abs_el_thk, n_abs_el_thn
   ! number of bins, number of electron impact reactions
   integer :: nelb, nert
   ! mean bin energy
@@ -288,9 +295,9 @@ module global_variables
   ! 0?
   real(wp), allocatable, dimension(:) :: pS
   ! cross section for thin?
-  real(wp), allocatable, dimension(:,:,:) :: brat_el
+  real(wp), allocatable, dimension(:,:,:) :: branch_ratio_el
   ! number of branches for dissociation + ionization (species)
-  integer, allocatable, dimension(:) :: nbrnch_el
+  integer, allocatable, dimension(:) :: n_branch_el
   ! total cross section for thin
   real(wp), allocatable, dimension(:,:) :: crs_tot_inel
   !
@@ -309,8 +316,10 @@ module global_variables
   !----------------------------------------------------------------------------
 
   ! absorption rate per molecule (reaction, altitude)
+  ! dim=(photo reaction #, altitude #)
   real(wp), allocatable, dimension(:,:) :: rph
-  ! total absorption rate (reaction, altitude)
+  ! total absorption rate
+  ! dim=(photo reaction #, altitude #)
   real(wp), allocatable, dimension(:,:) :: rpt
 
   !----------------------------------------------------------------------------
