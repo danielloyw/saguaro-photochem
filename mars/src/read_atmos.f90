@@ -60,8 +60,8 @@ subroutine read_atmos
     ! read species and associate them with sp_list from species settings files
     ! i.e., nmolecules.settings and imolecules.settings
     read(fid,'(A)') ts_header
-    read(fid,"(10(2X,A12,1X))") (sp_atm(i_sp),i_sp=1,tn_sp1)
-    do concurrent (i_sp = 1:tn_sp1)
+    read(fid,'(10(2X,A12,1X))') (sp_atm(i_sp),i_sp=1,tn_sp1)
+    do i_sp = 1, tn_sp1
       tn_sp2 = find_name(sp_atm(i_sp),sp_list)
       im_atm_list(i_sp) = tn_sp2
       if(tn_sp2 /= 0) has_den(tn_sp2) = .true.
@@ -107,7 +107,7 @@ subroutine read_atmos
   !----------------------------------------------------------------------------
 
   ! apply bottom boundary condition of stipulated mole ratio
-  do concurrent (i_sp = 1:n_diff)
+  do i_sp = 1, n_diff
     tn_sp2 = im_diff_all(i_sp)
     if(ibnd(tn_sp2,1) == 3) then
       den(1,tn_sp2) = bval(tn_sp2,1)*den(1,0)
@@ -118,8 +118,8 @@ subroutine read_atmos
   do concurrent (i_sp = 1:n_sp-1)
     if(.not. has_den(i_sp)) then
       den(:,i_sp) = den_min
-      write(*,"('Density not defined for ', A, &
-        '... Assigning minimum density of ', ES8.1)") sp_list(i_sp), den_min
+      write(*,'("Density not defined for ", A, &
+        "... Assigning minimum density of ", ES8.1)') sp_list(i_sp), den_min
     end if
   end do
 
@@ -144,10 +144,8 @@ subroutine read_atmos
   end do
 
   ! calculate mole fraction
-  do concurrent (i_z = 1:n_z)
-    do concurrent (i_sp = 1:n_sp)
+  do concurrent (i_z = 1:n_z, i_sp = 1:n_sp)
       vmr(i_z,i_sp) = den(i_z,i_sp)/den(i_z,0)
-    end do
   end do
 
   ! reset gravity

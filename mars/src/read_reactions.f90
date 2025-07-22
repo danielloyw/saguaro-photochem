@@ -132,8 +132,8 @@ subroutine read_reactions
         i = 1
         irct(i,nr) = find_name(ts_species(i), sp_list)
         if (irct(i,nr) <= 0) then
-          write(*,"(I6,':',2X,A)") nr, ctitle(nr)
-          write(*,"('Error: Reactant ',I2,' not found: ',A12)") & 
+          write(*,'(I6, ":", 2X, A)') nr, ctitle(nr)
+          write(*,'("Error: Reactant ", I2, " not found: ", A12)') & 
             i, ts_species(i)
           stop
         end if
@@ -144,8 +144,8 @@ subroutine read_reactions
         do i = 1, 2
           irct(i,nr) = find_name(ts_species(i), sp_list)
           if (irct(i,nr) <= 0) then
-            write(*,"(I6,':',2X,A)") nr, ctitle(nr)
-            write(*,"('Error: Reactant ',I2,' not found: ',A12)") & 
+            write(*,'(I6, ":", 2X, A)') nr, ctitle(nr)
+            write(*,'("Error: Reactant ", I2, " not found: ", A12)') & 
               i, ts_species(i)
             stop
           end if
@@ -179,8 +179,8 @@ subroutine read_reactions
       ! end if
 
       else 
-        write(*,"('Error: Invalid setting for neutral reaction ', I0, &
-          '! Exiting...')") i_rct
+        write(*,'("Error: Invalid setting for neutral reaction ", I0, &
+          "! Exiting...")') i_rct
         stop
       end if
     end if
@@ -211,8 +211,8 @@ subroutine read_reactions
         i = 1
         irct(i,nr) = find_name(ts_species(i), sp_list)
         if (irct(i,nr) <= 0) then
-          write(*,"(I6,':',2X,A)") nr, ctitle(nr)
-          write(*,"('Error: Reactant ',I0,' not found: ', A12)") &
+          write(*,'(I6, ":", 2X, A)') nr, ctitle(nr)
+          write(*,'("Error: Reactant ", I0, " not found: ", A12)') &
             i, ts_species(i)
           stop
         end if
@@ -223,8 +223,8 @@ subroutine read_reactions
         do i = 1, 2
           irct(i,nr) = find_name(ts_species(i), sp_list)
           if (irct(i,nr) <= 0) then
-            write(*,"(I6,':',2X,A)") nr, ctitle(nr)
-            write(*,"('Error: Reactant ',I0,' not found: ', A12)") & 
+            write(*,'(I6, ":", 2X, A)') nr, ctitle(nr)
+            write(*,'("Error: Reactant ", I0, " not found: ", A12)') & 
               i, ts_species(i)
             stop
           end if
@@ -258,8 +258,8 @@ subroutine read_reactions
           ! end if
 
       else 
-        write(*,"('Error: Invalid setting for ion reaction ', I0, &
-          '! Exiting...')") i_rct
+        write(*,'("Error: Invalid setting for ion reaction ", I0, &
+          "! Exiting...")') i_rct
         stop
       end if
     end if

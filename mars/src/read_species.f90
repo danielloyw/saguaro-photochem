@@ -54,7 +54,7 @@ subroutine read_species
     ibnd(n_sp,2), bval(n_sp,2))
   
   ! read in settings for neutrals
-  read(fid_neu,"(A)") ts_header ! column headers
+  read(fid_neu,'(A)') ts_header ! column headers
   do i_sp = 1, n_neu
     read(fid_neu,961) tn1, &
       sp_list(i_sp), istat(i_sp), chrg(i_sp), mmw(i_sp), &
@@ -70,7 +70,7 @@ subroutine read_species
       I1, 2X, ES10.3, 3X, I1, 2X, ES10.3)
   
   ! read in settings for ions
-  read(fid_ion,"(A)") ts_header
+  read(fid_ion,'(A)') ts_header
   ichk = 0
   do i_sp = n_neu+1, n_neu+n_ion
      read(fid_ion,962) tn1, &
@@ -139,11 +139,11 @@ subroutine read_species
     end if
   end do
 
-  write(*,"('DIFFUSING SPECIES')")
+  write(*,'("DIFFUSING SPECIES")')
   if(size(im_diff_all) > 0) then
-    write(*,"(10(1X,A12))") (sp_list(im_diff_all(nd)), nd=1, n_diff)
+    write(*,'(10(1X,A12))') (sp_list(im_diff_all(nd)), nd=1, n_diff)
   else
-    write(*,"('  NONE')")
+    write(*,'("  NONE")')
   end if
 
 
@@ -164,11 +164,11 @@ subroutine read_species
   end if
 
   ! print list of chemical species to screen
-  write(*,"('CHEMICAL SPECIES')")
+  write(*,'("CHEMICAL SPECIES")')
   if(size(im_chem_all) > 0) then
-    write(*,"(10(1X,A12))") (sp_list(im_chem_all(nc)), nc=1, n_chem)
+    write(*,'(10(1X,A12))') (sp_list(im_chem_all(nc)), nc=1, n_chem)
   else
-    write(*,"('  NONE')")
+    write(*,'("  NONE")')
   end if
 
   !----------------------------------------------------------------------------
