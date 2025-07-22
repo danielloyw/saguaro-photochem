@@ -165,8 +165,6 @@ module global_variables
   ! number of photo species for spectral regions A, B, C, and specified
   ! reactions
   integer :: n_sp_photoA, n_sp_photoB, n_sp_photoC, n_sp_photoJ
-  ! maximum number of branches for each species
-  integer :: n_branch_maxA, n_branch_maxB, n_branch_maxC, n_branch_maxJ
   ! index mapping from list of photo species -> list of all species: 
   ! dim=(photolyzed species #)
   integer, allocatable, dimension(:) :: im_photoA_all, im_photoB_all
@@ -177,21 +175,17 @@ module global_variables
   ! equation for photo reaction: dim=(photo reaction #)
   character(len=87), allocatable, dimension(:) :: ptitle
   ! index mapping from list of species in photo reactions -> list of all
-  ! species: dim=(photo reaction #, species # in reaction)
+  ! species: dim=(species # in reaction, photo reaction #)
   integer, allocatable, dimension(:,:) :: im_photo_all
   ! threshold energy: unit=angstrom; dim=(branch #, photolyzed species #)
   real(wp), allocatable, dimension(:,:) :: enrgIA, enrgIB, enrgIC
-  ! are any ions produced in reaction?: dim=(branch #, photolyzed species #)
-  logical, allocatable, dimension(:,:) :: is_ionizationA
-  logical, allocatable, dimension(:,:) :: is_ionizationB
-  logical, allocatable, dimension(:,:) :: is_ionizationC
   ! number of ions produced in reaction (branch #, photolyzed species #)
   real(wp), allocatable, dimension(:,:) :: charge_stateA
   real(wp), allocatable, dimension(:,:) :: charge_stateB
   real(wp), allocatable, dimension(:,:) :: charge_stateC
   ! total absorption cross sections: unit=cm2
   ! dim=(wavelength bin, photolyzed species #)
-  real(wp), allocatable, dimension(:,:) :: crsA, crsB, crsC
+  real(wp), allocatable, dimension(:,:) :: csA, csB, csC
   ! branch ratio: dim=(wavelength bin, branch #, photolyzed species #)
   real(wp), allocatable, dimension(:,:,:) :: branch_ratioA
   real(wp), allocatable, dimension(:,:,:) :: branch_ratioB
@@ -209,6 +203,11 @@ module global_variables
   ! non-diurnally averaged photo rate for spectral regions A, B, C: unit = 
   ! dim=(wavelength bin, branch #, species #)
   real(wp), allocatable, dimension(:,:,:) :: prtA, prtB, prtC
+  
+  ! Rayleigh scattering cross-section in spectral range C
+  real(wp), allocatable, dimension(:) :: cs_ray
+  ! tau (altitude, wavelength)
+  real(wp), allocatable, dimension(:,:) :: tau_ray
   
   !----------------------------------------------------------------------------
   !  Diffusion
@@ -229,6 +228,59 @@ module global_variables
   ! dim(altitude level, diffusive species #)
   real(wp), allocatable, dimension(:,:) :: c
 
+  !----------------------------------------------------------------------------
+  !  Electrons
+  !----------------------------------------------------------------------------
+
+  ! number of electron impact reactions
+  integer :: n_erct
+  ! energy scale for electrons: unit=eV; dim=(energy bin)
+  real(wp), allocatable, dimension(:) :: e_enrg
+  ! number of bins in scale
+  integer :: n_e_enrg
+  ! energy bin width: unit=eV; dim=(energy bin)
+  real(wp), allocatable, dimension(:) :: e_denrg
+  ! number of species (thick), number of species (thin)
+  integer :: n_sp_e_thk, n_sp_e_thn
+  ! number of states: dim=(excited/dissociation/ionization, e species #)
+  integer, allocatable, dimension(:,:) :: n_states
+  ! number of dissociation + ionization reactions: dim=(e species #)
+  integer, allocatable, dimension(:) :: n_branch_e
+  ! equation for electron reaction: dim=(electron reaction #)
+  character(len=87), allocatable, dimension(:) :: etitle
+  ! energy level of excited state: unit=eV; dim=(state, e species #)
+  real(wp), allocatable, dimension(:,:) :: enrg_state
+  ! index mapping from list of species in electron reactions -> list of
+  ! all species: dim=(species # in reaction, electron reaction #)
+  integer, allocatable, dimension(:,:) :: im_e_all
+  ! electron cross sections: unit=cm2; dim=(energy bin, state, e species #)
+  real(wp), allocatable, dimension(:,:,:) :: ecs
+  ! total cross-section for excitation and dissociation: unit=cm2;
+  ! dim=(energy bin, e species #)
+  real(wp), allocatable, dimension(:,:) :: eCS_exc
+  ! total cross-section for ionization: unit=cm2; dim=(energy bin, e species #)
+  real(wp), allocatable, dimension(:,:) :: eCS_ion
+  ! total cross-section for ionization: unit=cm2;
+  ! dim=(energy bin, state, e species #)
+  real(wp), allocatable, dimension(:,:,:) :: cs_ion
+  ! total cross-section for secondary electron production: unit=cm2
+  ! dim=(energy bin, state, e species #)
+  real(wp), allocatable, dimension(:,:,:) :: cs_sec
+  
+  ! electron production/source (altitude, bin)
+  real(wp), allocatable, dimension(:,:) :: Sel
+
+  ! 0?
+  real(wp), allocatable, dimension(:) :: pS
+  ! cross section for thin?
+  !real(wp), allocatable, dimension(:,:,:) :: branch_ratio_el
+  ! total cross section for thin
+  !real(wp), allocatable, dimension(:,:) :: crs_tot_inel
+
+  ! electron production rate (reaction, altitude, energy bin)
+  real(wp), allocatable, dimension(:,:,:) :: esrc
+  real(wp), allocatable, dimension(:,:) :: eflux, eph, rpe
+  
   !----------------------------------------------------------------------------
   !  RATECO
   !----------------------------------------------------------------------------
@@ -255,61 +307,7 @@ module global_variables
   !  Rayleigh Scattering
   !----------------------------------------------------------------------------
 
-  ! scattering cross-section in spectral range C
-  real(wp), allocatable, dimension(:) :: crs_ray
-  ! tau (altitude, wavelength)
-  real(wp), allocatable, dimension(:,:) :: tau_ray
 
-
-
-  !----------------------------------------------------------------------------
-  !  ELCTRN, ELDEP1
-  !----------------------------------------------------------------------------
-
-  ! number of species (thick), number of species (thin)
-  integer :: n_abs_el_thk, n_abs_el_thn
-  ! number of bins, number of electron impact reactions
-  integer :: nelb, nert
-  ! mean bin energy
-  real(wp), allocatable, dimension(:) :: elctreV
-  ! bin width
-  real(wp), allocatable, dimension(:) :: elctDeV
-  ! elastic cross section (energy bin, species)
-  real(wp), allocatable, dimension(:,:) :: eCS_tot_elast
-  ! inelastic cross section (energy bin, species)
-  real(wp), allocatable, dimension(:,:) :: eCS_tot_inelast
-  ! cross-sections (energy bin, species, state)
-  real(wp), allocatable, dimension(:,:,:) :: eCS
-  ! name of excited state (species, state)
-  character(len=10), allocatable, dimension(:,:) :: state
-  ! energy level of excited state (species, state)
-  real(wp), allocatable, dimension(:,:) :: enrgE
-  ! number of states (species, excited/dissociation/ionization)
-  integer, allocatable, dimension(:,:) :: ipath
-  ! electron production/source (altitude, bin)
-  real(wp), allocatable, dimension(:,:) :: Sel
-  ! total cross-section for excitation and dissociation
-  real(wp), allocatable, dimension(:,:) :: eCS_exc
-  ! total cross-section for ionization
-  real(wp), allocatable, dimension(:,:) :: eCS_ion
-  ! 0?
-  real(wp), allocatable, dimension(:) :: pS
-  ! cross section for thin?
-  real(wp), allocatable, dimension(:,:,:) :: branch_ratio_el
-  ! number of branches for dissociation + ionization (species)
-  integer, allocatable, dimension(:) :: n_branch_el
-  ! total cross section for thin
-  real(wp), allocatable, dimension(:,:) :: crs_tot_inel
-  !
-  real(wp), allocatable, dimension(:,:,:) :: sum_cs_rees_ion
-  ! total cross-section for secondary electron production
-  real(wp), allocatable, dimension(:,:,:) :: sum_cs_rees_sec
-  ! electron production rate (reaction, altitude, energy bin)
-  real(wp), allocatable, dimension(:,:,:) :: esrc
-  ! equation (reaction)
-  character(len=87), allocatable, dimension(:) :: etitle
-  ! reactant/product index (reactant/product #, reaction)
-  integer, allocatable, dimension(:,:) :: iert
 
   !----------------------------------------------------------------------------
   !  SOLDEP1
@@ -321,12 +319,6 @@ module global_variables
   ! total absorption rate
   ! dim=(photo reaction #, altitude #)
   real(wp), allocatable, dimension(:,:) :: rpt
-
-  !----------------------------------------------------------------------------
-  !  ELDEP1
-  !----------------------------------------------------------------------------
-
-  real(wp), allocatable, dimension(:,:) :: eflux, eph, rpe
 
   !----------------------------------------------------------------------------
   !  CHEMEQ & COMPO
