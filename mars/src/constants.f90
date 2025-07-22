@@ -24,7 +24,7 @@ module constants
   real(wp), parameter :: kB      = 1.380649E-16       ! Boltzmann's constant
   real(wp), parameter :: Rgas    = kB/amu             ! gas constant
   real(wp), parameter :: crs0    = 2.654E-2           ! atomic cross section
-  real(wp), parameter :: cs      = 2.99792458E10      ! speed of light
+!  real(wp), parameter :: c      = 2.99792458E10      ! speed of light
   real(wp), parameter :: Gcnst   = 6.67430E-8         ! gravitational constant
 !  real(wp), parameter :: hplanck = 6.62607015E-27     ! Planck's constant
 !  real(wp), parameter :: crad2   = 1.43878            ! hplanck*cs/kB
