@@ -1061,4 +1061,80 @@ subroutine read_rayleigh
 
 end subroutine read_rayleigh
 
+
+subroutine paths1D
+! This subroutine calculates the physical path lengths for radiative transfer
+! through the atmosphere for various illumination conditions:
+! 1: daylight
+! 0: twilight (past terminator but illuminated at altitude)
+! -1: night
+  use types, only: wp => dp
+  use constants
+  use global_variables
+  use utils, only : locate
+  
+  implicit none
+  
+  !----------------------------------------------------------------------------
+  !  Local variables
+  !----------------------------------------------------------------------------
+  
+  ! sine of solar zenith angle
+  real(wp) :: sin_sza
+  ! radius for tangent point of light ray
+  real(wp), allocatable, dimension(:) :: r_tan
+  ! radius to opaque aerosol layer
+  real(wp) :: rShadow
+  
+  ! loop variables
+  integer :: i_z1, i_z2
+  
+  
+  allocate(i_tan(n_z), ds(n_z,n_z))
+  allocate(r_tan(n_z))
+  
+  rShadow = rPlanet + z_bot
+  sin_sza = sqrt(one - cos_sza**two)
+  ds = 1.0e+33_wp ! high optical path by default
+
+  
+  if (cos_sza >= zero) then
+  ! day
+    illum = 1
+    do concurrent (i_z1 = 1:n_z-1)
+      r_tan(i_z1) = rz(i_z1) * sin_sza
+      i_tan(i_z1) = i_z1
+      do concurrent (i_z2 = i_z1:n_z-1)
+        ds(i_z2,i_z1) = sqrt(rz(i_z2+1)**two - r_tan(i_z1)**two) &
+          - sqrt(rz(i_z2)**two - r_tan(i_z1)**two)
+      end do
+    end do
+  else if((cos_sza < zero) .and. (rz(n_z)*sin_sza > rShadow)) then
+  ! twilight (sin sza = cos solar elev ang)
+    illum = 0
+    i_bot = locate(rShadow, rz*sin_sza) + 1
+    do concurrent (i_z1 = i_bot:n_z-1)
+      r_tan(i_z1) = rz(i_z1) * sin_sza
+      
+      i_tan(i_z1) = locate(r_tan(i_z1), rz)
+      if (rz(i_tan(i_z1)) < r_tan(i_z1)) then
+        i_tan(i_z1) = i_tan(i_z1) + 1
+      end if
+      ds(i_tan(i_z1),i_z1) = sqrt(rz(i_tan(i_z1)+1)**two - r_tan(i_z1)**two)
+      do concurrent (i_z2 = i_tan(i_z1)+1:n_z-1)
+        ds(i_z2,i_z1) = sqrt(rz(i_z2+1)**two - r_tan(i_z1)**two) &
+          - sqrt(rz(i_z2)**two - r_tan(i_z1)**two)
+      end do
+    end do
+    r_tan(i_z1) = rz(n_z) * sin_sza
+    i_tan(n_z) = locate(r_tan(i_z1),rz) + 1
+  else if((cos_sza < zero).and.(rz(n_z)*sin_sza <= rShadow)) then
+  ! night
+    illum = -1
+    ! just use default 1E33 value
+  end if
+  
+end subroutine paths1D
+
+
 end module
