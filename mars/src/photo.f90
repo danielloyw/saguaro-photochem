@@ -359,9 +359,9 @@ subroutine read_photo(file_photo, sp_list, & ! input variables
     
     do i_branch = 1, n_branch(i_sp)
       ! read reaction formula
-      read (fid,'(A)') ts_line
+      read(fid,'(A)') ts_line
       ptitle(i_branch,i_sp) = ts_line
-      read (ts_line,'(5(A12, 3X), A12, F7.1)') &
+      read(ts_line,'(5(A12, 3X), A12, F7.1)') &
         (ts_species2(i), i=1,6), enrgI(i_branch,i_sp)
       
       ! link products to species list
@@ -545,9 +545,9 @@ subroutine read_photoB(sp_list, wave, & ! input variables
     
     do i_branch = 1, n_branch(i_sp)
       ! read reaction formula
-      read (fid,'(A)') ts_line
+      read(fid,'(A)') ts_line
       ptitle(i_branch,i_sp) = ts_line
-      read (ts_line,'(5(A12, 3X), A12, F7.1)') &
+      read(ts_line,'(5(A12, 3X), A12, F7.1)') &
         (ts_species2(i), i=1,6), enrgI(i_branch,i_sp)
 
       ! link products to species list
@@ -835,9 +835,9 @@ subroutine read_Jvals(file_jvals, sp_list, &
     
     do i_branch = 1, n_branch(i_sp)
       ! read reaction formula
-      read (fid,'(A)') ts_line
+      read(fid,'(A)') ts_line
       ptitle(i_branch,i_sp) = ts_line
-      read (ts_line,'(5(A12,3X), A12, ES11.3)') &
+      read(ts_line,'(5(A12,3X), A12, ES11.3)') &
         (ts_species2(i), i=1,6), srateJ(i_branch,i_sp)
       
       ! link products to species list
@@ -977,7 +977,7 @@ subroutine norm_sol(sol_wave_lres, sol_flux_lres, sol_wave_hres, sol_flux_hres)
     t_bin_high = sol_wave_lres(i_wave) + half * dwave_lres(i_wave)
     
     ! check if current low-resolution bin has any high-resolution fluxes
-    if((t_bin_low >= sol_wave_hres(1)) .and. &
+    if ((t_bin_low >= sol_wave_hres(1)) .and. &
       (t_bin_high <= sol_wave_hres(n_sol_wave_hres))) then
       
       ! determine indices of high-resolution wavelength scale corresponding to
@@ -1050,7 +1050,7 @@ subroutine read_rayleigh
   call intrp(wave, cs, waveC, cs_ray)
 
   do concurrent (i_wave = 1:n_waveC, i_z = 1:n_z)
-    if(waveC(i_wave) > 500._wp) then
+    if (waveC(i_wave) > 500._wp) then
       tau_ray(i_z,i_wave) = cs_ray(i_wave)*col(i_z)
     else
       tau_ray(i_z,i_wave) = zero
@@ -1109,7 +1109,7 @@ subroutine paths1D
           - sqrt(rz(i_z2)**two - r_tan(i_z1)**two)
       end do
     end do
-  else if((cos_sza < zero) .and. (rz(n_z)*sin_sza > rShadow)) then
+  else if ((cos_sza < zero) .and. (rz(n_z)*sin_sza > rShadow)) then
   ! twilight (sin sza = cos solar elev ang)
     illum = 0
     ibot = locate(rShadow, rz*sin_sza) + 1
@@ -1128,7 +1128,7 @@ subroutine paths1D
     end do
     r_tan(i_z1) = rz(n_z) * sin_sza
     itan(n_z) = locate(r_tan(i_z1),rz) + 1
-  else if((cos_sza < zero).and.(rz(n_z)*sin_sza <= rShadow)) then
+  else if ((cos_sza < zero).and.(rz(n_z)*sin_sza <= rShadow)) then
   ! night
     illum = -1
     ! just use default 1E33 value

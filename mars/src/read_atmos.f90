@@ -54,17 +54,17 @@ subroutine read_atmos
     ! allocate variables
     allocate(sp_atm(tn_sp1), im_atm_list(tn_sp1))
     allocate(z(n_z), rz(0:n_z+1), grv(n_z), eK(n_z))
-    allocate(Tn(n_z), Ti(n_z), Te(n_z), prs(n_z), mass(n_z), rho(n_z))
+    allocate(Tn(n_z), Te(n_z), prs(n_z), mass(n_z), rho(n_z))
     allocate(den(n_z,0:n_sp), den_old(n_z,0:n_sp), vmr(n_z,n_sp))
 
     ! read species and associate them with sp_list from species settings files
     ! i.e., nmolecules.settings and imolecules.settings
     read(fid,'(A)') ts_header
-    read(fid,'(10(2X,A12,1X))') (sp_atm(i_sp),i_sp=1,tn_sp1)
+    read(fid,'(10(2X,A12,1X))') (sp_atm(i_sp), i_sp=1, tn_sp1)
     do i_sp = 1, tn_sp1
       tn_sp2 = find_name(sp_atm(i_sp),sp_list)
       im_atm_list(i_sp) = tn_sp2
-      if(tn_sp2 /= 0) has_den(tn_sp2) = .true.
+      if (tn_sp2 /= 0) has_den(tn_sp2) = .true.
     end do
 
     ! read in model atmosphere and populate relevant variables
@@ -95,8 +95,6 @@ subroutine read_atmos
     end do
     
   close(unit=fid)
-
-  Ti = 230._wp !? need to confirm
   
   ! altitude to opaque atmosphere layer (e.g., aerosols)
   z_bot = 0.E5_wp
@@ -109,14 +107,14 @@ subroutine read_atmos
   ! apply bottom boundary condition of stipulated mole ratio
   do i_sp = 1, n_diff
     tn_sp2 = im_diff_all(i_sp)
-    if(ibnd(tn_sp2,1) == 3) then
+    if (ibnd(tn_sp2,1) == 3) then
       den(1,tn_sp2) = bval(tn_sp2,1)*den(1,0)
     end if
   end do
 
   ! set density to min value if species does not have density defined
   do concurrent (i_sp = 1:n_sp-1)
-    if(.not. has_den(i_sp)) then
+    if (.not. has_den(i_sp)) then
       den(:,i_sp) = den_min
       write(*,'("Density not defined for ", A, &
         "... Assigning minimum density of ", ES8.1)') sp_list(i_sp), den_min
@@ -138,7 +136,7 @@ subroutine read_atmos
   
   ! set density to fixed mole fraction according to settings
   do concurrent (i_sp = 1:n_sp-1)
-    if(istat(i_sp) == 3) then
+    if (istat(i_sp) == 3) then
       den(:,i_sp) = bval(i_sp,1)*den(:,0)
     end if
   end do

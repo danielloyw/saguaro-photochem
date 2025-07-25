@@ -53,7 +53,7 @@ subroutine elctrn
   open(newunit=fid, file='../data/electrons/eimpact.dat', &
     status='old', action='read')
 
-  read (fid,*) n_e_enrg, n_sp_e_thk, n_sp_e_thn, n_state_max
+  read(fid,*) n_e_enrg, n_sp_e_thk, n_sp_e_thn, n_state_max
 
   n_sp_e = n_sp_e_thk + n_sp_e_thn ! number of species
   
@@ -111,7 +111,7 @@ subroutine elctrn
       read(fid,'(A12, F9.3)') ts_state, enrg_state(n_excite+i_branch,i_sp)
       
       ! read reaction formula
-      read (fid,'(A)') ts_line
+      read(fid,'(A)') ts_line
       ts_title(i_branch,i_sp) = ts_line
       read(ts_line,'(5(A12, 3X), A12)') (ts_species2(i), i=1,6)
       
@@ -146,9 +146,9 @@ subroutine elctrn
     ! read(fid,'(10ES11.3)') (crs_tot_inel(i_enrg,i_sp),i_enrg=1,n_e_enrg)
     
     ! do i_branch = 1, n_branch_e(i_sp)
-      ! read (fid,'(A)') ts_line
+      ! read(fid,'(A)') ts_line
       ! ts_title(i_branch,i_sp) = ts_line
-      ! read (ts_line,'((5(A12,3X),A12,F6.1))') (ts_species2(j),j=1,6), rdum
+      ! read(ts_line,'((5(A12,3X),A12,F6.1))') (ts_species2(j),j=1,6), rdum
       ! i_p = 0
       ! do i = 3, 6 ! products
         ! tn_isp = find_name(ts_species2(i), sp_list)
@@ -207,7 +207,7 @@ subroutine elctrn
     do i_state = 1, n_states(3,i_sp)
       do i_enrg = 1, n_e_enrg
         t_enrg1 = enrg_state(n_states(1,i_sp)+n_states(2,i_sp)+i_state,i_sp)
-        if(e_enrg(i_enrg) > t_enrg1) then
+        if (e_enrg(i_enrg) > t_enrg1) then
         ! electron energy > ionization energy
           
           ! --- Calculate discretized ionization energy -----------------------
@@ -219,7 +219,7 @@ subroutine elctrn
           ! the upper half of the final bin will get pushed up. 
           t_enrg2 = e_enrg(i_enrg) - t_enrg1   ! total energy after ionization
           tn_ibin = find_bin(t_enrg2, e_enrg, e_denrg)
-          if(t_enrg2 < e_enrg(tn_ibin)) then
+          if (t_enrg2 < e_enrg(tn_ibin)) then
           ! total energy after ionization < bin center
             ! discretized total energy after ionization
             t_enrg3 = e_enrg(tn_ibin) - half * e_denrg(tn_ibin)
@@ -231,7 +231,7 @@ subroutine elctrn
           enrg_ion = e_enrg(i_enrg) - t_enrg3
           ! -------------------------------------------------------------------
           
-          if(tn_ibin == 0) then
+          if (tn_ibin == 0) then
           ! when exiting e energy < first bin center
             ! then remove electron from model with large 1-cm2 cross section
             cs_ion(i_enrg,i_state,i_sp) = one 
@@ -317,4 +317,4 @@ real(kind=wp) pure function difcs_sec(E_sec, E, I)
   difcs_sec = (one + E_sec/E0)**(-2.1_wp) / E0 / tanh((E-I) / two / E0)
 end function difcs_sec
 
-end module elctrn_mod
+end module

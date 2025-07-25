@@ -42,4 +42,4 @@ module constants
   real(wp), parameter :: rad_to_deg = 180.0_wp/pi
   real(wp), parameter :: deg_to_rad = pi/180.0_wp
 
-end module constants
+end module

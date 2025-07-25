@@ -77,7 +77,7 @@ subroutine read_species
       sp_list(i_sp), istat(i_sp), chrg(i_sp), mmw(i_sp), &
       nhyd(i_sp), ncar(i_sp), n14N(i_sp), n15N(i_sp), noxy(i_sp), &
       ibnd(i_sp,1), bval(i_sp,1), ibnd(i_sp,2), bval(i_sp,2)
-    if(istat(i_sp) == 1) ichk = ichk + 1
+    if (istat(i_sp) == 1) ichk = ichk + 1
   end do
   
 962 format(I4, &
@@ -99,14 +99,14 @@ subroutine read_species
   ! count number of species in chemical and diffusive equilibrium
   n_c = 0; n_d = 0
   do i_sp = 1, n_sp-1
-    if(istat(i_sp) == 1) n_c = n_c + 1 ! species in chemical equilibrium
-    if(istat(i_sp) == 2) n_d = n_d + 1 ! species diffusive equilibrium
+    if (istat(i_sp) == 1) n_c = n_c + 1 ! species in chemical equilibrium
+    if (istat(i_sp) == 2) n_d = n_d + 1 ! species diffusive equilibrium
   end do
   n_chem = n_c
   n_diff = n_d
   
 
-  if(ichk > 0) then
+  if (ichk > 0) then
     have_ions = .true.
     n_chem_e = n_chem + 1 ! with electrons
   else
@@ -132,7 +132,7 @@ subroutine read_species
   ! calculate mapping between list of diffusing species and list of all species
   n_d = 0
   do i_sp = 1, n_sp-1
-    if(istat(i_sp) == 2) then
+    if (istat(i_sp) == 2) then
       n_d = n_d + 1
       im_diff_all(n_d) = i_sp
       im_all_diff(i_sp) = n_d
@@ -140,7 +140,7 @@ subroutine read_species
   end do
 
   write(*,'("DIFFUSING SPECIES")')
-  if(size(im_diff_all) > 0) then
+  if (size(im_diff_all) > 0) then
     write(*,'(10(1X,A12))') (sp_list(im_diff_all(n_d)), n_d=1, n_diff)
   else
     write(*,'("  NONE")')
@@ -150,7 +150,7 @@ subroutine read_species
   ! calculate mapping between list of chemical species and list of all species
   n_c = 0
   do i_sp = 1, n_sp-1
-    if(istat(i_sp) == 1) then ! species in chemical equilibrium
+    if (istat(i_sp) == 1) then ! species in chemical equilibrium
       n_c = n_c + 1
       im_chem_all(n_c) = i_sp
       im_all_chem(i_sp) = n_c
@@ -158,14 +158,14 @@ subroutine read_species
   end do
   
   ! entry for electrons
-  if(have_ions) then
+  if (have_ions) then
     im_chem_all(n_chem_e) = n_sp
     im_all_chem(n_sp) = n_chem_e
   end if
 
   ! print list of chemical species to screen
   write(*,'("CHEMICAL SPECIES")')
-  if(size(im_chem_all) > 0) then
+  if (size(im_chem_all) > 0) then
     write(*,'(10(1X,A12))') (sp_list(im_chem_all(n_c)), n_c=1, n_chem)
   else
     write(*,'("  NONE")')

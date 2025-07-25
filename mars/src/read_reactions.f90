@@ -29,8 +29,10 @@ subroutine read_reactions
   real(wp), allocatable, dimension(:,:) :: rkn
   ! rate constants (k0, kinf, krad)
   real(wp) :: rk0, rkInf, rkRad
+  ! reduced pressure (k0 * [M] / kinf)
+  real(wp) :: P_red
   ! constants for Baulch et al. [2005] broadening factor
-  real(wp) :: FC, PFL, FCL, NF, CF, FF, XF, rexp
+  real(wp) :: FC, NF, CF, FF
   
   ! loop variables
   integer :: i_rct, i, i_r, i_z
@@ -80,10 +82,10 @@ subroutine read_reactions
     status='old', action='read')
 
   ! determine number of entries in neutral reactions list
-  read (fid_nrct,'(A)') ts_line
-  read (ts_line,*) n_nrct, ts1
-  read (fid_nrct,'(A)') ts_line
-  read (fid_nrct,'(A)') ts_line
+  read(fid_nrct,'(A)') ts_line
+  read(ts_line,*) n_nrct, ts1
+  read(fid_nrct,'(A)') ts_line
+  read(fid_nrct,'(A)') ts_line
 
   ! count how many of the entries are actually active (type /= 0)
   i_r = 0
@@ -96,10 +98,10 @@ subroutine read_reactions
   rewind(unit=fid_nrct)
 
   ! determine number of entries in ion reactions list
-  read (fid_irct,'(A)') ts_line
-  read (ts_line,*) n_irct, ts1
-  read (fid_irct,'(A)') ts_line
-  read (fid_irct,'(A)') ts_line
+  read(fid_irct,'(A)') ts_line
+  read(ts_line,*) n_irct, ts1
+  read(fid_irct,'(A)') ts_line
+  read(fid_irct,'(A)') ts_line
 
   ! count how many of the entries are actually active (type /= 0)
   do i_rct = 1, n_irct
@@ -116,9 +118,9 @@ subroutine read_reactions
   ! allocate(ntab(n_rct))
 
   ! --- Neutral reactions -----------------------------------------------------
-  read (fid_nrct,'(A)') ts_line
-  read (fid_nrct,'(A)') ts_line
-  read (fid_nrct,'(A)') ts_line  
+  read(fid_nrct,'(A)') ts_line
+  read(fid_nrct,'(A)') ts_line
+  read(fid_nrct,'(A)') ts_line  
   i_r = 0
   do i_rct = 1, n_nrct
     read(fid_nrct,'(A)') ts_line
@@ -161,7 +163,7 @@ subroutine read_reactions
         end do
          
       ! Tabulated reaction rates (deactivated for now)
-      ! else if(abs(chem_type(i_r)) == 6) then
+      ! else if (abs(chem_type(i_r)) == 6) then
         ! do i = 1, 2
           ! ireactant(i,i_r) = find_name(ts_species(i), sp_list)
           ! if (ireactant(i,i_r) <= 0) then
@@ -174,14 +176,14 @@ subroutine read_reactions
         ! do nt = 1, ntab_rct
           ! ltab = .true.
           ! do i = 1, 5
-            ! if(ireactant(i,i_r) /= itab_rct(i,nt)) ltab = .false.
+            ! if (ireactant(i,i_r) /= itab_rct(i,nt)) ltab = .false.
         ! end do
-        ! if(ltab) then
+        ! if (ltab) then
           ! ntab(i_r) = nt
           ! EXIT
         ! end if
       ! end do
-      ! if(.not.ltab) then
+      ! if (.not.ltab) then
         ! write(*,"(I6,':',2X,A)") i_r,ctitle(i_r)
         ! write(*,"(' TABULATED DATA NOT FOUND FOR REACTION ',I4,', ABORTING ....')") i_r
         ! STOP
@@ -197,9 +199,9 @@ subroutine read_reactions
   close(unit=fid_nrct)
 
   ! --- Ion reactions ---------------------------------------------------------
-  read (fid_irct,'(A)') ts_line
-  read (fid_irct,'(A)') ts_line
-  read (fid_irct,'(A)') ts_line  
+  read(fid_irct,'(A)') ts_line
+  read(fid_irct,'(A)') ts_line
+  read(fid_irct,'(A)') ts_line  
   do i_rct = 1, n_irct
     read(fid_irct,'(A)') ts_line
     read(ts_line,*) tn1, (ts_species(i),i=1,5), tm_chem_type, (t_rk(i),i=1,10)
@@ -241,7 +243,7 @@ subroutine read_reactions
         end do
 
       ! Tabulated reaction rates (deactivated for now)
-      ! else if(ABS(chem_type(i_r)) == 6) then
+      ! else if (ABS(chem_type(i_r)) == 6) then
         ! do i = 1, 2
           ! ireactant(i,i_r) = FIND_NAME(ts_species(i),sp_list)
             ! if (ireactant(i,i_r) <= 0) then
@@ -254,14 +256,14 @@ subroutine read_reactions
           ! do nt = 1, ntab_rct
             ! ltab = .true.
             ! do i = 1, 5
-              ! if(ireactant(i,i_r) /= itab_rct(i,nt)) ltab = .false.
+              ! if (ireactant(i,i_r) /= itab_rct(i,nt)) ltab = .false.
             ! end do
-            ! if(ltab) then
+            ! if (ltab) then
               ! ntab(i_r) = nt
               ! EXIT
             ! end if
           ! end do
-          ! if(.not.ltab) then
+          ! if (.not.ltab) then
             ! write(*,"(I6,':',2X,A)") i_r,ctitle(i_r)
             ! write(*,"(' TABULATED DATA NOT FOUND FOR REACTION ',I4,', ABORTING ....')") i_r
             ! STOP
@@ -294,7 +296,7 @@ subroutine read_reactions
         rk(i_rct,i_z) = rkn(1,i_rct)
       end do
 
-    else if(chem_type(i_rct) == 2) then
+    else if (chem_type(i_rct) == 2) then
     ! bimolecular reactions
     ! k1 * T^k2 * exp(k3 * T)
       do concurrent (i_z = 1:n_z)
@@ -307,7 +309,7 @@ subroutine read_reactions
     ! k0 * [M] * kinf / (k0 * [M] + kinf)
     ! k0 and kinf are in the form k1 * T^k2 * exp(k3 * T)
     ! F is the Troe broadening factor
-    ! log F = log Fc / (1 + (log(P)+C) / (N - 0.14*(log(P)+C))^2)
+    ! log F = log Fc / (1 + ((log(P)+C) / (N - 0.14*(log(P)+C)))^2)
     ! where
     ! reduced pressure P = k0 * [M] / kinf
     ! N = 0.75 - 1.27 * log Fc
@@ -317,18 +319,19 @@ subroutine read_reactions
           * exp(rkn(3,i_rct) / Tn(i_z))
         rk0 = rkn(4,i_rct) * (Tn(i_z) ** rkn(5,i_rct)) &
           * exp(rkn(6,i_rct) / Tn(i_z))
-        if(rkn(10,i_rct) == zero) then
-          rk(i_rct,i_z) = rk0 * rkInf * den(i_z,0) / (rkInf + rk0 * den(i_z,0))
+        P_red = rk0 * den(i_z,0) / rkInf
+        if (rkn(10,i_rct) == zero) then
+          rk(i_rct,i_z) = rk0 * den(i_z,0) / (one + P_red)
         else
           FC = rkn(10,i_rct)
-          PFL = log10(rk0 * den(i_z,0) / rkInf)
           NF = 0.75_wp - 1.27_wp * log10(FC)
           CF = -0.4_wp - 0.67_wp * log10(FC)
-          FF =10._wp**(log10(FC)/(one+((PFL+CF)/(NF-0.14_wp*(PFL+CF)))**2))
-          rk(i_rct,i_z) = FF*(rk0*rkInf/(rk0*den(i_z,0)+rkInf))
-        end if
+          FF = 10._wp ** (log10(FC) / (one + &
+            ((log10(P_red) + CF) / (NF - 0.14_wp * (log10(P_red) + CF))) ** 2))
+          rk(i_rct,i_z) = FF * rk0 * den(i_z,0) / (one + P_red)
+          end if
       end do
-
+!? check if reaction types should be 3 rather than 4
     else if (chem_type(i_rct) == 4) then
     ! association & radiative association reactions
       do i_z = 1, n_z
@@ -338,18 +341,17 @@ subroutine read_reactions
           * exp(rkn(6,i_rct) / Tn(i_z))
         rkRad = rkn(7,i_rct) * (Tn(i_z) ** rkn(8,i_rct)) &
           * exp(rkn(9,i_rct) / Tn(i_z))
-        if(rkn(10,i_rct) == zero) then
-          rk(i_rct,i_z) = rkRad + rk0 * rkInf * den(i_z,0) &
-            / (rkInf + rk0 * den(i_z,0))
+        P_red = rk0 * den(i_z,0) / rkInf
+        if (rkn(10,i_rct) == zero) then
+          rk(i_rct,i_z) = rkRad + rk0 * den(i_z,0) / (one + P_red)
         else
           FC = rkn(10,i_rct)
-          PFL = log10(rk0*den(i_z,0)/rkInf)
-          FCL = log10(FC)
-          NF = 0.75_wp - 1.27_wp*FCL
-          CF = -0.4_wp-0.67_wp*FCL
-          FF =10._wp**(FCL/(one+((PFL+CF)/(NF-0.14_wp*(PFL+CF)))**2))
-          XF = FF/(one-FF)
-          rk(i_rct,i_z) = min(rkInf, rkRad + FF*(rk0*rkInf*den(i_z,0)/(rk0*den(i_z,0)+rkInf)))
+          NF = 0.75_wp - 1.27_wp * log10(FC)
+          CF = -0.4_wp - 0.67_wp * log10(FC)
+          FF = 10._wp ** (log10(FC) / (one + &
+            ((log10(P_red) + CF) / (NF - 0.14_wp * (log10(P_red) + CF))) ** 2))
+          rk(i_rct,i_z) = min(rkInf, &
+            rkRad + FF * rk0 * den(i_z,0) / (one + P_red))
         end if
       end do
 
@@ -362,20 +364,20 @@ subroutine read_reactions
           * exp(rkn(3,i_rct) / Tn(i_z))
         rk0 = rkn(4,i_rct) * (Tn(i_z) ** rkn(5,i_rct)) &
           * exp(rkn(6,i_rct) / Tn(i_z))
-        rexp = one / (one + (log10(rk0 * den(i_z,0) / rkInf))**two)
-        rk(i_rct,i_z) = rk0 * rkInf * den(i_z,0) / (rkInf + rk0 * den(i_z,0)) &
-          * 0.6_wp ** rexp
+        P_red = rk0 * den(i_z,0) / rkInf
+        rk(i_rct,i_z) = rk0 * den(i_z,0) / (one + P_red) &
+          * 0.6_wp ** (one / (one + log10(P_red) ** two))
       end do
 
     ! Tabulated reaction rates (deactivated for now)
-    ! else if(chem_type(i_rct) == 6) then
+    ! else if (chem_type(i_rct) == 6) then
       ! nt = ntab(i_rct)
       ! do i_z = 1, n_z
-        ! if(Tn(i_z) < tmp_rct(1,nt)) then
+        ! if (Tn(i_z) < tmp_rct(1,nt)) then
           ! nt1 = 1
           ! nt2 = 2
           ! rtmp = zero
-        ! else if(Tn(i_z) > tmp_rct(ntmp_rct(nt),nt)) then
+        ! else if (Tn(i_z) > tmp_rct(ntmp_rct(nt),nt)) then
           ! nt1 = ntmp_rct(nt)-1
           ! nt2 = nt1 + 1
           ! rtmp = one
@@ -406,31 +408,32 @@ subroutine read_reactions
 
     ! --- Ion reactions -------------------------------------------------------
     else if (chem_type(i_rct) == -1) then
+!? why is there a factor of two?
     ! unimolecular reaction
-      do i_z = 1, n_z
+      do concurrent (i_z = 1:n_z)
         rk(i_rct,i_z) = rkn(1,i_rct) * (Tn(i_z) ** rkn(2,i_rct)) &
-          * two * exp(rkn(3,i_rct) / Tn(i_z)) / (one + exp(rkn(4,i_rct) / Tn(i_z)))
+          * two * exp(rkn(3,i_rct) / Tn(i_z))
       end do
 
     else if (chem_type(i_rct) == -2) then
     ! normal two-body reaction
-      do i_z = 1, n_z
-        rk(i_rct,i_z)=rkn(1,i_rct)*(Tn(i_z)**rkn(2,i_rct)) &
-          *two*exp(rkn(3,i_rct)/Tn(i_z))/(one+exp(rkn(4,i_rct)/Tn(i_z)))
+      do concurrent (i_z = 1:n_z)
+        rk(i_rct,i_z) = rkn(1,i_rct) * (Tn(i_z) ** rkn(2,i_rct)) &
+          * two * exp(rkn(3,i_rct) / Tn(i_z))
       end do
 
     else if (chem_type(i_rct) == -3) then
     ! 3-body reaction
-      do i_z = 1, n_z
-        rk(i_rct,i_z)=rkn(1,i_rct)*(Tn(i_z)**rkn(2,i_rct)) &
-          *two*exp(rkn(3,i_rct)/Tn(i_z))/(one+exp(rkn(4,i_rct)/Tn(i_z))) 
+      do concurrent (i_z = 1:n_z)
+        rk(i_rct,i_z) = rkn(1,i_rct) * (Tn(i_z) ** rkn(2,i_rct)) &
+          * two * exp(rkn(3,i_rct) / Tn(i_z))
       end do
 
     else if (chem_type(i_rct) == -4) then
     ! electron recombination
-      do i_z = 1, n_z
-        rk(i_rct,i_z)=rkn(1,i_rct)*(te(i_z)**rkn(2,i_rct)) &
-          *two*exp(rkn(3,i_rct)/te(i_z))/(one+exp(rkn(4,i_rct)/te(i_z)))
+      do concurrent (i_z = 1:n_z)
+        rk(i_rct,i_z) = rkn(1,i_rct) * (Te(i_z) ** rkn(2,i_rct)) &
+          * two * exp(rkn(3,i_rct) / Te(i_z))
       end do
     
     else if (chem_type(i_rct) .ne. 0) then

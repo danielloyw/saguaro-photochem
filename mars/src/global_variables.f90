@@ -126,8 +126,6 @@ module global_variables
   real(wp), allocatable, dimension(:) :: grv
   ! neutral temperature: unit=K; dim=(altitude level)
   real(wp), allocatable, dimension(:) :: Tn
-  ! ion temperature: unit=K; dim=(altitude level)
-  real(wp), allocatable, dimension(:) :: Ti
   ! electron temperature: unit=K; dim=(altitude level)
   real(wp), allocatable, dimension(:) :: Te
   ! pressure: unit=dyne cm-2 | 0.1 Pa | 1E-6 bar; dim=(altitude level)
@@ -329,4 +327,4 @@ module global_variables
   !  Net balance
   real(wp), allocatable, dimension(:,:) :: dNdt
 
-end module global_variables
+end module
