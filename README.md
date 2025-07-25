@@ -38,11 +38,11 @@ Output data files produced by _Saguaro_ are located in the `/runs/<run-name>/out
 | :---------       | :---------------------------------------------------------------------------------------------------------------------------------- |
 | `atm1D.out`      | Altitude profiles for key variables in the model, including the altitude grid, gravity, neutral and electron temperatures, pressure, mean molecular weight, eddy diffusion coefficient, and densities for each species. Same structure as `atm1D.in`. |
 | `atm1D.csv`      | Same as `atm1D.out`, except in comma-separated format, and mixing ratios for each species are provided instead of their densities.  |
+| `diff.csv`       | Diffusion coefficients and scale heights for each species with altitude. The eddy diffusion coeffient (which applies to all species) is also provided. Units: cm<sup>2</sup> s<sup>-1</sup>. |
 | `solar_flux.out` | Solar flux as a function of wavelength and altitude. Units: photons cm<sup>-2</sup> s<sup>-1</sup> nm<sup>-1</sup>.                 |
 | `eflux.out`      | Electron fluxes as a function of energy and altitude. Units: electrons cm<sup>-2</sup> s<sup>-1</sup> eV<sup>-1</sup>.              |
 | `balance.out`    | Overview of convergence for model species, with information about column number density (cm<sup>-2</sup>), production and loss rates (cm<sup>-2</sup> s<sup>-1</sup>), and fluxes at top and bottom (cm<sup>-2</sup> s<sup>-1</sup>). Balance (cm<sup>-2</sup> s<sup>-1</sup>) is the residue of the various terms controlling the abundance of each species, and the stability time constant (s) is the balance divided by the column number density. |
 | `mcolrates.out`  | Same as `balance.out` without some columns.                                                                                         |
-| `diff.csv`       | Diffusion coefficients for each species with altitude. The eddy diffusion coeffient (which applies to all species) is also provided. Units: cm<sup>2</sup> s<sup>-1</sup>. |
 
 
 ### Reaction Rates
