@@ -19,7 +19,9 @@ module global_variables
 
   !  .. Photolysis averaging
 
+  ! cosine of solar zenith angle
   real(wp) :: cos_sza
+  ! factor for diurnal averaging (usually 0.5 for day-night)
   real(wp) :: diurnal_average
 
   !  .. Run control parameters
@@ -91,9 +93,7 @@ module global_variables
   ! reaction type: dim=(reaction #)
   integer, allocatable, dimension(:) :: chem_type
   ! reactant index: dim=(reactant #, reaction #)
-  integer, allocatable, dimension(:,:) :: irct
-  ! reaction rate constants: dim=(constant 1-10, reaction #)
-  real(wp), allocatable, dimension(:,:) :: rk
+  integer, allocatable, dimension(:,:) :: ireactant
   
   ! Tabulated reaction rates variables (deactivated)
   ! integer, allocatable, dimension(:) :: ntab
@@ -102,6 +102,11 @@ module global_variables
   ! real(wp), allocatable, dimension(:,:) :: plog_rct
   ! real(wp), allocatable, dimension(:,:) :: tmp_rct
   ! real(wp), allocatable, dimension(:,:,:) :: rct_tab
+
+  ! rate coefficients: unit variable; dim=(reaction #, altitude level)
+  real(wp), allocatable, dimension(:,:) :: rk
+  ! reaction rate: unit=cm-3 s-1; dim=(reaction #, altitude level)
+  real(wp), allocatable, dimension(:,:) :: rct_rate
 
   !----------------------------------------------------------------------------
   !  Atmosphere
@@ -209,6 +214,17 @@ module global_variables
   ! tau (altitude, wavelength)
   real(wp), allocatable, dimension(:,:) :: tau_ray
   
+  ! illumination condition: 1=day, 0=twilight, -1=night
+  integer :: illum
+  ! index of lowest illuminated altitude level
+  integer :: ibot
+  ! path through atmosphere for rk: unit=cm;
+  ! dim=(altitude level, tangent altitude level)
+  real(wp), allocatable, dimension(:,:) :: ds
+  ! altitude index for tangent altitude
+  integer, allocatable, dimension(:) :: itan
+  
+  
   !----------------------------------------------------------------------------
   !  Diffusion
   !----------------------------------------------------------------------------
@@ -257,9 +273,9 @@ module global_variables
   real(wp), allocatable, dimension(:,:,:) :: ecs
   ! total cross-section for excitation and dissociation: unit=cm2;
   ! dim=(energy bin, e species #)
-  real(wp), allocatable, dimension(:,:) :: eCS_exc
+  real(wp), allocatable, dimension(:,:) :: ecs_exc
   ! total cross-section for ionization: unit=cm2; dim=(energy bin, e species #)
-  real(wp), allocatable, dimension(:,:) :: eCS_ion
+  real(wp), allocatable, dimension(:,:) :: ecs_ion
   ! total cross-section for ionization: unit=cm2;
   ! dim=(energy bin, state, e species #)
   real(wp), allocatable, dimension(:,:,:) :: cs_ion
@@ -281,34 +297,6 @@ module global_variables
   real(wp), allocatable, dimension(:,:,:) :: esrc
   real(wp), allocatable, dimension(:,:) :: eflux, eph, rpe
   
-  !----------------------------------------------------------------------------
-  !  RATECO
-  !----------------------------------------------------------------------------
-
-  ! rate (reaction #, altitude bin #),
-  real(wp), allocatable, dimension(:,:) :: rt, rct
-
-  !----------------------------------------------------------------------------
-  !  PATHS
-  !----------------------------------------------------------------------------
-
-  ! planet radius + z_bot
-  real(wp) :: RSHADOW
-  ! path through atmosphere for RT (altitude, tangent altitude)
-  real(wp), allocatable, dimension(:,:) :: ds
-  ! illumination condition: 1=day, 0=twilight, -1=night
-  integer :: illum
-  ! index of lowest illuminated altitude
-  integer :: nbot
-  ! altitude index for tangent altitude
-  integer, allocatable, dimension(:) :: ntan
-
-  !----------------------------------------------------------------------------
-  !  Rayleigh Scattering
-  !----------------------------------------------------------------------------
-
-
-
   !----------------------------------------------------------------------------
   !  SOLDEP1
   !----------------------------------------------------------------------------

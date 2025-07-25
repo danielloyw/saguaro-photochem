@@ -29,7 +29,7 @@ subroutine photo
   implicit none
   ! input file paths
   character(len=128) :: file_photoA, file_photoC, file_jvals
-  character(len=128) ::  file_solA, file_solB, file_solC, file_sol_hres
+  character(len=128) :: file_solA, file_solB, file_solC, file_sol_hres
   
   ! high resolution wavelength bin size for region B
   real(wp), allocatable, dimension(:) :: dwaveB
@@ -1090,7 +1090,7 @@ subroutine paths1D
   integer :: i_z1, i_z2
   
   
-  allocate(i_tan(n_z), ds(n_z,n_z))
+  allocate(itan(n_z), ds(n_z,n_z))
   allocate(r_tan(n_z))
   
   rShadow = rPlanet + z_bot
@@ -1103,7 +1103,7 @@ subroutine paths1D
     illum = 1
     do concurrent (i_z1 = 1:n_z-1)
       r_tan(i_z1) = rz(i_z1) * sin_sza
-      i_tan(i_z1) = i_z1
+      itan(i_z1) = i_z1
       do concurrent (i_z2 = i_z1:n_z-1)
         ds(i_z2,i_z1) = sqrt(rz(i_z2+1)**two - r_tan(i_z1)**two) &
           - sqrt(rz(i_z2)**two - r_tan(i_z1)**two)
@@ -1112,22 +1112,22 @@ subroutine paths1D
   else if((cos_sza < zero) .and. (rz(n_z)*sin_sza > rShadow)) then
   ! twilight (sin sza = cos solar elev ang)
     illum = 0
-    i_bot = locate(rShadow, rz*sin_sza) + 1
-    do concurrent (i_z1 = i_bot:n_z-1)
+    ibot = locate(rShadow, rz*sin_sza) + 1
+    do concurrent (i_z1 = ibot:n_z-1)
       r_tan(i_z1) = rz(i_z1) * sin_sza
       
-      i_tan(i_z1) = locate(r_tan(i_z1), rz)
-      if (rz(i_tan(i_z1)) < r_tan(i_z1)) then
-        i_tan(i_z1) = i_tan(i_z1) + 1
+      itan(i_z1) = locate(r_tan(i_z1), rz)
+      if (rz(itan(i_z1)) < r_tan(i_z1)) then
+        itan(i_z1) = itan(i_z1) + 1
       end if
-      ds(i_tan(i_z1),i_z1) = sqrt(rz(i_tan(i_z1)+1)**two - r_tan(i_z1)**two)
-      do concurrent (i_z2 = i_tan(i_z1)+1:n_z-1)
+      ds(itan(i_z1),i_z1) = sqrt(rz(itan(i_z1)+1)**two - r_tan(i_z1)**two)
+      do concurrent (i_z2 = itan(i_z1)+1:n_z-1)
         ds(i_z2,i_z1) = sqrt(rz(i_z2+1)**two - r_tan(i_z1)**two) &
           - sqrt(rz(i_z2)**two - r_tan(i_z1)**two)
       end do
     end do
     r_tan(i_z1) = rz(n_z) * sin_sza
-    i_tan(n_z) = locate(r_tan(i_z1),rz) + 1
+    itan(n_z) = locate(r_tan(i_z1),rz) + 1
   else if((cos_sza < zero).and.(rz(n_z)*sin_sza <= rShadow)) then
   ! night
     illum = -1

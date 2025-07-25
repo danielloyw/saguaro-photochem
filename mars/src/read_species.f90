@@ -28,7 +28,7 @@ subroutine read_species
   integer :: n_chem_e
   
   ! loop variables
-  integer :: i_sp, nc, nd
+  integer :: i_sp, n_c, n_d
   ! temporary / dummy variables
   integer :: tn1
   character(len=140) :: ts_header
@@ -97,13 +97,13 @@ subroutine read_species
   !----------------------------------------------------------------------------
 
   ! count number of species in chemical and diffusive equilibrium
-  nc = 0; nd = 0
+  n_c = 0; n_d = 0
   do i_sp = 1, n_sp-1
-    if(istat(i_sp) == 1) nc = nc + 1 ! species in chemical equilibrium
-    if(istat(i_sp) == 2) nd = nd + 1 ! species diffusive equilibrium
+    if(istat(i_sp) == 1) n_c = n_c + 1 ! species in chemical equilibrium
+    if(istat(i_sp) == 2) n_d = n_d + 1 ! species diffusive equilibrium
   end do
-  n_chem = nc
-  n_diff = nd
+  n_chem = n_c
+  n_diff = n_d
   
 
   if(ichk > 0) then
@@ -130,30 +130,30 @@ subroutine read_species
 
 
   ! calculate mapping between list of diffusing species and list of all species
-  nd = 0
+  n_d = 0
   do i_sp = 1, n_sp-1
     if(istat(i_sp) == 2) then
-      nd=nd+1
-      im_diff_all(nd) = i_sp
-      im_all_diff(i_sp) = nd
+      n_d = n_d + 1
+      im_diff_all(n_d) = i_sp
+      im_all_diff(i_sp) = n_d
     end if
   end do
 
   write(*,'("DIFFUSING SPECIES")')
   if(size(im_diff_all) > 0) then
-    write(*,'(10(1X,A12))') (sp_list(im_diff_all(nd)), nd=1, n_diff)
+    write(*,'(10(1X,A12))') (sp_list(im_diff_all(n_d)), n_d=1, n_diff)
   else
     write(*,'("  NONE")')
   end if
 
 
   ! calculate mapping between list of chemical species and list of all species
-  nc = 0
+  n_c = 0
   do i_sp = 1, n_sp-1
     if(istat(i_sp) == 1) then ! species in chemical equilibrium
-      nc=nc+1
-      im_chem_all(nc) = i_sp
-      im_all_chem(i_sp) = nc
+      n_c = n_c + 1
+      im_chem_all(n_c) = i_sp
+      im_all_chem(i_sp) = n_c
     end if
   end do
   
@@ -166,7 +166,7 @@ subroutine read_species
   ! print list of chemical species to screen
   write(*,'("CHEMICAL SPECIES")')
   if(size(im_chem_all) > 0) then
-    write(*,'(10(1X,A12))') (sp_list(im_chem_all(nc)), nc=1, n_chem)
+    write(*,'(10(1X,A12))') (sp_list(im_chem_all(n_c)), n_c=1, n_chem)
   else
     write(*,'("  NONE")')
   end if
