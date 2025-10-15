@@ -1,8 +1,8 @@
-module photo_mod
+module photo
 
 contains
 
-subroutine photo
+subroutine photo_setup
 ! This subroutine sets up the calculation for photolysis reactions, including
 ! the reading in of the photo reactions (and their cross sections) and the
 ! solar flux. Reaction rates are calculated using cross sections from 0-2000 A,
@@ -152,7 +152,7 @@ subroutine photo
   
   ! unit conversion of high-resolution spectrum to new bin size
   ! 10 A -> 2E-4 A
-  do concurrent (i_wave=1:n_waveB)
+  do concurrent (i_wave = 1:n_waveB)
     sol_fluxB(i_wave) = sol_fluxB(i_wave) * dwaveB(i_wave) / ten
   end do
   
@@ -160,10 +160,10 @@ subroutine photo
   call read_sol(file_solC, sol_waveC, sol_fluxC)
   
   ! --- Scale to Mars orbital distance (fluxes are 1-AU values) ---------------
-  sol_fluxA = sol_fluxA/DH**2
-  sol_fluxB = sol_fluxB/DH**2
-  sol_fluxC = sol_fluxC/DH**2
-  srateJ = srateJ/DH**2
+  sol_fluxA = sol_fluxA / DH**2
+  sol_fluxB = sol_fluxB / DH**2
+  sol_fluxC = sol_fluxC / DH**2
+  srateJ = srateJ / DH**2
 
   !----------------------------------------------------------------------------
   !  Combine regions
@@ -241,8 +241,14 @@ subroutine photo
   deallocate(im_photoC_product_all, im_photoJ_product_all)
   deallocate(sol_waveA, sol_waveB_lres, sol_waveC, sol_wave_hres)
   deallocate(sol_fluxB_lres, sol_flux_hres)
+  
+  ! calculate Rayleigh optical depth
+  call read_rayleigh
 
-end subroutine photo
+  ! calculate path lengths for solar absorption
+  call paths1D
+
+end subroutine photo_setup
 
 
 subroutine read_photo(file_photo, sp_list, & ! input variables
@@ -595,7 +601,7 @@ subroutine read_photoB(sp_list, wave, & ! input variables
     i_wave = n_wave_N2 - i_wavenum + 1
     read(fid_28N2,*) wave_N2(i_wave), crs_N2(i_wave)
     ! convert cm-1 to angstrom
-    wave_N2(i_wave) = 1.E8_wp / wave_N2(i_wave)
+    wave_N2(i_wave) = cm_to_aa / wave_N2(i_wave)
   end do
   close(unit=fid_28N2)
 
@@ -627,7 +633,7 @@ subroutine read_photoB(sp_list, wave, & ! input variables
     i_wave = n_wave_N2 - i_wavenum + 1
     read(fid_29N2,*) wave_N2(i_wave), crs_N2(i_wave)
     ! convert cm-1 to angstrom
-    wave_N2(i_wave) = 1.E8_wp / wave_N2(i_wave)
+    wave_N2(i_wave) = cm_to_aa / wave_N2(i_wave)
   end do
   close(unit=fid_29N2)
 
@@ -1051,7 +1057,7 @@ subroutine read_rayleigh
 
   do concurrent (i_wave = 1:n_waveC, i_z = 1:n_z)
     if (waveC(i_wave) > 500._wp) then
-      tau_ray(i_z,i_wave) = cs_ray(i_wave)*col(i_z)
+      tau_ray(i_z,i_wave) = cs_ray(i_wave) * col(i_z)
     else
       tau_ray(i_z,i_wave) = zero
     end if
@@ -1079,8 +1085,6 @@ subroutine paths1D
   !  Local variables
   !----------------------------------------------------------------------------
   
-  ! sine of solar zenith angle
-  real(wp) :: sin_sza
   ! radius for tangent point of light ray
   real(wp), allocatable, dimension(:) :: r_tan
   ! radius to opaque aerosol layer
@@ -1094,10 +1098,8 @@ subroutine paths1D
   allocate(r_tan(n_z))
   
   rShadow = rPlanet + z_bot
-  sin_sza = sqrt(one - cos_sza**two)
   ds = 1.0e+33_wp ! high optical path by default
 
-  
   if (cos_sza >= zero) then
   ! day
     illum = 1
@@ -1128,13 +1130,355 @@ subroutine paths1D
     end do
     r_tan(i_z1) = rz(n_z) * sin_sza
     itan(n_z) = locate(r_tan(i_z1),rz) + 1
-  else if ((cos_sza < zero).and.(rz(n_z)*sin_sza <= rShadow)) then
+  else if ((cos_sza < zero) .and. (rz(n_z)*sin_sza <= rShadow)) then
   ! night
     illum = -1
     ! just use default 1E33 value
   end if
   
 end subroutine paths1D
+
+
+subroutine cal_photo_rates
+! This subroutine 
+
+  !----------------------------------------------------------------------------
+  !  Modules
+  !----------------------------------------------------------------------------
+
+  use types, only: wp => dp
+  use constants
+  use global_variables
+  use utils, only : find_bin
+
+  !----------------------------------------------------------------------------
+  !  Local variables
+  !----------------------------------------------------------------------------
+  implicit none
+  ! Column density: unit=cm-2; dim=(altitude level, species #)
+  real(wp), allocatable, dimension(:,:) :: clm
+  ! Scale height at top of atmosphere: unit=cm
+  real(wp) :: Htop
+  ! Chapman function parameters
+  real(wp) :: ch_sin_a, ch_cos_a, ch_x
+  ! Energies (ionization, photon, electron): unit=eV
+  real(wp) :: E_ion, E_hv, E_e
+!  real(wp), allocatable, dimension(:) :: Selsum
+  
+  ! loop variables
+  integer :: i_sp1, i_sp2, i_z1, i_z2, i_branch, i_wave, i_r
+  ! temporary / dummy variables
+  integer :: ienrg
+  real(wp) :: t
+
+  !----------------------------------------------------------------------------
+  ! Photolysis Rates at Top of Atmosphere
+  !----------------------------------------------------------------------------
+  if (cal_photoA) then
+    do concurrent (i_wave = 1:n_waveA, i_sp1 = 1:n_sp_photoA)
+      do i_branch = 1, n_branchA(i_sp1) 
+        prtA(i_wave,i_branch,i_sp1) = branch_ratioA(i_wave,i_branch,i_sp1) &
+          * csA(i_wave,i_sp1) * sol_fluxA(i_wave)
+      end do
+    end do
+  end if
+
+  if (cal_photoB) then
+    do concurrent (i_wave = 1:n_waveB, i_sp1 = 1:n_sp_photoB)
+      do i_branch = 1, n_branchB(i_sp1)
+        prtB(i_wave,i_branch,i_sp1) = branch_ratioB(i_wave,i_branch,i_sp1) &
+          * csB(i_wave,i_sp1) * sol_fluxB(i_wave)
+      end do
+    end do
+  end if
+
+  if (cal_photoC) then
+    do concurrent (i_wave = 1:n_waveC, i_sp1 = 1:n_sp_photoC)
+      do i_branch = 1, n_branchC(i_sp1)
+        prtC(i_wave,i_branch,i_sp1) = branch_ratioC(i_wave,i_branch,i_sp1) &
+          * csC(i_wave,i_sp1) * sol_fluxC(i_wave)
+      end do
+    end do
+  end if
+
+  !----------------------------------------------------------------------------
+  ! Column Densities
+  !----------------------------------------------------------------------------
+
+  allocate(clm(n_z,n_sp))
+
+  if (illum == 1) then    ! dayside
+    do i_sp1 = 1, n_sp-1
+      do i_z1 = 1, n_z
+        ! element at top of atmosphere (includes contribution above top bin)
+
+        ! Chapman function 
+        ! Ch(a, x) = sqrt(pi*x/2) * exp(x/2*cos(a)^2) * erfc(sqrt(x/2)*cos(a))
+        ! a is SZA at the point of interest
+        ! x is radius measured from planetary center divided by scale height
+        ch_sin_a = rz(i_z1) * sin_sza / rz(n_z)
+        ch_cos_a = sqrt(one - ch_sin_a * ch_sin_a)
+        ch_x = rz(n_z) / Ht(n_z,i_sp1)
+        if (ch_x < 100._wp) then    ! curvature is important
+          Htop = Ht(n_z,i_sp1) * sqrt(pi * half * ch_x) &
+            * exp(half * ch_x * ch_cos_a * ch_cos_a) &
+            * erfc(sqrt(half * ch_x) * ch_cos_a)
+        else
+          Htop = Ht(n_z,i_sp1) / cos_sza
+        end if
+        t = Htop * den(n_z,i_sp1)
+        
+        ! elements over rest of atmosphere
+        do i_z2 = n_z-1, i_z1, -1
+          t = t + half * (den(i_z2,i_sp1) + den(i_z2+1,i_sp1)) * ds(i_z2,i_z1)
+        end do
+        clm(i_z1,i_sp1) = t
+      end do
+   end do
+
+  else if (illum == 0) then    ! twilight
+    do i_sp1 = 1, n_sp-1
+      clm(1:ibot-1,i_sp1) = 1.E33_wp
+      do i_z1 = ibot, n_z
+        ! element at top of atmosphere (includes contribution above top bin)
+        ch_sin_a = rz(i_z1) * sin_sza / rz(n_z)
+        ch_cos_a = sqrt(one - ch_sin_a * ch_sin_a)
+        ch_x = rz(n_z) / Ht(n_z,i_sp1)
+        if (ch_x < 100._wp) then    ! curvature is important
+          Htop = Ht(n_z,i_sp1) * sqrt(pi * half * ch_x) &
+            * exp(half * ch_x * ch_cos_a * ch_cos_a) &
+            * erfc(sqrt(half * ch_x) * ch_cos_a)
+        else
+          Htop = Ht(n_z,i_sp1) / cos_sza
+        end if
+        t = Htop * den(n_z,i_sp1)
+        
+        do i_z2 = i_z1, n_z-1                  ! exterior to rz
+          t = t + half * (den(i_z2,i_sp1) + den(i_z2+1,i_sp1)) * ds(i_z2,i_z1)
+        end do
+        do i_z2 = max(itan(i_z1),1), i_z1-1    ! interior to rz
+          t = t + (den(i_z2,i_sp1)+den(i_z2+1,i_sp1)) * ds(i_z2,i_z1)
+        end do
+        clm(i_z1,i_sp1) = t
+      end do
+    end do
+
+  else if (illum == -1) then    ! nightside
+    clm(i_z1,i_sp1) = 1.E33_wp
+  
+  end if
+
+  !----------------------------------------------------------------------------
+  ! Optical Depths
+  !----------------------------------------------------------------------------
+
+  if (cal_photoA) then
+    do i_z1 = 1, n_z
+      do i_wave = 1, n_waveA
+        t = zero
+        do i_sp1 = 1, n_sp_photoA
+          i_sp2 = im_photoA_all(i_sp1)
+          t = t + csA(i_wave,i_sp1) * clm(i_z1,i_sp2)
+        end do
+        trnA(i_wave,i_z1) = exp(-t)
+      end do
+    end do
+  end if
+
+  if (cal_photoB) then
+    do i_z1 = 1, n_z
+      do i_wave = 1, n_waveB
+        t = zero
+        do i_sp1 = 1, n_sp_photoB
+          i_sp2 = im_photoB_all(i_sp1)
+          t = t + csB(i_wave,i_sp1) * clm(i_z1,i_sp2)
+        end do
+        trnB(i_wave,i_z1) = exp(-t)
+      end do
+    end do
+  end if
+
+  if (cal_photoC) then
+    do i_z1 = 1, n_z
+      do i_wave = 1, n_waveC
+        t = zero
+        do i_sp1 = 1, n_sp_photoC
+          i_sp2 = im_photoC_all(i_sp1)
+          t = t + csC(i_wave,i_sp1) * clm(i_z1,i_sp2)
+        end do
+        trnC(i_wave,i_z1) = exp(-(t + tau_ray(i_z1,i_wave) / cos_sza))
+        ! with addition absorption from CO2 Rayleigh scattering
+      end do
+    end do
+  end if
+
+  !----------------------------------------------------------------------------
+  ! Absorption Rates
+  !----------------------------------------------------------------------------
+
+  i_r = 0
+  
+  do i_sp1 = 1, n_sp_photoA
+    do i_branch = 1, n_branchA(i_sp1)
+      i_r = i_r + 1
+      if (cal_photoA) then
+        do i_z1 = 1, n_z
+          t = zero
+          do i_wave = 1, n_waveA
+            t = t + prtA(i_wave,i_branch,i_sp1) * trnA(i_wave,i_z1)
+          end do
+          rph(i_r,i_z1) = diurnal_average * t
+        end do
+      end if
+    end do
+  end do
+
+  do i_sp1 = 1, n_sp_photoB
+    do i_branch = 1, n_branchB(i_sp1)
+      i_r = i_r + 1
+      if (cal_photoB) then  
+        do i_z1 = 1, n_z
+          t = zero
+          do i_wave = 1, n_waveB
+            t = t + prtB(i_wave,i_branch,i_sp1) * trnB(i_wave,i_z1)
+          end do
+          rph(i_r,i_z1) = diurnal_average * t
+        end do
+      end if
+    end do
+  end do
+  
+  do i_sp1 = 1, n_sp_photoC
+    do i_branch = 1, n_branchC(i_sp1)
+      i_r = i_r + 1
+      if (cal_photoC) then
+        do i_z1 = 1, n_z
+          t = zero
+          do i_wave = 1, n_waveC
+            t = t + prtC(i_wave,i_branch,i_sp1) * trnC(i_wave,i_z1)
+          end do
+          rph(i_r,i_z1) = diurnal_average * t
+        end do
+      end if
+    end do
+  end do
+
+  do i_sp1 = 1, n_sp_photoJ
+    do i_branch = 1, n_branchJ(i_sp1)
+      i_r = i_r + 1
+      if ((illum >= 0) .and. cal_photoJ) then
+        rph(i_r,1:n_z) = diurnal_average * srateJ(i_branch,i_sp1)
+      else
+        rph(i_r,1:n_z) = zero
+      end if
+    end do
+  end do
+
+  !----------------------------------------------------------------------------
+  ! Photoelectron Production
+  !----------------------------------------------------------------------------
+
+  esrc = zero
+  i_r = 0
+  
+  if (cal_photoA) then
+    do i_sp1 = 1, n_sp_photoA
+      i_sp2 = im_photoA_all(i_sp1)
+      do i_branch = 1, n_branchA(i_sp1)
+        i_r = i_r + 1
+        if (charge_stateA(i_branch,i_sp1) > zero) then
+          E_ion = hc / (enrgIA(i_branch,i_sp1) * aa_to_cm) * erg_to_ev
+          do i_wave = 1, n_waveA
+            E_hv = hc / (waveA(i_wave) * aa_to_cm) * erg_to_ev
+            E_e = (E_hv - E_ion) / charge_stateA(i_branch,i_sp1)
+            if (E_e > zero) then
+              ienrg = find_bin(E_e, e_enrg, e_denrg) 
+              do i_z1 = iz_bot, n_z
+                esrc(i_r,i_z1,ienrg) = esrc(i_r,i_z1,ienrg) &
+                  + (E_e / e_enrg(ienrg) / e_denrg(ienrg)) &
+                  * prtA(i_wave,i_branch,i_sp1) &
+                  * charge_stateA(i_branch,i_sp1) &
+                  * den(i_z1,i_sp2) * trnA(i_wave,i_z1)
+              end do
+            end if
+          end do
+        end if
+      end do
+    end do
+  end if
+
+  if (cal_photoB) then
+    do i_sp1 = 1, n_sp_photoB
+      i_sp2 = im_photoB_all(i_sp1)
+      do i_branch = 1, n_branchB(i_sp1)
+        i_r = i_r + 1
+        if (charge_stateB(i_branch,i_sp1) > zero) then
+          E_ion = hc / (enrgIB(i_branch,i_sp1) * aa_to_cm) * erg_to_ev
+          do i_wave = 1, n_waveB
+            E_hv = hc / (waveB(i_wave) * aa_to_cm) * erg_to_ev
+            E_e = (E_hv - E_ion) / charge_stateB(i_branch,i_sp1)
+            if (E_e > zero) then
+              ienrg = find_bin(E_e, e_enrg, e_denrg)
+              do i_z1 = iz_bot, n_z
+                esrc(i_r,i_z1,ienrg) = esrc(i_r,i_z1,ienrg) &
+                  + (E_e / e_enrg(ienrg) / e_denrg(ienrg)) &
+                  * prtB(i_wave,i_branch,i_sp1) &
+                  * charge_stateB(i_branch,i_sp1) &
+                  * den(i_z1,i_sp2) * trnB(i_wave,i_z1)
+              end do
+            end if
+          end do
+        end if
+      end do
+    end do
+  end if
+
+  if (cal_photoC) then
+    do i_sp1 = 1, n_sp_photoC
+      i_sp2 = im_photoC_all(i_sp1)
+      do i_branch = 1, n_branchC(i_sp1)
+        i_r = i_r + 1
+        if (charge_stateC(i_branch,i_sp1) > zero) then
+          E_ion = hc / (enrgIC(i_branch,i_sp1) * aa_to_cm) * erg_to_ev
+          do i_wave = 1, n_waveC
+            E_hv = hc / (waveC(i_wave) * aa_to_cm) * erg_to_ev
+            E_e = (E_hv - E_ion) / charge_stateC(i_branch,i_sp1)
+            if (E_e > zero) then
+              ienrg = find_bin(E_e, e_enrg, e_denrg)
+              do i_z1 = iz_bot, n_z
+                esrc(i_r,i_z1,ienrg) = esrc(i_r,i_z1,ienrg) &
+                  + (E_e / e_enrg(ienrg) / e_denrg(ienrg)) &
+                  * prtC(i_wave,i_branch,i_sp1) &
+                  * charge_stateC(i_branch,i_sp1) &
+                  * den(i_z1,i_sp2) * trnC(i_wave,i_z1)
+              end do
+            end if
+          end do
+        end if
+      end do
+    end do
+  end if
+
+  esrc = diurnal_average * esrc
+
+  Sel = zero
+  do concurrent (ienrg = 1:n_e_enrg, i_z1 = 1:n_z)
+    Sel(i_z1,ienrg) = sum(esrc(:,i_z1,ienrg))
+  end do
+
+!  ALLOCATE(Selsum(n_z))
+!  Selsum = zero ! total electrons produced in altitude bin
+!  do i_z1 = iz_bot, n_z
+!    t = zero
+!    do ienrg = 1, n_e_enrg
+!      t = t + e_denrg(ienrg)*Sel(i_z1,ienrg)
+!    end do
+!    Selsum(i_z1) = t
+!  end do
+
+  deallocate(clm)
+
+end subroutine cal_photo_rates
 
 
 end module
