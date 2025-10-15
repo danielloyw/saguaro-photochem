@@ -32,6 +32,7 @@ integer pure function find_name(sp_name, sp_list)
   end do
 end function find_name
 
+
 integer pure function locate(x, x_list)
 ! This function finds the index of the element in x_list that is nearest in
 ! value to x. x_list is monotonically increasing or decreasing.
@@ -153,6 +154,37 @@ subroutine intrp(xp, yp, x, y)
 
 end subroutine intrp
 
+
+integer pure function find_bin(enrg, e_enrg, e_denrg)
+! This function finds the index of the bin containing the value enrg in an
+! monotically increasing vector e_enrg with bin sizes e_denrg.
+! Returns extreme bins if outside of the range spanned by e_enrg. 
+  use types, only: wp => dp
+  use constants
+  implicit none
+  real(wp), intent(in) :: enrg
+  real(wp), intent(in), dimension(:) :: e_enrg, e_denrg
+  integer :: i, n_e_enrg
+  
+  n_e_enrg = size(e_enrg)
+  
+  ! initialize result to first bin
+  find_bin = 1
+  
+  do i = 2, n_e_enrg-1
+    if ((e_enrg(i) - half * e_denrg(i) <= enrg) .and. &
+      (enrg <= e_enrg(i+1) - half * e_denrg(i+1))) then
+      find_bin = i
+      return
+    end if
+  end do
+  
+  ! case for last bin
+  if (enrg > e_enrg(n_e_enrg) - half * e_denrg(n_e_enrg)) then
+    find_bin = n_e_enrg
+  end if
+  
+end function find_bin
 
 subroutine heapsort(x_list, sort_order)
 ! This subroutine performs an indirect heapsort on x_list and returns
