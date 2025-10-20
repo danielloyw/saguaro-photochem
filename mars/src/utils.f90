@@ -1,15 +1,5 @@
 module utils
   
-interface
-  subroutine gauleg(x1, x2, x, w)
-    use types, only: wp => dp
-    real(wp), intent(in) :: x1, x2
-    real(wp), dimension(:), intent(out) :: x, w
-  end subroutine gauleg
-
-end interface
-  
-  
 contains
   
 integer pure function find_name(sp_name, sp_list)
@@ -19,10 +9,10 @@ integer pure function find_name(sp_name, sp_list)
   implicit none
   character(len=12), intent(in) :: sp_name
   character(len=12), intent(in), dimension(0:) :: sp_list
-  integer :: n_sp ! size of sp_list
-  integer :: i_sp ! loop variable
+  integer :: n_sp    ! size of sp_list
+  integer :: i_sp    ! loop variable
 
-  n_sp = size(sp_list,1)-1 ! -1 because index starts at 0
+  n_sp = size(sp_list,1)-1    ! -1 because index starts at 0
   find_name = -1
   do i_sp = 0, n_sp
     if (trim(adjustl(sp_name)) == trim(adjustl(sp_list(i_sp)))) then
@@ -43,8 +33,8 @@ integer pure function locate(x, x_list)
   implicit none
   real(wp), intent(in) :: x
   real(wp), intent(in), dimension(:) :: x_list
-  logical :: is_increasing ! is list ascending?
-  integer :: low, high, mid ! index bounds of search window
+  logical :: is_increasing    ! is list ascending?
+  integer :: low, high, mid    ! index bounds of search window
 
   ! initialize result to 'not found' and handle empty list
   locate = -1
@@ -79,7 +69,7 @@ integer pure function locate(x, x_list)
   end if
 
   ! binary search to find indices bracketing x
-  do while (high - low > 1) ! low and high not adjacent indices
+  do while (high - low > 1)    ! low and high not adjacent indices
     mid = (high + low) / 2
 
     ! exact match found
@@ -213,7 +203,7 @@ subroutine heapsort(x_list, sort_order)
   do concurrent (i = 1:n)
     sort_order(i) = i
   end do
-  i_start = (n / 2) + 1 ! lowest parent in heap
+  i_start = (n / 2) + 1    ! lowest parent in heap
   i_end = n
   
   do
@@ -229,7 +219,7 @@ subroutine heapsort(x_list, sort_order)
       ! move first and largest element to the back out of heap
       sort_order(i_end) = sort_order(1)
       i_end = i_end - 1
-      if (i_end == 1) then ! heap size 1 => all elements sorted
+      if (i_end == 1) then    ! heap size 1 => all elements sorted
         sort_order(1) = t_index
         return 
       end if
@@ -237,11 +227,11 @@ subroutine heapsort(x_list, sort_order)
     
     ! Sifting down algorithm
     i_parent = i_start
-    i_child = 2 * i_parent ! left child
+    i_child = 2 * i_parent    ! left child
 
     do while (i_child <= i_end)
       ! 1. Select the larger child
-      if (i_child < i_end) then ! if right child exists
+      if (i_child < i_end) then    ! if right child exists
         if (x_list(sort_order(i_child)) < x_list(sort_order(i_child+1))) then
           i_child = i_child + 1
         end if

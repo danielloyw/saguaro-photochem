@@ -86,7 +86,7 @@ subroutine photo_setup
   !----------------------------------------------------------------------------
   
   ! Region A (0-750 A)
-  call read_photo(file_photoA, sp_list, & ! input variables
+  call read_photo(file_photoA, sp_list, &    ! input variables
     im_photoA_all, n_branchA, ptitleA, enrgIA, charge_stateA, & 
     im_photoA_product_all, waveA, csA, branch_ratioA)
   
@@ -95,7 +95,7 @@ subroutine photo_setup
   n_branch_maxA = size(branch_ratioA, 2)
   
   ! Region B (750-1080 A)
-  call read_photoB(sp_list, waveB, & ! input variables
+  call read_photoB(sp_list, waveB, &    ! input variables
     im_photoB_all, n_branchB, ptitleB, enrgIB, charge_stateB, &
     im_photoB_product_all, waveB_lres, csB, branch_ratioB)
   
@@ -104,7 +104,7 @@ subroutine photo_setup
   n_branch_maxB = size(branch_ratioB, 2)
   
   ! Region C (1080-2000 A)
-  call read_photo(file_photoC, sp_list, & ! input variables
+  call read_photo(file_photoC, sp_list, &    ! input variables
     im_photoC_all, n_branchC, ptitleC, enrgIC, charge_stateC, &
     im_photoC_product_all, waveC, csC, branch_ratioC)
   
@@ -113,7 +113,7 @@ subroutine photo_setup
   n_branch_maxC = size(branch_ratioC, 2)
   
   ! Specified rates of species with no optical effects
-  call read_Jvals(file_jvals, sp_list, & ! input variables
+  call read_Jvals(file_jvals, sp_list, &    ! input variables
     im_photoJ_all, n_branchJ, ptitleJ, im_photoJ_product_all, srateJ)
   
   n_sp_photoJ = size(srateJ,2)
@@ -251,7 +251,7 @@ subroutine photo_setup
 end subroutine photo_setup
 
 
-subroutine read_photo(file_photo, sp_list, & ! input variables
+subroutine read_photo(file_photo, sp_list, &    ! input variables
   im_photo_all, n_branch, ptitle, enrgI, charge_state, &
   im_photo_product_all, wave, cs, branch_ratio)
 ! This subroutine reads the cross sections and branching ratios in spectral
@@ -349,7 +349,7 @@ subroutine read_photo(file_photo, sp_list, & ! input variables
   read(fid,'(10ES11.3)') wave
   
   do i_sp = 1, n_sp_photo
-    read(fid,'(A12, I4)') ts_species1, n_branch(i_sp) ! header for species
+    read(fid,'(A12, I4)') ts_species1, n_branch(i_sp)    ! header for species
     im_photo_all(i_sp) = find_name(ts_species1, sp_list)
     
     if (im_photo_all(i_sp) <= 0) then
@@ -357,10 +357,10 @@ subroutine read_photo(file_photo, sp_list, & ! input variables
       stop
     end if
     
-    read(fid,'(A)') ts_line ! "Total Absorption Cross Section (cm^2)"
+    read(fid,'(A)') ts_line    ! "Total Absorption Cross Section (cm^2)"
     read(fid,*) (cs(i_wave,i_sp), i_wave=1,n_wave)
     
-    read(fid,'(A)') ts_line ! "Total Ionization Cross Section (cm^2)"
+    read(fid,'(A)') ts_line    ! "Total Ionization Cross Section (cm^2)"
     read(fid,*) (t_cs(i_wave), i_wave=1,n_wave)
     
     do i_branch = 1, n_branch(i_sp)
@@ -372,7 +372,7 @@ subroutine read_photo(file_photo, sp_list, & ! input variables
       
       ! link products to species list
       i_p = 0
-      do i = 3, 6 ! products
+      do i = 3, 6    ! products
         tn_isp = find_name(ts_species2(i), sp_list)
         if ((tn_isp > 0) .and. (tn_isp <= n_sp)) then
           i_p = i_p + 1
@@ -395,7 +395,7 @@ subroutine read_photo(file_photo, sp_list, & ! input variables
 end subroutine read_photo
 
 
-subroutine read_photoB(sp_list, wave, & ! input variables
+subroutine read_photoB(sp_list, wave, &    ! input variables
   im_photo_all, n_branch, ptitle, enrgI, charge_state, &
   im_photo_product_all, wave_lres, cs, branch_ratio)
 ! This subroutine reads the cross sections and branching ratios in spectral
@@ -501,7 +501,7 @@ subroutine read_photoB(sp_list, wave, & ! input variables
   !  section file
   !----------------------------------------------------------------------------
 
-  n_sp = size(sp_list)-1 ! since 0th index = total
+  n_sp = size(sp_list)-1    ! since 0th index = total
   n_wave = size(wave)
   
   open(newunit=fid, file='../data/photons/photoB.dat', &
@@ -533,7 +533,7 @@ subroutine read_photoB(sp_list, wave, & ! input variables
   read(fid,'(10ES11.3)') wave_lres
   
   do i_sp = 1, n_sp_photo_lres
-    read(fid,'(A12, I4)') ts_species1, n_branch(i_sp) ! header for species
+    read(fid,'(A12, I4)') ts_species1, n_branch(i_sp)    ! header for species
     im_photo_all(i_sp) = find_name(ts_species1, sp_list)
     
     if (im_photo_all(i_sp) <= 0) then
@@ -541,12 +541,12 @@ subroutine read_photoB(sp_list, wave, & ! input variables
       stop
     end if
     
-    read(fid,'(A)') ts_line ! "Total Absorption Cross Section (cm^2)"
+    read(fid,'(A)') ts_line    ! "Total Absorption Cross Section (cm^2)"
     read(fid,*) (crs_lres(i_wave), i_wave=1,n_wave_lres)
     ! interpolate cross sections onto high resolution scale
     call intrp(wave_lres, crs_lres, wave, cs(:,i_sp))
     
-    read(fid,'(A)') ts_line ! "Total Ion Cross Section (cm^2)"
+    read(fid,'(A)') ts_line    ! "Total Ion Cross Section (cm^2)"
     read(fid,*) (t_cs(i_wave), i_wave=1,n_wave_lres)
     
     do i_branch = 1, n_branch(i_sp)
@@ -558,7 +558,7 @@ subroutine read_photoB(sp_list, wave, & ! input variables
 
       ! link products to species list
       i_p = 0
-      do i = 3, 6 ! products
+      do i = 3, 6    ! products
         tn_isp = find_name(ts_species2(i), sp_list)
         if ((tn_isp > 0) .and. (tn_isp <= n_sp)) then
           i_p = i_p + 1
@@ -592,9 +592,9 @@ subroutine read_photoB(sp_list, wave, & ! input variables
   i_sp = n_sp_photo_lres + 1
   open(newunit=fid_28N2, file='../data/photons/photoB-28N2.dat', &
     status='old', action='read')
-  read(fid_28N2,'(A)') ts_line ! "## Processed by..."
-  read(fid_28N2,'(A)') ts_line ! "## CROSS_SECTION=..."
-  read(fid_28N2,'(A)') ts_line ! "Wavenumber(cm-1) Cross-section(cm2)..."
+  read(fid_28N2,'(A)') ts_line    ! "## Processed by..."
+  read(fid_28N2,'(A)') ts_line    ! "## CROSS_SECTION=..."
+  read(fid_28N2,'(A)') ts_line    ! "Wavenumber(cm-1) Cross-section(cm2)..."
   ! convert wavenumber scale (cm-1) to wavelength (angstrom) scale
   do i_wavenum = 1, n_wave_N2
     ! need to flip indices since wavelength is reciprocal of wavenumber
@@ -624,9 +624,9 @@ subroutine read_photoB(sp_list, wave, & ! input variables
   i_sp = n_sp_photo_lres + 2
   open(newunit=fid_29N2, file='../data/photons/photoB-29N2.dat', &
     status='old', action='read')
-  read(fid_29N2,'(A)') ts_line ! "## Processed by..."
-  read(fid_29N2,'(A)') ts_line ! "## CROSS_SECTION=..."
-  read(fid_29N2,'(A)') ts_line ! "Wavenumber(cm-1) Cross-section(cm2)..."
+  read(fid_29N2,'(A)') ts_line    ! "## Processed by..."
+  read(fid_29N2,'(A)') ts_line    ! "## CROSS_SECTION=..."
+  read(fid_29N2,'(A)') ts_line    ! "Wavenumber(cm-1) Cross-section(cm2)..."
   ! convert wavenumber scale (cm-1) to wavelength (angstrom) scale
   do i_wavenum = 1, n_wave_N2
     ! need to flip indices since wavelength is reciprocal of wavenumber
@@ -685,8 +685,8 @@ subroutine read_photoB(sp_list, wave, & ! input variables
   open(newunit=fid_COa, &
     file='../data/photons/photoB-12C16O_300K_75-91.2.dat', &
     status='old', action='read')
-  read(fid_COa,'(A)') ts_line ! "# 12C16O photoabsorption..."
-  read(fid_COa,'(A)') ts_line ! "# wavelength(nm)..."
+  read(fid_COa,'(A)') ts_line    ! "# 12C16O photoabsorption..."
+  read(fid_COa,'(A)') ts_line    ! "# wavelength(nm)..."
   do i_wave = 1, n_wave_COa
     read(fid_COa,*) wave_CO(i_wave), &
       crs_CO(i_wave), crs_CO_diss(i_wave)
@@ -699,10 +699,10 @@ subroutine read_photoB(sp_list, wave, & ! input variables
   open(newunit=fid_COb, &
     file='../data/photons/photoB-12C16O_300K_91.2-108.dat', &
     status='old', action='read')
-  read(fid_COb,'(A)') ts_line ! "# Photoabsorption..."
-  read(fid_COb,'(A)') ts_line ! "# Based on the..."
-  read(fid_COb,'(A)') ts_line ! "# Assembled by..."
-  read(fid_COb,'(A)') ts_line ! "# wavelength(nm)..."
+  read(fid_COb,'(A)') ts_line    ! "# Photoabsorption..."
+  read(fid_COb,'(A)') ts_line    ! "# Based on the..."
+  read(fid_COb,'(A)') ts_line    ! "# Assembled by..."
+  read(fid_COb,'(A)') ts_line    ! "# wavelength(nm)..."
   do i_wave = n_wave_COa+1, n_wave_COa+n_wave_COb
     read(fid_COb,*) wave_CO(i_wave), &
       crs_CO(i_wave), crs_CO_diss(i_wave)
@@ -831,7 +831,7 @@ subroutine read_Jvals(file_jvals, sp_list, &
   im_photo_product_all = 0
   
   do i_sp = 1, n_sp_photo
-    read(fid,'(A12, I4)') ts_species1, n_branch(i_sp) ! header for species
+    read(fid,'(A12, I4)') ts_species1, n_branch(i_sp)    ! header for species
     im_photo_all(i_sp) = find_name(ts_species1, sp_list)
     
     if (im_photo_all(i_sp) <= 0) then
@@ -863,7 +863,7 @@ subroutine read_Jvals(file_jvals, sp_list, &
 end subroutine read_Jvals
 
 
-subroutine read_sol(file_sol, & ! input variable
+subroutine read_sol(file_sol, &    ! input variable
   sol_wave, sol_flux)
 ! This subroutine reads in the solar fluxes in /solar/.
   use types, only: wp => dp
@@ -902,9 +902,9 @@ subroutine read_sol(file_sol, & ! input variable
   read(fid,*) n_wave
   allocate(sol_wave(n_wave), sol_flux(n_wave))
   
-  read(fid,'(A)') ts_line ! e.g., "; High solar activity reference..."
-  read(fid,'(A)') ts_line ! "; Values are..."
-  read(fid,'(A)') ts_line ! "; wave (A)..."
+  read(fid,'(A)') ts_line    ! e.g., "; High solar activity reference..."
+  read(fid,'(A)') ts_line    ! "; Values are..."
+  read(fid,'(A)') ts_line    ! "; wave (A)..."
   
   do i_wave = 1, n_wave
     read(fid,*) sol_wave(i_wave), sol_flux(i_wave)
@@ -938,6 +938,7 @@ subroutine norm_sol(sol_wave_lres, sol_flux_lres, sol_wave_hres, sol_flux_hres)
   !----------------------------------------------------------------------------
   !  Local variables
   !----------------------------------------------------------------------------
+  
   ! number of wavelength bins in low and high resolution
   integer :: n_sol_wave_lres, n_sol_wave_hres
   ! wavelength bin widths in low and high resolution
@@ -1140,7 +1141,7 @@ end subroutine paths1D
 
 
 subroutine cal_photo_rates
-! This subroutine 
+! This subroutine calculates photolysis and photoelectron production rates. 
 
   !----------------------------------------------------------------------------
   !  Modules
@@ -1154,6 +1155,7 @@ subroutine cal_photo_rates
   !----------------------------------------------------------------------------
   !  Local variables
   !----------------------------------------------------------------------------
+  
   implicit none
   ! Column density: unit=cm-2; dim=(altitude level, species #)
   real(wp), allocatable, dimension(:,:) :: clm
@@ -1162,13 +1164,13 @@ subroutine cal_photo_rates
   ! Chapman function parameters
   real(wp) :: ch_sin_a, ch_cos_a, ch_x
   ! Energies (ionization, photon, electron): unit=eV
-  real(wp) :: E_ion, E_hv, E_e
+  real(wp) :: enrg_ion, enrg_hv, enrg_e
 !  real(wp), allocatable, dimension(:) :: Selsum
   
   ! loop variables
   integer :: i_sp1, i_sp2, i_z1, i_z2, i_branch, i_wave, i_r
   ! temporary / dummy variables
-  integer :: ienrg
+  integer :: tn_ienrg
   real(wp) :: t
 
   !----------------------------------------------------------------------------
@@ -1387,15 +1389,15 @@ subroutine cal_photo_rates
       do i_branch = 1, n_branchA(i_sp1)
         i_r = i_r + 1
         if (charge_stateA(i_branch,i_sp1) > zero) then
-          E_ion = hc / (enrgIA(i_branch,i_sp1) * aa_to_cm) * erg_to_ev
+          enrg_ion = hc / (enrgIA(i_branch,i_sp1) * aa_to_cm) * erg_to_ev
           do i_wave = 1, n_waveA
-            E_hv = hc / (waveA(i_wave) * aa_to_cm) * erg_to_ev
-            E_e = (E_hv - E_ion) / charge_stateA(i_branch,i_sp1)
-            if (E_e > zero) then
-              ienrg = find_bin(E_e, e_enrg, e_denrg) 
+            enrg_hv = hc / (waveA(i_wave) * aa_to_cm) * erg_to_ev
+            enrg_e = (enrg_hv - enrg_ion) / charge_stateA(i_branch,i_sp1)
+            if (enrg_e > zero) then
+              tn_ienrg = find_bin(enrg_e, e_enrg, e_denrg) 
               do i_z1 = iz_bot, n_z
-                esrc(i_r,i_z1,ienrg) = esrc(i_r,i_z1,ienrg) &
-                  + (E_e / e_enrg(ienrg) / e_denrg(ienrg)) &
+                esrc(i_r,i_z1,tn_ienrg) = esrc(i_r,i_z1,tn_ienrg) &
+                  + (enrg_e / e_enrg(tn_ienrg) / e_denrg(tn_ienrg)) &
                   * prtA(i_wave,i_branch,i_sp1) &
                   * charge_stateA(i_branch,i_sp1) &
                   * den(i_z1,i_sp2) * trnA(i_wave,i_z1)
@@ -1413,15 +1415,15 @@ subroutine cal_photo_rates
       do i_branch = 1, n_branchB(i_sp1)
         i_r = i_r + 1
         if (charge_stateB(i_branch,i_sp1) > zero) then
-          E_ion = hc / (enrgIB(i_branch,i_sp1) * aa_to_cm) * erg_to_ev
+          enrg_ion = hc / (enrgIB(i_branch,i_sp1) * aa_to_cm) * erg_to_ev
           do i_wave = 1, n_waveB
-            E_hv = hc / (waveB(i_wave) * aa_to_cm) * erg_to_ev
-            E_e = (E_hv - E_ion) / charge_stateB(i_branch,i_sp1)
-            if (E_e > zero) then
-              ienrg = find_bin(E_e, e_enrg, e_denrg)
+            enrg_hv = hc / (waveB(i_wave) * aa_to_cm) * erg_to_ev
+            enrg_e = (enrg_hv - enrg_ion) / charge_stateB(i_branch,i_sp1)
+            if (enrg_e > zero) then
+              tn_ienrg = find_bin(enrg_e, e_enrg, e_denrg)
               do i_z1 = iz_bot, n_z
-                esrc(i_r,i_z1,ienrg) = esrc(i_r,i_z1,ienrg) &
-                  + (E_e / e_enrg(ienrg) / e_denrg(ienrg)) &
+                esrc(i_r,i_z1,tn_ienrg) = esrc(i_r,i_z1,tn_ienrg) &
+                  + (enrg_e / e_enrg(tn_ienrg) / e_denrg(tn_ienrg)) &
                   * prtB(i_wave,i_branch,i_sp1) &
                   * charge_stateB(i_branch,i_sp1) &
                   * den(i_z1,i_sp2) * trnB(i_wave,i_z1)
@@ -1439,15 +1441,15 @@ subroutine cal_photo_rates
       do i_branch = 1, n_branchC(i_sp1)
         i_r = i_r + 1
         if (charge_stateC(i_branch,i_sp1) > zero) then
-          E_ion = hc / (enrgIC(i_branch,i_sp1) * aa_to_cm) * erg_to_ev
+          enrg_ion = hc / (enrgIC(i_branch,i_sp1) * aa_to_cm) * erg_to_ev
           do i_wave = 1, n_waveC
-            E_hv = hc / (waveC(i_wave) * aa_to_cm) * erg_to_ev
-            E_e = (E_hv - E_ion) / charge_stateC(i_branch,i_sp1)
-            if (E_e > zero) then
-              ienrg = find_bin(E_e, e_enrg, e_denrg)
+            enrg_hv = hc / (waveC(i_wave) * aa_to_cm) * erg_to_ev
+            enrg_e = (enrg_hv - enrg_ion) / charge_stateC(i_branch,i_sp1)
+            if (enrg_e > zero) then
+              tn_ienrg = find_bin(enrg_e, e_enrg, e_denrg)
               do i_z1 = iz_bot, n_z
-                esrc(i_r,i_z1,ienrg) = esrc(i_r,i_z1,ienrg) &
-                  + (E_e / e_enrg(ienrg) / e_denrg(ienrg)) &
+                esrc(i_r,i_z1,tn_ienrg) = esrc(i_r,i_z1,tn_ienrg) &
+                  + (enrg_e / e_enrg(tn_ienrg) / e_denrg(tn_ienrg)) &
                   * prtC(i_wave,i_branch,i_sp1) &
                   * charge_stateC(i_branch,i_sp1) &
                   * den(i_z1,i_sp2) * trnC(i_wave,i_z1)
@@ -1462,16 +1464,16 @@ subroutine cal_photo_rates
   esrc = diurnal_average * esrc
 
   Sel = zero
-  do concurrent (ienrg = 1:n_e_enrg, i_z1 = 1:n_z)
-    Sel(i_z1,ienrg) = sum(esrc(:,i_z1,ienrg))
+  do concurrent (tn_ienrg = 1:n_e_enrg, i_z1 = 1:n_z)
+    Sel(i_z1,tn_ienrg) = sum(esrc(:,i_z1,tn_ienrg))
   end do
 
 !  ALLOCATE(Selsum(n_z))
 !  Selsum = zero ! total electrons produced in altitude bin
 !  do i_z1 = iz_bot, n_z
 !    t = zero
-!    do ienrg = 1, n_e_enrg
-!      t = t + e_denrg(ienrg)*Sel(i_z1,ienrg)
+!    do tn_ienrg = 1, n_e_enrg
+!      t = t + e_denrg(tn_ienrg)*Sel(i_z1,tn_ienrg)
 !    end do
 !    Selsum(i_z1) = t
 !  end do

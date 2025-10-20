@@ -42,10 +42,11 @@ subroutine read_species
   open(newunit=fid_ion, file='imolecules.settings', &
     status='old', action='read')
 
-  read(fid_neu,*) n_neu ! number of neutral species
-  read(fid_ion,*) n_ion ! number of ion species
+  read(fid_neu,*) n_neu    ! number of neutral species
+  read(fid_ion,*) n_ion    ! number of ion species
 
-  n_sp = n_neu + n_ion + 1 ! total number of species (neutrals+ions+electrons)
+  ! total number of species (neutrals+ions+electrons)
+  n_sp = n_neu + n_ion + 1
 
   ! allocate variables in preparation for population with file read
   allocate(sp_list(0:n_sp), istat(n_sp), chrg(n_sp), mmw(n_sp), &
@@ -54,7 +55,7 @@ subroutine read_species
     ibnd(n_sp,2), bval(n_sp,2))
   
   ! read in settings for neutrals
-  read(fid_neu,'(A)') ts_header ! column headers
+  read(fid_neu,'(A)') ts_header    ! column headers
   do i_sp = 1, n_neu
     read(fid_neu,961) tn1, &
       sp_list(i_sp), istat(i_sp), chrg(i_sp), mmw(i_sp), &
@@ -88,8 +89,8 @@ subroutine read_species
   close(unit=fid_neu)
   close(unit=fid_ion)
 
-  sp_list(0)    = '            ' ! for total
-  sp_list(n_sp) = 'E           ' ! electrons
+  sp_list(0)    = '            '    ! for total
+  sp_list(n_sp) = 'E           '    ! electrons
   mmw(n_sp) = zero
 
   !----------------------------------------------------------------------------
@@ -99,8 +100,8 @@ subroutine read_species
   ! count number of species in chemical and diffusive equilibrium
   n_c = 0; n_d = 0
   do i_sp = 1, n_sp-1
-    if (istat(i_sp) == 1) n_c = n_c + 1 ! species in chemical equilibrium
-    if (istat(i_sp) == 2) n_d = n_d + 1 ! species diffusive equilibrium
+    if (istat(i_sp) == 1) n_c = n_c + 1    ! species in chemical equilibrium
+    if (istat(i_sp) == 2) n_d = n_d + 1    ! species diffusive equilibrium
   end do
   n_chem = n_c
   n_diff = n_d
@@ -108,7 +109,7 @@ subroutine read_species
 
   if (ichk > 0) then
     have_ions = .true.
-    n_chem_e = n_chem + 1 ! with electrons
+    n_chem_e = n_chem + 1    ! with electrons
   else
     have_ions = .false.
     n_chem_e = n_chem
@@ -150,7 +151,7 @@ subroutine read_species
   ! calculate mapping between list of chemical species and list of all species
   n_c = 0
   do i_sp = 1, n_sp-1
-    if (istat(i_sp) == 1) then ! species in chemical equilibrium
+    if (istat(i_sp) == 1) then    ! species in chemical equilibrium
       n_c = n_c + 1
       im_chem_all(n_c) = i_sp
       im_all_chem(i_sp) = n_c
@@ -267,7 +268,7 @@ subroutine read_atmos
     read(fid,'(A)') ts_header
     read(fid,*) (eK(i_z), i_z=1, n_z)
     read(fid,'(A)') ts_header
-    read(fid,*) (den(i_z,0), i_z=1, n_z) ! den(*,0) is for overall density
+    read(fid,*) (den(i_z,0), i_z=1, n_z)    ! den(*,0) is for overall density
     do i_sp = 1, tn_sp1
       tn_sp2 = im_atm_list(i_sp)
       read(fid,'(A)') ts_name
@@ -499,7 +500,7 @@ subroutine read_reactions
     read(ts_line,*) tn1, (ts_species(i),i=1,5), tm_chem_type, (t_rk(i),i=1,10)
     if (tm_chem_type /= 0) i_r = i_r + 1
   end do
-  n_rct = i_r ! assign to global variable
+  n_rct = i_r    ! assign to global variable
 
   rewind(unit=fid_irct)
 
