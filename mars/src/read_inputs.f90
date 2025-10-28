@@ -22,9 +22,9 @@ subroutine read_species
   implicit none
   ! file unit numbers for neutral and ion settings
   integer :: fid_neu, fid_ion
-  ! number of ions in chemical equilibrium
+  ! number of ions
   integer :: ichk
-  ! number of species in chemical equilibrium + electrons
+  ! number of species in chemistry loop + electrons
   integer :: n_chem_e
   
   ! loop variables
@@ -94,14 +94,14 @@ subroutine read_species
   mmw(n_sp) = zero
 
   !----------------------------------------------------------------------------
-  !  Create lists of species in chemical and diffusive equilibrium
+  !  Create lists of species in chemistry and diffusion loops
   !----------------------------------------------------------------------------
 
-  ! count number of species in chemical and diffusive equilibrium
+  ! count number of species in chemistry and diffusion loops
   n_c = 0; n_d = 0
   do i_sp = 1, n_sp-1
-    if (istat(i_sp) == 1) n_c = n_c + 1    ! species in chemical equilibrium
-    if (istat(i_sp) == 2) n_d = n_d + 1    ! species diffusive equilibrium
+    if (istat(i_sp) == 1) n_c = n_c + 1    ! species in chemistry loop
+    if (istat(i_sp) == 2) n_d = n_d + 1    ! species in diffusion loop
   end do
   n_chem = n_c
   n_diff = n_d
@@ -151,7 +151,7 @@ subroutine read_species
   ! calculate mapping between list of chemical species and list of all species
   n_c = 0
   do i_sp = 1, n_sp-1
-    if (istat(i_sp) == 1) then    ! species in chemical equilibrium
+    if (istat(i_sp) == 1) then    ! species in chemistry loop
       n_c = n_c + 1
       im_chem_all(n_c) = i_sp
       im_all_chem(i_sp) = n_c
@@ -165,7 +165,7 @@ subroutine read_species
   end if
 
   ! print list of chemical species to screen
-  write(*,'("CHEMICAL SPECIES")')
+  write(*,'("CHEMISTRY SPECIES")')
   if (size(im_chem_all) > 0) then
     write(*,'(10(1X,A12))') (sp_list(im_chem_all(n_c)), n_c=1, n_chem)
   else
@@ -203,8 +203,6 @@ subroutine read_atmos
   implicit none
   ! file unit numbers for atm1D.in
   integer :: fid
-  ! minimum density
-  real(wp), parameter :: den_min = 1.0e-50_wp
   
   ! species names in atm1D.in
   character(len=12), allocatable, dimension(:) :: sp_atm
@@ -289,21 +287,21 @@ subroutine read_atmos
   do i_sp = 1, n_diff
     tn_sp2 = im_diff_all(i_sp)
     if (ibnd(tn_sp2,1) == 3) then
-      den(1,tn_sp2) = bval(tn_sp2,1)*den(1,0)
+      den(1,tn_sp2) = bval(tn_sp2,1) * den(1,0)
     end if
   end do
 
   ! set density to min value if species does not have density defined
   do concurrent (i_sp = 1:n_sp-1)
     if (.not. has_den(i_sp)) then
-      den(:,i_sp) = den_min
+      den(:,i_sp) = eps
       write(*,'("Density not defined for ", A, &
-        "... Assigning minimum density of ", ES8.1)') sp_list(i_sp), den_min
+        "... Assigning minimum density of ", ES8.1)') sp_list(i_sp), eps
     end if
   end do
 
   ! set density to min value if below minimum
-  where (den < den_min) den = den_min
+  where (den < eps) den = eps
   
   ! reset electron density to sum of ion densities
   do concurrent (i_z = 1:n_z)
@@ -312,40 +310,35 @@ subroutine read_atmos
   
   ! reset total density
   do concurrent (i_z = 1:n_z)
-    den(i_z,0) = sum(den(i_z,1:n_sp))
+    den(i_z,0) = sum(den(i_z,1:n_sp-1))
   end do
   
   ! set density to fixed mole fraction according to settings
   do concurrent (i_sp = 1:n_sp-1)
     if (istat(i_sp) == 3) then
-      den(:,i_sp) = bval(i_sp,1)*den(:,0)
+      den(:,i_sp) = bval(i_sp,1) * den(:,0)
     end if
   end do
 
   ! calculate mole fraction
   do concurrent (i_z = 1:n_z, i_sp = 1:n_sp)
-      vmr(i_z,i_sp) = den(i_z,i_sp)/den(i_z,0)
+    vmr(i_z,i_sp) = den(i_z,i_sp) / den(i_z,0)
   end do
 
   ! reset gravity
   do concurrent (i_z = 1:n_z)
-    grv(i_z) = GM/rz(i_z)**2
+    grv(i_z) = GM / rz(i_z)**2
   end do
 
   ! reset pressure to be consistent with N & T
   do concurrent (i_z = 1:n_z)
-    prs(i_z) = kB*Tn(i_z)*den(i_z,0)
+    prs(i_z) = kB * Tn(i_z) * den(i_z,0)
   end do
 
   ! calculate mass density, mean molecular mass
   do concurrent (i_z = 1:n_z)
-    if (n_ion > 0) then
-      rho(i_z) = dot_product(mmw, den(i_z,1:n_sp)) * amu
-      mass(i_z) = rho(i_z) / (den(i_z,0) + two * den(i_z,n_sp)) / amu !? why
-    else
-      rho(i_z) = dot_product(mmw, den(i_z,1:n_sp)) * amu
-      mass(i_z) = rho(i_z) / den(i_z,0) / amu
-    end if
+    rho(i_z) = dot_product(mmw, den(i_z,1:n_sp)) * amu
+    mass(i_z) = rho(i_z) / den(i_z,0) / amu
   end do
 
   !----------------------------------------------------------------------------
@@ -675,7 +668,7 @@ subroutine read_reactions
   !  Calculate reaction coefficients
   !----------------------------------------------------------------------------
   
-  allocate(rk(n_rct,n_z), rct_rate(n_rct,n_z)) 
+  allocate(rk(n_rct,n_z), rate_rct(n_rct,n_z)) 
   
   do i_rct = 1, n_rct
     

@@ -1,7 +1,10 @@
 ! Defines various constants that are used in program
 module constants
   use types, only: wp => dp
-
+  
+  ! Machine accuracy
+  real(wp), parameter :: eps = 1.e-50_wp
+  
   ! Ordinary numbers, so that they have specified precision
   real(wp), parameter :: zero  = 0.0
   real(wp), parameter :: half  = 0.5

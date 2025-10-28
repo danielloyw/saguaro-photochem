@@ -261,10 +261,10 @@ subroutine electrons_setup
   allocate(esrc(n_prct,n_z,n_e_enrg))
   allocate(Sel(n_z,n_e_enrg))
   allocate(eflux(n_z,n_e_enrg))
-  allocate(eph(n_erct,n_z))
-  allocate(rpe(n_erct,n_z))
+  allocate(freq_erct(n_erct,n_z))
+  allocate(rate_erct(n_erct,n_z))
   ! allocate(pS(n_z))
-  rpe = zero
+  rate_erct = zero
 
   ! deallocate local arrays
   deallocate(im_e_product_all, ts_title, t_cs)
@@ -464,13 +464,13 @@ subroutine cal_electrons
   ! end do
   
   i_r = 0
-  eph = zero
+  freq_erct = zero
   do i_sp = 1, n_sp_e_thk
     do i_branch = 1, n_branch_e(i_sp)
       i_r = i_r + 1
       do i_z = iz_bot, n_z
         do i_enrg = 1, n_e_enrg
-          eph(i_r,i_z) = eph(i_r,i_z) + eflux(i_z,i_enrg) &
+          freq_erct(i_r,i_z) = freq_erct(i_r,i_z) + eflux(i_z,i_enrg) &
           * ecs(i_enrg,n_states(1,i_sp)+i_branch,i_sp) * e_denrg(i_enrg) 
         end do
       end do
@@ -482,7 +482,7 @@ subroutine cal_electrons
       ! i_r = i_r + 1
       ! do i_z = iz_bot, n_z
         ! do i_enrg = 1, n_e_enrg
-          ! eph(i_r,i_z) = eph(i_r,i_z) + branch_ratio_el(i_enrg,i_branch,i_sp) &
+          ! freq_erct(i_r,i_z) = freq_erct(i_r,i_z) + branch_ratio_el(i_enrg,i_branch,i_sp) &
           ! * eflux(i_z,i_enrg) * crs_tot_inel(i_enrg,i_sp) * e_denrg(i_enrg) 
         ! end do
       ! end do
