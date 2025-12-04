@@ -416,7 +416,7 @@ subroutine cal_electrons
 
       ! --- Calculate Electron Flux -------------------------------------------
       sigmaN = zero
-      do concurrent (i_enrg = 1:n_e_enrg)
+      do i_enrg = 1, n_e_enrg
         do i_sp = 1, n_sp_e_thk
           sigmaN(i_enrg) = sigmaN(i_enrg) + den(i_z,im_e_reactant_all(i_sp)) &
             * (sum_cs_exc(i_enrg,i_sp) + sum_cs_ion(i_enrg,i_sp))

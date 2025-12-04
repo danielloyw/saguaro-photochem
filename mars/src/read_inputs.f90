@@ -327,7 +327,7 @@ subroutine read_atmos
 
   ! reset gravity
   do concurrent (i_z = 1:n_z)
-    grv(i_z) = GM / rz(i_z)**2
+    grv(i_z) = GM / rz(i_z)**two
   end do
 
   ! reset pressure to be consistent with N & T
@@ -419,7 +419,7 @@ subroutine read_reactions
   real(wp) :: FC, NF, CF, FF
   
   ! loop variables
-  integer :: i_rct, i, i_r, i_z
+  integer :: i_r, i, i_r2, i_z
   ! temporary / dummy variables
   character(len=256) :: ts_line, ts1 
   integer :: tn1, tm_chem_type
@@ -441,16 +441,16 @@ subroutine read_reactions
      ! ALLOCATE(itab_rct(5,ntab_rct),nprs_rct(ntab_rct),ntmp_rct(ntab_rct), &
           ! plog_rct(nprs_tab_max,ntab_rct),tmp_rct(ntmp_tab_max,ntab_rct), &
           ! rct_tab(nprs_tab_max,ntmp_tab_max,ntab_rct))
-     ! DO i_r = 1, ntab_rct
+     ! DO i_r2 = 1, ntab_rct
         ! READ(40,"(A12,3X,A12,3X,A12,3X,A12,3X,A12)") (fn(i),i=1,5)
         ! DO i = 1, 5
-           ! itab_rct(i,i_r) = FIND_NAME(fn(i),name)
+           ! itab_rct(i,i_r2) = FIND_NAME(fn(i),name)
         ! END DO
-        ! READ(40,*) nprs_rct(i_r),ntmp_rct(i_r)
-        ! READ(40,*) (tmp_rct(nt,i_r),nt=1,ntmp_rct(i_r))
-        ! DO np = 1, nprs_rct(i_r)
-           ! READ(40,*) rdum,(rct_tab(np,nt,i_r),nt=1,ntmp_rct(i_r))
-           ! plog_rct(np,i_r) = LOG(rdum)
+        ! READ(40,*) nprs_rct(i_r2),ntmp_rct(i_r2)
+        ! READ(40,*) (tmp_rct(nt,i_r2),nt=1,ntmp_rct(i_r2))
+        ! DO np = 1, nprs_rct(i_r2)
+           ! READ(40,*) rdum,(rct_tab(np,nt,i_r2),nt=1,ntmp_rct(i_r2))
+           ! plog_rct(np,i_r2) = LOG(rdum)
         ! END DO
      ! END DO
   ! CLOSE(unit=40)
@@ -472,11 +472,11 @@ subroutine read_reactions
   read(fid_nrct,'(A)') ts_line
 
   ! count how many of the entries are actually active (type /= 0)
-  i_r = 0
-  do i_rct = 1, n_nrct
+  n_rct = 0
+  do i_r = 1, n_nrct
     read(fid_nrct,'(A)') ts_line
     read(ts_line,*) tn1, (ts_species(i),i=1,5), tm_chem_type, (t_rk(i),i=1,10)
-    if (tm_chem_type /= 0) i_r = i_r + 1
+    if (tm_chem_type /= 0) n_rct = n_rct + 1
   end do
 
   rewind(unit=fid_nrct)
@@ -488,12 +488,11 @@ subroutine read_reactions
   read(fid_irct,'(A)') ts_line
 
   ! count how many of the entries are actually active (type /= 0)
-  do i_rct = 1, n_irct
+  do i_r = 1, n_irct
     read(fid_irct,'(A)') ts_line
     read(ts_line,*) tn1, (ts_species(i),i=1,5), tm_chem_type, (t_rk(i),i=1,10)
-    if (tm_chem_type /= 0) i_r = i_r + 1
+    if (tm_chem_type /= 0) n_rct = n_rct + 1
   end do
-  n_rct = i_r    ! assign to global variable
 
   rewind(unit=fid_irct)
 
@@ -505,41 +504,41 @@ subroutine read_reactions
   read(fid_nrct,'(A)') ts_line
   read(fid_nrct,'(A)') ts_line
   read(fid_nrct,'(A)') ts_line  
-  i_r = 0
-  do i_rct = 1, n_nrct
+  i_r2 = 0
+  do i_r = 1, n_nrct
     read(fid_nrct,'(A)') ts_line
     read(ts_line,*) tn1, (ts_species(i),i=1,5), tm_chem_type, (t_rk(i),i=1,10)
     if (tm_chem_type /= 0) then
-      i_r = i_r + 1
-      chem_type(i_r) = tm_chem_type
-      ctitle(i_r) = ts_species(1)//' + '//ts_species(2)//' = '// & 
+      i_r2 = i_r2 + 1
+      chem_type(i_r2) = tm_chem_type
+      ctitle(i_r2) = ts_species(1)//' + '//ts_species(2)//' = '// & 
         ts_species(3)//' + '//ts_species(4)//' + '//ts_species(5)
       ! determine indices for products
       do concurrent (i = 3:5)
-        ireactant(i,i_r) = find_name(ts_species(i), sp_list)
+        ireactant(i,i_r2) = find_name(ts_species(i), sp_list)
       end do
       
       ! determine indices for reactants
-      if (abs(chem_type(i_r)) == 1) then
+      if (abs(chem_type(i_r2)) == 1) then
       ! unimolecular reaction
-        rkn(:,i_r) = t_rk
+        rkn(:,i_r2) = t_rk
         i = 1
-        ireactant(i,i_r) = find_name(ts_species(i), sp_list)
-        if (ireactant(i,i_r) <= 0) then
-          write(*,'(I6, ":", 2X, A)') i_r, ctitle(i_r)
+        ireactant(i,i_r2) = find_name(ts_species(i), sp_list)
+        if (ireactant(i,i_r2) <= 0) then
+          write(*,'(I6, ":", 2X, A)') i_r2, ctitle(i_r2)
           write(*,'("Error: Reactant ", I2, " not found: ", A12)') & 
             i, ts_species(i)
           stop
         end if
-        ireactant(2,i_r) = 0
+        ireactant(2,i_r2) = 0
 
-      else if ((abs(chem_type(i_r)) > 1) .and. (abs(chem_type(i_r)) < 6)) then
+      else if ((abs(chem_type(i_r2)) > 1) .and. (abs(chem_type(i_r2)) < 6)) then
       ! bimolecular & trimolecular reaction
-        rkn(:,i_r) = t_rk
+        rkn(:,i_r2) = t_rk
         do i = 1, 2
-          ireactant(i,i_r) = find_name(ts_species(i), sp_list)
-          if (ireactant(i,i_r) <= 0) then
-            write(*,'(I6, ":", 2X, A)') i_r, ctitle(i_r)
+          ireactant(i,i_r2) = find_name(ts_species(i), sp_list)
+          if (ireactant(i,i_r2) <= 0) then
+            write(*,'(I6, ":", 2X, A)') i_r2, ctitle(i_r2)
             write(*,'("Error: Reactant ", I2, " not found: ", A12)') & 
               i, ts_species(i)
             stop
@@ -547,11 +546,11 @@ subroutine read_reactions
         end do
          
       ! Tabulated reaction rates (deactivated for now)
-      ! else if (abs(chem_type(i_r)) == 6) then
+      ! else if (abs(chem_type(i_r2)) == 6) then
         ! do i = 1, 2
-          ! ireactant(i,i_r) = find_name(ts_species(i), sp_list)
-          ! if (ireactant(i,i_r) <= 0) then
-            ! write(*,"(I6,':',2X,A)") i_r, ctitle(i_r)
+          ! ireactant(i,i_r2) = find_name(ts_species(i), sp_list)
+          ! if (ireactant(i,i_r2) <= 0) then
+            ! write(*,"(I6,':',2X,A)") i_r2, ctitle(i_r2)
             ! write(*,"('Error: Reactant ',I2,' not found: ',A12)") & 
               ! i, ts_species(i)
             ! stop
@@ -560,22 +559,22 @@ subroutine read_reactions
         ! do nt = 1, ntab_rct
           ! ltab = .true.
           ! do i = 1, 5
-            ! if (ireactant(i,i_r) /= itab_rct(i,nt)) ltab = .false.
+            ! if (ireactant(i,i_r2) /= itab_rct(i,nt)) ltab = .false.
         ! end do
         ! if (ltab) then
-          ! ntab(i_r) = nt
+          ! ntab(i_r2) = nt
           ! EXIT
         ! end if
       ! end do
       ! if (.not.ltab) then
-        ! write(*,"(I6,':',2X,A)") i_r,ctitle(i_r)
-        ! write(*,"(' TABULATED DATA NOT FOUND FOR REACTION ',I4,', ABORTING ....')") i_r
+        ! write(*,"(I6,':',2X,A)") i_r2,ctitle(i_r2)
+        ! write(*,"(' TABULATED DATA NOT FOUND FOR REACTION ',I4,', ABORTING ....')") i_r2
         ! STOP
       ! end if
 
       else 
         write(*,'("Error: Invalid setting for neutral reaction ", I0, &
-          "! Exiting...")') i_rct
+          "! Exiting...")') i_r
         stop
       end if
     end if
@@ -586,40 +585,40 @@ subroutine read_reactions
   read(fid_irct,'(A)') ts_line
   read(fid_irct,'(A)') ts_line
   read(fid_irct,'(A)') ts_line  
-  do i_rct = 1, n_irct
+  do i_r = 1, n_irct
     read(fid_irct,'(A)') ts_line
     read(ts_line,*) tn1, (ts_species(i),i=1,5), tm_chem_type, (t_rk(i),i=1,10)
     if (tm_chem_type /= 0) then
-      i_r = i_r + 1
-      chem_type(i_r) = tm_chem_type
-      ctitle(i_r) = ts_species(1)//' + '//ts_species(2)//' = '// & 
+      i_r2 = i_r2 + 1
+      chem_type(i_r2) = tm_chem_type
+      ctitle(i_r2) = ts_species(1)//' + '//ts_species(2)//' = '// & 
         ts_species(3)//' + '//ts_species(4)//' + '//ts_species(5)
       ! determine indices for products
       do concurrent (i = 3:5)
-        ireactant(i,i_r) = find_name(ts_species(i), sp_list)
+        ireactant(i,i_r2) = find_name(ts_species(i), sp_list)
       end do
       
       ! determine indices for reactants
-      if (abs(chem_type(i_r)) == 1) then
+      if (abs(chem_type(i_r2)) == 1) then
       ! unimolecular reaction
-        rkn(:,i_r) = t_rk
+        rkn(:,i_r2) = t_rk
         i = 1
-        ireactant(i,i_r) = find_name(ts_species(i), sp_list)
-        if (ireactant(i,i_r) <= 0) then
-          write(*,'(I6, ":", 2X, A)') i_r, ctitle(i_r)
+        ireactant(i,i_r2) = find_name(ts_species(i), sp_list)
+        if (ireactant(i,i_r2) <= 0) then
+          write(*,'(I6, ":", 2X, A)') i_r2, ctitle(i_r2)
           write(*,'("Error: Reactant ", I0, " not found: ", A12)') &
             i, ts_species(i)
           stop
         end if
-        ireactant(2,i_r) = 0
+        ireactant(2,i_r2) = 0
 
-      else if ((abs(chem_type(i_r)) > 1) .and. (abs(chem_type(i_r)) < 6)) then
+      else if ((abs(chem_type(i_r2)) > 1) .and. (abs(chem_type(i_r2)) < 6)) then
       ! bimolecular & trimolecular reaction
-      rkn(:,i_r) = t_rk
+      rkn(:,i_r2) = t_rk
         do i = 1, 2
-          ireactant(i,i_r) = find_name(ts_species(i), sp_list)
-          if (ireactant(i,i_r) <= 0) then
-            write(*,'(I6, ":", 2X, A)') i_r, ctitle(i_r)
+          ireactant(i,i_r2) = find_name(ts_species(i), sp_list)
+          if (ireactant(i,i_r2) <= 0) then
+            write(*,'(I6, ":", 2X, A)') i_r2, ctitle(i_r2)
             write(*,'("Error: Reactant ", I0, " not found: ", A12)') & 
               i, ts_species(i)
             stop
@@ -627,12 +626,12 @@ subroutine read_reactions
         end do
 
       ! Tabulated reaction rates (deactivated for now)
-      ! else if (ABS(chem_type(i_r)) == 6) then
+      ! else if (ABS(chem_type(i_r2)) == 6) then
         ! do i = 1, 2
-          ! ireactant(i,i_r) = FIND_NAME(ts_species(i),sp_list)
-            ! if (ireactant(i,i_r) <= 0) then
-              ! write(*,"(I6,':',2X,A)") i_r,ctitle(i_r)
-              ! write(*,"(' REACTION',I6,' REACTANT',I2,' NOT FOUND: ',A12)") i_r,i,ts_species(i)
+          ! ireactant(i,i_r2) = FIND_NAME(ts_species(i),sp_list)
+            ! if (ireactant(i,i_r2) <= 0) then
+              ! write(*,"(I6,':',2X,A)") i_r2,ctitle(i_r2)
+              ! write(*,"(' REACTION',I6,' REACTANT',I2,' NOT FOUND: ',A12)") i_r2,i,ts_species(i)
               ! STOP
             ! end if
           ! end do
@@ -640,22 +639,22 @@ subroutine read_reactions
           ! do nt = 1, ntab_rct
             ! ltab = .true.
             ! do i = 1, 5
-              ! if (ireactant(i,i_r) /= itab_rct(i,nt)) ltab = .false.
+              ! if (ireactant(i,i_r2) /= itab_rct(i,nt)) ltab = .false.
             ! end do
             ! if (ltab) then
-              ! ntab(i_r) = nt
+              ! ntab(i_r2) = nt
               ! EXIT
             ! end if
           ! end do
           ! if (.not.ltab) then
-            ! write(*,"(I6,':',2X,A)") i_r,ctitle(i_r)
-            ! write(*,"(' TABULATED DATA NOT FOUND FOR REACTION ',I4,', ABORTING ....')") i_r
+            ! write(*,"(I6,':',2X,A)") i_r2,ctitle(i_r2)
+            ! write(*,"(' TABULATED DATA NOT FOUND FOR REACTION ',I4,', ABORTING ....')") i_r2
             ! STOP
           ! end if
 
       else 
         write(*,'("Error: Invalid setting for ion reaction ", I0, &
-          "! Exiting...")') i_rct
+          "! Exiting...")') i_r
         stop
       end if
     end if
@@ -670,25 +669,25 @@ subroutine read_reactions
   
   allocate(rk(n_rct,n_z), rate_rct(n_rct,n_z)) 
   
-  do i_rct = 1, n_rct
+  do i_r = 1, n_rct
     
     ! --- Neutral reactions ---------------------------------------------------
-    if (chem_type(i_rct) == 1) then
+    if (chem_type(i_r) == 1) then
     ! unimolecular reactions
     ! rate coefficient is simply rate constant
       do concurrent (i_z = 1:n_z)
-        rk(i_rct,i_z) = rkn(1,i_rct)
+        rk(i_r,i_z) = rkn(1,i_r)
       end do
 
-    else if (chem_type(i_rct) == 2) then
+    else if (chem_type(i_r) == 2) then
     ! bimolecular reactions
     ! k1 * T^k2 * exp(k3 * T)
       do concurrent (i_z = 1:n_z)
-        rk(i_rct,i_z) = rkn(1,i_rct) * (Tn(i_z) ** rkn(2,i_rct)) &
-          * exp(rkn(3,i_rct) / Tn(i_z))
+        rk(i_r,i_z) = rkn(1,i_r) * (Tn(i_z) ** rkn(2,i_r)) &
+          * exp(rkn(3,i_r) / Tn(i_z))
       end do
 
-    else if (chem_type(i_rct) == 3) then
+    else if (chem_type(i_r) == 3) then
     ! association reactions
     ! k0 * [M] * kinf / (k0 * [M] + kinf)
     ! k0 and kinf are in the form k1 * T^k2 * exp(k3 * T)
@@ -699,63 +698,63 @@ subroutine read_reactions
     ! N = 0.75 - 1.27 * log Fc
     ! C = -0.4 - 0.67 * log Fc
       do i_z = 1, n_z
-        rkInf = rkn(1,i_rct) * (Tn(i_z) ** rkn(2,i_rct)) &
-          * exp(rkn(3,i_rct) / Tn(i_z))
-        rk0 = rkn(4,i_rct) * (Tn(i_z) ** rkn(5,i_rct)) &
-          * exp(rkn(6,i_rct) / Tn(i_z))
+        rkInf = rkn(1,i_r) * (Tn(i_z) ** rkn(2,i_r)) &
+          * exp(rkn(3,i_r) / Tn(i_z))
+        rk0 = rkn(4,i_r) * (Tn(i_z) ** rkn(5,i_r)) &
+          * exp(rkn(6,i_r) / Tn(i_z))
         P_red = rk0 * den(i_z,0) / rkInf
-        if (rkn(10,i_rct) == zero) then
-          rk(i_rct,i_z) = rk0 * den(i_z,0) / (one + P_red)
+        if (rkn(10,i_r) == zero) then
+          rk(i_r,i_z) = rk0 * den(i_z,0) / (one + P_red)
         else
-          FC = rkn(10,i_rct)
+          FC = rkn(10,i_r)
           NF = 0.75_wp - 1.27_wp * log10(FC)
           CF = -0.4_wp - 0.67_wp * log10(FC)
           FF = 10._wp ** (log10(FC) / (one + &
             ((log10(P_red) + CF) / (NF - 0.14_wp * (log10(P_red) + CF))) ** 2))
-          rk(i_rct,i_z) = FF * rk0 * den(i_z,0) / (one + P_red)
+          rk(i_r,i_z) = FF * rk0 * den(i_z,0) / (one + P_red)
           end if
       end do
 !? check if reaction types should be 3 rather than 4
-    else if (chem_type(i_rct) == 4) then
+    else if (chem_type(i_r) == 4) then
     ! association & radiative association reactions
       do i_z = 1, n_z
-        rkInf = rkn(1,i_rct) * (Tn(i_z) ** rkn(2,i_rct)) &
-          * exp(rkn(3,i_rct) / Tn(i_z))
-        rk0 = rkn(4,i_rct) * (Tn(i_z) ** rkn(5,i_rct)) &
-          * exp(rkn(6,i_rct) / Tn(i_z))
-        rkRad = rkn(7,i_rct) * (Tn(i_z) ** rkn(8,i_rct)) &
-          * exp(rkn(9,i_rct) / Tn(i_z))
+        rkInf = rkn(1,i_r) * (Tn(i_z) ** rkn(2,i_r)) &
+          * exp(rkn(3,i_r) / Tn(i_z))
+        rk0 = rkn(4,i_r) * (Tn(i_z) ** rkn(5,i_r)) &
+          * exp(rkn(6,i_r) / Tn(i_z))
+        rkRad = rkn(7,i_r) * (Tn(i_z) ** rkn(8,i_r)) &
+          * exp(rkn(9,i_r) / Tn(i_z))
         P_red = rk0 * den(i_z,0) / rkInf
-        if (rkn(10,i_rct) == zero) then
-          rk(i_rct,i_z) = rkRad + rk0 * den(i_z,0) / (one + P_red)
+        if (rkn(10,i_r) == zero) then
+          rk(i_r,i_z) = rkRad + rk0 * den(i_z,0) / (one + P_red)
         else
-          FC = rkn(10,i_rct)
+          FC = rkn(10,i_r)
           NF = 0.75_wp - 1.27_wp * log10(FC)
           CF = -0.4_wp - 0.67_wp * log10(FC)
           FF = 10._wp ** (log10(FC) / (one + &
             ((log10(P_red) + CF) / (NF - 0.14_wp * (log10(P_red) + CF))) ** 2))
-          rk(i_rct,i_z) = min(rkInf, &
+          rk(i_r,i_z) = min(rkInf, &
             rkRad + FF * rk0 * den(i_z,0) / (one + P_red))
         end if
       end do
 
-    else if (chem_type(i_rct) == 5) then
+    else if (chem_type(i_r) == 5) then
     ! association reactions (Sander's formula)
     ! k0 * [M] * kinf / (k0 * [M] + kinf)
     !   * 0.6 ^ (1 / (1 + (log10(k0 * [M] / kinf))^2)
       do i_z = 1, n_z
-        rkInf = rkn(1,i_rct) * (Tn(i_z) ** rkn(2,i_rct)) &
-          * exp(rkn(3,i_rct) / Tn(i_z))
-        rk0 = rkn(4,i_rct) * (Tn(i_z) ** rkn(5,i_rct)) &
-          * exp(rkn(6,i_rct) / Tn(i_z))
+        rkInf = rkn(1,i_r) * (Tn(i_z) ** rkn(2,i_r)) &
+          * exp(rkn(3,i_r) / Tn(i_z))
+        rk0 = rkn(4,i_r) * (Tn(i_z) ** rkn(5,i_r)) &
+          * exp(rkn(6,i_r) / Tn(i_z))
         P_red = rk0 * den(i_z,0) / rkInf
-        rk(i_rct,i_z) = rk0 * den(i_z,0) / (one + P_red) &
+        rk(i_r,i_z) = rk0 * den(i_z,0) / (one + P_red) &
           * 0.6_wp ** (one / (one + log10(P_red) ** two))
       end do
 
     ! Tabulated reaction rates (deactivated for now)
-    ! else if (chem_type(i_rct) == 6) then
-      ! nt = ntab(i_rct)
+    ! else if (chem_type(i_r) == 6) then
+      ! nt = ntab(i_r)
       ! do i_z = 1, n_z
         ! if (Tn(i_z) < tmp_rct(1,nt)) then
           ! nt1 = 1
@@ -783,46 +782,46 @@ subroutine read_reactions
           ! np2 = np1 + 1
           ! rprs = (log(prs(i_z))-plog_rct(np1,nt))/(plog_rct(np2,nt)-plog_rct(np1,nt))
         ! end if
-        ! rk(i_rct,i_z) = (one-rtmp)*(one-rprs)*rct_tab(np1,nt1,nt) &
+        ! rk(i_r,i_z) = (one-rtmp)*(one-rprs)*rct_tab(np1,nt1,nt) &
                  ! + rtmp*(one-rprs)*rct_tab(np2,nt1,nt) &
                  ! + (one-rtmp)*rprs*rct_tab(np1,nt2,nt) &
                  ! + rtmp*rprs*rct_tab(np2,nt2,nt) 
-        ! rk(i_rct,i_z) = exp(rk(i_rct,i_z))
+        ! rk(i_r,i_z) = exp(rk(i_r,i_z))
       ! end do
 
     ! --- Ion reactions -------------------------------------------------------
-    else if (chem_type(i_rct) == -1) then
+    else if (chem_type(i_r) == -1) then
 !? why is there a factor of two?
     ! unimolecular reaction
       do concurrent (i_z = 1:n_z)
-        rk(i_rct,i_z) = rkn(1,i_rct) * (Tn(i_z) ** rkn(2,i_rct)) &
-          * two * exp(rkn(3,i_rct) / Tn(i_z))
+        rk(i_r,i_z) = rkn(1,i_r) * (Tn(i_z) ** rkn(2,i_r)) &
+          * two * exp(rkn(3,i_r) / Tn(i_z))
       end do
 
-    else if (chem_type(i_rct) == -2) then
+    else if (chem_type(i_r) == -2) then
     ! normal two-body reaction
       do concurrent (i_z = 1:n_z)
-        rk(i_rct,i_z) = rkn(1,i_rct) * (Tn(i_z) ** rkn(2,i_rct)) &
-          * two * exp(rkn(3,i_rct) / Tn(i_z))
+        rk(i_r,i_z) = rkn(1,i_r) * (Tn(i_z) ** rkn(2,i_r)) &
+          * two * exp(rkn(3,i_r) / Tn(i_z))
       end do
 
-    else if (chem_type(i_rct) == -3) then
+    else if (chem_type(i_r) == -3) then
     ! 3-body reaction
       do concurrent (i_z = 1:n_z)
-        rk(i_rct,i_z) = rkn(1,i_rct) * (Tn(i_z) ** rkn(2,i_rct)) &
-          * two * exp(rkn(3,i_rct) / Tn(i_z))
+        rk(i_r,i_z) = rkn(1,i_r) * (Tn(i_z) ** rkn(2,i_r)) &
+          * two * exp(rkn(3,i_r) / Tn(i_z))
       end do
 
-    else if (chem_type(i_rct) == -4) then
+    else if (chem_type(i_r) == -4) then
     ! electron recombination
       do concurrent (i_z = 1:n_z)
-        rk(i_rct,i_z) = rkn(1,i_rct) * (Te(i_z) ** rkn(2,i_rct)) &
-          * two * exp(rkn(3,i_rct) / Te(i_z))
+        rk(i_r,i_z) = rkn(1,i_r) * (Te(i_z) ** rkn(2,i_r)) &
+          * two * exp(rkn(3,i_r) / Te(i_z))
       end do
     
-    else if (chem_type(i_rct) .ne. 0) then
+    else if (chem_type(i_r) .ne. 0) then
       write(*,'("Error! Invalid setting for reaction ", I0, ": ", A)') &
-        i_rct, ctitle(i_rct)
+        i_r, ctitle(i_r)
       write(*,'("Exiting...")')
       stop
     end if

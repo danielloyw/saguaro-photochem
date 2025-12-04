@@ -160,10 +160,10 @@ subroutine photo_setup
   call read_sol(file_solC, sol_waveC, sol_fluxC)
   
   ! --- Scale to Mars orbital distance (fluxes are 1-AU values) ---------------
-  sol_fluxA = sol_fluxA / DH**2
-  sol_fluxB = sol_fluxB / DH**2
-  sol_fluxC = sol_fluxC / DH**2
-  srateJ = srateJ / DH**2
+  sol_fluxA = sol_fluxA / DH**two
+  sol_fluxB = sol_fluxB / DH**two
+  sol_fluxC = sol_fluxC / DH**two
+  srateJ = srateJ / DH**two
 
   !----------------------------------------------------------------------------
   !  Combine regions
@@ -1116,7 +1116,7 @@ subroutine paths1D
   ! twilight (sin sza = cos solar elev ang)
     illum = 0
     ibot = locate(rShadow, rz*sin_sza) + 1
-    do concurrent (i_z1 = ibot:n_z-1)
+    do i_z1 = ibot, n_z-1
       r_tan(i_z1) = rz(i_z1) * sin_sza
       
       itan(i_z1) = locate(r_tan(i_z1), rz)
@@ -1177,28 +1177,34 @@ subroutine cal_photo_rates
   ! Photolysis Rates at Top of Atmosphere
   !----------------------------------------------------------------------------
   if (cal_photoA) then
-    do concurrent (i_wave = 1:n_waveA, i_sp = 1:n_sp_photoA)
-      do i_branch = 1, n_branchA(i_sp) 
-        prtA(i_wave,i_branch,i_sp) = branch_ratioA(i_wave,i_branch,i_sp) &
-          * csA(i_wave,i_sp) * sol_fluxA(i_wave)
+    do i_wave = 1, n_waveA
+      do i_sp = 1, n_sp_photoA
+        do i_branch = 1, n_branchA(i_sp) 
+          prtA(i_wave,i_branch,i_sp) = branch_ratioA(i_wave,i_branch,i_sp) &
+            * csA(i_wave,i_sp) * sol_fluxA(i_wave)
+        end do
       end do
     end do
   end if
 
   if (cal_photoB) then
-    do concurrent (i_wave = 1:n_waveB, i_sp = 1:n_sp_photoB)
-      do i_branch = 1, n_branchB(i_sp)
-        prtB(i_wave,i_branch,i_sp) = branch_ratioB(i_wave,i_branch,i_sp) &
-          * csB(i_wave,i_sp) * sol_fluxB(i_wave)
+    do i_wave = 1, n_waveB
+      do i_sp = 1, n_sp_photoB
+        do i_branch = 1, n_branchB(i_sp)
+          prtB(i_wave,i_branch,i_sp) = branch_ratioB(i_wave,i_branch,i_sp) &
+            * csB(i_wave,i_sp) * sol_fluxB(i_wave)
+        end do
       end do
     end do
   end if
 
   if (cal_photoC) then
-    do concurrent (i_wave = 1:n_waveC, i_sp = 1:n_sp_photoC)
-      do i_branch = 1, n_branchC(i_sp)
-        prtC(i_wave,i_branch,i_sp) = branch_ratioC(i_wave,i_branch,i_sp) &
-          * csC(i_wave,i_sp) * sol_fluxC(i_wave)
+    do i_wave = 1, n_waveC
+      do i_sp = 1, n_sp_photoC
+        do i_branch = 1, n_branchC(i_sp)
+          prtC(i_wave,i_branch,i_sp) = branch_ratioC(i_wave,i_branch,i_sp) &
+            * csC(i_wave,i_sp) * sol_fluxC(i_wave)
+        end do
       end do
     end do
   end if
