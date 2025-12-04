@@ -1,0 +1,14 @@
+atm1D.csv	on
+diff.csv	on
+solar_flux.out	on
+eflux.out	on
+balance.out	on
+ratecoeff.out	on
+chemrates.out	on
+colrates.out	on
+photorates.out	on
+COphotofreqB.out	off
+pcolrates.out	on
+elerates.out	on
+ecolrates.out	on
+Species-specific	on
