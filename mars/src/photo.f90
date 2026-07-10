@@ -74,9 +74,9 @@ subroutine photo_setup
   !  Create high-resolution wavelength scale for region B
   !----------------------------------------------------------------------------
   
-  n_waveB = 1650000
+  n_waveB = 6600
   allocate(waveB(n_waveB), dwaveB(n_waveB))
-  dwaveB = 2.E-4_wp
+  dwaveB = 5.E-2_wp
   do concurrent (i_wave = 1:n_waveB)
     waveB(i_wave) = 750._wp + (i_wave-half) * dwaveB(i_wave)
   end do
@@ -405,7 +405,7 @@ subroutine read_photoB(sp_list, wave, &    ! input variables
 
   use types, only: wp => dp
   use constants
-  use utils, only : find_name, intrp, locate
+  use utils, only : find_name, intrp, rebin, locate
 
   implicit none
 
@@ -582,7 +582,7 @@ subroutine read_photoB(sp_list, wave, &    ! input variables
   
   !----------------------------------------------------------------------------
   !  Read N2 cross sections over 800-1000 Angstroms from Lewis et al. Then
-  !  interpolate to high-resolution wavelength grid. 
+  !  rebin to high-resolution wavelength grid. 
   !----------------------------------------------------------------------------
 
   n_wave_N2 = 540000
@@ -617,8 +617,8 @@ subroutine read_photoB(sp_list, wave, &    ! input variables
   im_photo_product_all(2,i_branch,i_sp) = find_name('N           ', sp_list)
   im_photo_product_all(3:4,i_branch,i_sp) = 0
   
-  ! interpolate cross sections onto high resolution scale
-  call intrp(wave_N2, crs_N2, wave, cs(:,i_sp))
+  ! rebin cross sections onto high resolution scale
+  call rebin(wave_N2, crs_N2, wave, cs(:,i_sp))
 
   ! --- 29N2 ------------------------------------------------------------------
   i_sp = n_sp_photo_lres + 2
@@ -660,14 +660,14 @@ subroutine read_photoB(sp_list, wave, &    ! input variables
   im_photo_product_all(2,i_branch,i_sp) = find_name('NI          ', sp_list)
   im_photo_product_all(3:4,i_branch,i_sp) = 0
 
-  ! interpolate cross sections onto high resolution scale
-  call intrp(wave_N2, crs_N2, wave, cs(:,i_sp))
+  ! rebin cross sections onto high resolution scale
+  call rebin(wave_N2, crs_N2, wave, cs(:,i_sp))
   deallocate(wave_N2, crs_N2)
   
   !----------------------------------------------------------------------------
   !  Read CO cross sections from Alan Heays. The first file spans 75-91.2 nm,
-  !  and the second file spans 91.2-108 nm. Then interpolate to
-  !  high-resolution wavelength grid. 
+  !  and the second file spans 91.2-108 nm. Then rebin to high-resolution
+  !  wavelength grid. 
   !----------------------------------------------------------------------------
 
   n_wave_COa = 162000
@@ -713,8 +713,8 @@ subroutine read_photoB(sp_list, wave, &    ! input variables
   
   im_photo_all(i_sp) = find_name('CO          ', sp_list)
   
-  ! interpolate cross sections onto high resolution scale
-  call intrp(wave_CO, crs_CO, wave, cs(:,i_sp))
+  ! rebin cross sections onto high resolution scale
+  call rebin(wave_CO, crs_CO, wave, cs(:,i_sp))
   
   ! --- Photodissociation branch ----------------------------------------------
   i_branch = 1
@@ -729,8 +729,8 @@ subroutine read_photoB(sp_list, wave, &    ! input variables
   im_photo_product_all(2,i_branch,i_sp) = find_name('O           ', sp_list)
   im_photo_product_all(3:4,i_branch,i_sp) = 0
   
-  ! interpolate branching ratios onto high resolution scale
-  call intrp(wave_CO, branch_ratio_CO(:,i_branch), &
+  ! rebin branching ratios onto high resolution scale
+  call rebin(wave_CO, branch_ratio_CO(:,i_branch), &
     wave, branch_ratio(:,i_branch,i_sp))
   
   ! --- Photoionization branch ------------------------------------------------
@@ -746,8 +746,8 @@ subroutine read_photoB(sp_list, wave, &    ! input variables
   im_photo_product_all(2,i_branch,i_sp) = find_name('E           ',sp_list)
   im_photo_product_all(3:4,i_branch,i_sp) = 0
 
-  ! interpolate branching ratios onto high resolution scale
-  call intrp(wave_CO, branch_ratio_CO(:,i_branch), &
+  ! rebin branching ratios onto high resolution scale
+  call rebin(wave_CO, branch_ratio_CO(:,i_branch), &
     wave, branch_ratio(:,i_branch,i_sp))
   
   deallocate(wave_CO, crs_CO, crs_co_diss, branch_ratio_co)
