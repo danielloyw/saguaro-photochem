@@ -13,7 +13,7 @@ integer pure function find_name(sp_name, sp_list)
   integer :: i_sp    ! loop variable
 
   n_sp = size(sp_list,1)-1    ! -1 because index starts at 0
-  find_name = -1
+  find_name = 0
   do i_sp = 0, n_sp
     if (trim(adjustl(sp_name)) == trim(adjustl(sp_list(i_sp)))) then
       find_name = i_sp
@@ -145,6 +145,86 @@ subroutine intrp(xp, yp, x, y)
 end subroutine intrp
 
 
+subroutine rebin(x_fine, y_fine, x_coarse, y_coarse)
+! This subroutine rebins the points y_fine on the fine x_fine scale onto the
+! coarser x_coarse scale. x_fine and x_coarse must be monotonically increasing.
+  use types, only: wp => dp
+  implicit none
+  real(wp), intent(in), dimension(:) :: x_fine, y_fine
+  real(wp), intent(in), dimension(:) :: x_coarse
+  real(wp), intent(out), dimension(:) :: y_coarse
+  integer :: n_x_fine, n_x_coarse
+  ! coarse bin boundaries
+  real(wp) :: bin_boundary(0:size(x_coarse))
+  ! number of fine bins falling into coarse bin
+  integer :: n_bins
+  ! loop variables
+  integer :: i_coarse, i_fine, min_i_fine
+  
+  n_x_fine = size(x_fine)
+  n_x_coarse = size(x_coarse)
+  
+  ! check fine vector lengths
+  if (size(x_fine) /= size(y_fine)) then
+    write(*,*) "Rebin Error: x_fine and y_fine have different sizes."
+    stop
+  end if
+  
+  ! check coarse vector lengths
+  if (size(x_coarse) /= size(y_coarse)) then
+    write(*,*) "Rebin Error: x_coarse and y_coarse have different sizes."
+    stop
+  end if  
+  
+  ! check if x_fine is monotonically increasing
+  do i_fine = 1, n_x_fine-1
+    if (x_fine(i_fine) >= x_fine(i_fine+1)) then
+      write(*,'("Rebin Error: x_fine not monotonically increasing! ", &
+        "Exiting ... ")')
+      stop
+    end if
+  end do
+  
+  ! check if x_coarse is monotonically increasing
+  do i_coarse = 1, n_x_coarse-1
+    if (x_coarse(i_coarse) >= x_coarse(i_coarse+1)) then
+      write(*,'("Rebin Error: x_coarse not monotonically increasing! ", &
+        "Exiting ... ")')
+      stop
+    end if
+  end do
+  
+  ! Set coarse bin boundaries
+  do i_coarse = 1, n_x_coarse-1
+    bin_boundary(i_coarse) = 0.5_wp * &
+      (x_coarse(i_coarse) + x_coarse(i_coarse+1))
+  end do
+  bin_boundary(0) = x_coarse(1) - (bin_boundary(1) - x_coarse(1))
+  bin_boundary(n_x_coarse) = x_coarse(n_x_coarse) + &
+    (x_coarse(n_x_coarse) - bin_boundary(n_x_coarse-1))
+  
+  do i_coarse = 1, n_x_coarse
+    n_bins = 0
+    y_coarse(i_coarse) = 0._wp
+    min_i_fine = 1
+    do i_fine = min_i_fine, n_x_fine
+      if ((x_fine(i_fine) >= bin_boundary(i_coarse-1)) .and. &
+        (x_fine(i_fine) <= bin_boundary(i_coarse))) then
+        n_bins = n_bins + 1
+        y_coarse(i_coarse) = y_coarse(i_coarse) + y_fine(i_fine)
+        min_i_fine = i_fine
+      else if (x_fine(i_fine) > bin_boundary(i_coarse)) then
+        exit
+      end if
+    end do
+    if (n_bins > 0) then
+      y_coarse(i_coarse) = y_coarse(i_coarse) / n_bins
+    end if
+  end do
+
+end subroutine rebin
+
+
 integer pure function find_bin(enrg, e_enrg, e_denrg)
 ! This function finds the index of the bin containing the value enrg in an
 ! monotically increasing vector e_enrg with bin sizes e_denrg.
@@ -175,6 +255,7 @@ integer pure function find_bin(enrg, e_enrg, e_denrg)
   end if
   
 end function find_bin
+
 
 subroutine heapsort(x_list, sort_order)
 ! This subroutine performs an indirect heapsort on x_list and returns
