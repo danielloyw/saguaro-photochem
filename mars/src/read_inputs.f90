@@ -365,12 +365,12 @@ subroutine read_atmos
   
   ! for each species
   do concurrent (i_z = 1:n_z, i_sp = 1:n_sp-1)
-    Ht(i_z,i_sp) = kB * tn(i_z) / grv(i_z) / mmw(i_sp) / amu
+    Ht(i_z,i_sp) = kB * Tn(i_z) / grv(i_z) / mmw(i_sp) / amu
   end do
   
   ! mean scale height
   do concurrent (i_z = 1:n_z)
-    Ht(i_z,0) = kB * tn(i_z) / grv(i_z) / mass(i_z) / amu
+    Ht(i_z,0) = kB * Tn(i_z) / grv(i_z) / mass(i_z) / amu
   end do
 
   !----------------------------------------------------------------------------
