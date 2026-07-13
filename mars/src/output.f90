@@ -263,27 +263,27 @@ subroutine write_output
   open(newunit=fid_settings, file='output.settings', &
     status='old', action='read')
   
-  read(fid_settings, '(A)') ts_header, out_settings(1) ! atm1D.csv
-  read(fid_settings, '(A)') ts_header, out_settings(2) ! diff.csv
-  read(fid_settings, '(A)') ts_header, out_settings(3) ! solar_flux.out
-  read(fid_settings, '(A)') ts_header, out_settings(4) ! eflux.out
-  read(fid_settings, '(A)') ts_header, out_settings(5) ! balance.out
-  read(fid_settings, '(A)') ts_header, out_settings(6) ! ratecoeff.out
-  read(fid_settings, '(A)') ts_header, out_settings(7) ! chemrates.out
-  read(fid_settings, '(A)') ts_header, out_settings(8) ! colrates.out
-  read(fid_settings, '(A)') ts_header, out_settings(9) ! photorates.out
-  read(fid_settings, '(A)') ts_header, out_settings(10) ! COphotofreqB.out
-  read(fid_settings, '(A)') ts_header, out_settings(11) ! pcolrates.out
-  read(fid_settings, '(A)') ts_header, out_settings(12) ! elerates.out
-  read(fid_settings, '(A)') ts_header, out_settings(13) ! ecolrates.out
-  read(fid_settings, '(A)') ts_header, out_settings(14) ! species-specific files
+  read(fid_settings, *) ts_header, out_settings(1) ! atm1D.csv
+  read(fid_settings, *) ts_header, out_settings(2) ! diff.csv
+  read(fid_settings, *) ts_header, out_settings(3) ! solar_flux.out
+  read(fid_settings, *) ts_header, out_settings(4) ! eflux.out
+  read(fid_settings, *) ts_header, out_settings(5) ! balance.out
+  read(fid_settings, *) ts_header, out_settings(6) ! ratecoeff.out
+  read(fid_settings, *) ts_header, out_settings(7) ! chemrates.out
+  read(fid_settings, *) ts_header, out_settings(8) ! colrates.out
+  read(fid_settings, *) ts_header, out_settings(9) ! photorates.out
+  read(fid_settings, *) ts_header, out_settings(10) ! COphotofreqB.out
+  read(fid_settings, *) ts_header, out_settings(11) ! pcolrates.out
+  read(fid_settings, *) ts_header, out_settings(12) ! elerates.out
+  read(fid_settings, *) ts_header, out_settings(13) ! ecolrates.out
+  read(fid_settings, *) ts_header, out_settings(14) ! species-specific files
   
   output_dir = '../runs/'//trim(runID)//'/output/'
   
   !----------------------------------------------------------------------------
   !  atm1D.out
   !----------------------------------------------------------------------------
-    
+
   open(newunit=fid_atm1, file=trim(output_dir)//'atm1D.out', &
     status='unknown', action='write')
 
@@ -420,7 +420,7 @@ subroutine write_output
       end do
       ! region B (sum over high-resolution bins)
       do i_wave = 1, n_waveB_lres-2
-         do i_waveB = (i_wave-1)*50000+1, i_wave*50000
+         do i_waveB = (i_wave-1)*200+1, i_wave*200
             solar_flux(n_waveA+i_wave,i_z) = solar_flux(n_waveA+i_wave,i_z) &
               + sol_fluxB(i_waveB) * trnB(i_waveB,i_z)
          end do
@@ -518,7 +518,8 @@ subroutine write_output
       rate_col(i_r,2) = col_integrate(rate_rct(i_r,:), 1, iz_bot)
       rate_col(i_r,3) = rate_col(i_r,1) + rate_col(i_r,2)
     end do
-
+    
+    allocate(t_sort_order(n_rct))
     call heapsort(rate_col(:,3), t_sort_order)
     write(fid_colrates, '(4A15)') (heads(i_h), i_h=1, 4)
     do i_r = n_rct, 1, -1
@@ -529,7 +530,7 @@ subroutine write_output
     end do
     close(unit=fid_colrates)
     
-    deallocate(heads, rate_col)
+    deallocate(heads, rate_col, t_sort_order)
   end if
   
   !----------------------------------------------------------------------------
@@ -598,16 +599,17 @@ subroutine write_output
     heads(4) = 'Reaction'
     
     allocate(rate_col(n_prct,3))
-    open(newunit=fid_colrates, file=trim(output_dir)//'colrates.out', &
+    open(newunit=fid_pcolrates, file=trim(output_dir)//'pcolrates.out', &
       status='unknown', action='write')
     do i_r = 1, n_prct
       rate_col(i_r,1) = col_integrate(rate_prct(i_r,:), iz_bot, n_z)
       rate_col(i_r,2) = col_integrate(rate_prct(i_r,:), 1, iz_bot)
       rate_col(i_r,3) = rate_col(i_r,1) + rate_col(i_r,2)
     end do
-
+    
+    allocate(t_sort_order(n_prct))
     call heapsort(rate_col(:,3), t_sort_order)
-    write(fid_colrates, '(4A15)') (heads(i_h), i_h=1, 4)
+    write(fid_pcolrates, '(4A15)') (heads(i_h), i_h=1, 4)
     do i_r = n_prct, 1, -1
       write(fid_pcolrates,'(I4, 3(2X, ES11.3), 2X, A87)') &
         t_sort_order(i_r), rate_col(t_sort_order(i_r),1), &
@@ -616,7 +618,7 @@ subroutine write_output
     end do
     close(unit=fid_pcolrates)
     
-    deallocate(heads, rate_col)
+    deallocate(heads, rate_col, t_sort_order)
   end if
   
   !----------------------------------------------------------------------------
@@ -655,8 +657,9 @@ subroutine write_output
       rate_col(i_r, 1) = col_integrate(rate_erct(i_r,:), 1, n_z)
     end do
 
+    allocate(t_sort_order(n_erct))
     call heapsort(rate_col(:,1), t_sort_order)
-    write(fid_ecolrates, '(2A15)') (heads(i_h), i_h=1, 2)
+    write(fid_ecolrates, '(8X, 2A15)') (heads(i_h), i_h=1, 2)
     do i_r = n_erct, 1, -1
       write(fid_ecolrates, '(I4, 2X, ES11.3, 2X, A87)') &
         t_sort_order(i_r), rate_col(t_sort_order(i_r), 1), &
@@ -664,7 +667,7 @@ subroutine write_output
     end do
     close(unit=fid_ecolrates)
     
-    deallocate(heads, rate_col)
+    deallocate(heads, rate_col, t_sort_order)
   end if
 
   !----------------------------------------------------------------------------
@@ -706,15 +709,28 @@ subroutine write_output
         "Bot Flux     Top Flux     ", &
         "Production   Loss         Balance      Time Const")')
       
+      allocate(t_sort_order(n_sp))
       call heapsort(abs(bal_col), t_sort_order)
       do i = n_sp, 1, -1    ! descending order
         i_sp = t_sort_order(i)
-        write(fid_balance, '(A12, I3, 7(2X, ES11.3))') &
-          sp_list(i_sp), istat(i_sp), den_col(i_sp), &
-          flux_bot_col(i_sp), flux_top_col(i_sp), &
-          pr_col(i_sp), ls_col(i_sp), bal_col(i_sp), bal_time(i_sp)
+        if (istat(i_sp) > 0) then ! write only active species
+          write(fid_balance, '(A12, I3, 7(2X, ES11.3))') &
+            sp_list(i_sp), istat(i_sp), den_col(i_sp), &
+            flux_bot_col(i_sp), flux_top_col(i_sp), &
+            pr_col(i_sp), ls_col(i_sp), bal_col(i_sp), bal_time(i_sp)
+        end if
+      end do
+      do i = n_sp, 1, -1    ! descending order
+        i_sp = t_sort_order(i)
+        if (istat(i_sp) <= 0) then ! write the other species
+          write(fid_balance, '(A12, I3, 7(2X, ES11.3))') &
+            sp_list(i_sp), istat(i_sp), den_col(i_sp), &
+            flux_bot_col(i_sp), flux_top_col(i_sp), &
+            pr_col(i_sp), ls_col(i_sp), bal_col(i_sp), bal_time(i_sp)
+        end if
       end do
       close(unit=fid_balance)
+      deallocate(t_sort_order)
     end if
   
     ! --- Species specific files ----------------------------------------------
