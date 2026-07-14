@@ -1,103 +1,117 @@
-! Calculates the vapor pressure of NAME at temperature T.
+real(wp) pure function vapor(sp, T)
+! Calculates the saturation vapor pressure of chemical species sp at
+! temperature T. 
+! Condensation currently deactivated. 
+!? Need to update for organics
+  use types, only: wp => dp
+  implicit none
+  real(wp), intent(in) :: T
+  character(len=*), intent(in) :: sp
 
-  FUNCTION VAPOR( NAME, T)
-    USE PRECISION
-    IMPLICIT none
-    REAL(RP), INTENT(IN) :: T
-    CHARACTER(LEN=*), INTENT(IN) :: NAME
-    REAL(RP) :: VAPOR
+  if (trim(sp) == 'H2O') then
+    if (T > 273.16._wp) then
+      ! Buck [1996] for liquid water
+      vapor = 611.21 * exp((18.678 - (T + 273.15) / 234.5) &
+        * ((T + 273.15) / (257.14 + T + 273.15)))
+    else
+      ! Murphy and Koop [2005] for H2O ice (valid down to 110 K)
+      vapor = Pa_to_cgs * exp(9.550426 − 5723.265 / T &
+        + 3.53068 * log(T) − 0.00728332 * T)
+      return
+    end if
+  else if (trim(sp) == 'CO2') then
+    ! Giauque & Egan [1937]
+    vapor = ten * mmHg_to_cgs * ten ** (-1354.210 / T + 8.69903 + &
+      0.0015880 * T - 4.5107E-6 * T**2)
+!  from Moses 1992
+!    vapor = 1333._wp*exp(2.13807649E+01_wp-2.57064700E+03_wp/T-7.78129489E+04_wp/T**2  &
+!         +4.32506256E+06_wp/T**3-1.20671368E+08_wp/T**4+1.34966306E+09_wp/T**5)
+    return
+  else if (trim(sp) == 'C2H2') then
+!  based on Tickner & Losing 1951 data
+    vapor = 1.333_wp*10._wp**(9.25_wp-1201.75_wp/T)
+    return
+  else if (trim(sp) == 'C2H4') then
+    if (T < 104._wp) then
+      vapor = 1333._wp*10._wp**(8.724_wp - 901.6_wp/(T-2.555_wp))
+    else if ((T >= 104._wp) .AND. (T < 120._wp)) then
+      vapor = 1333._wp*10._wp**(50.79_wp - 1703._wp/T - 17.141_wp*log10(T))
+    else if (T >= 120._wp) then
+      vapor = 1333._wp*10._wp**(6.74756_wp-585._wp/(T-18.16_wp))
+    end if
+    return
+  else if (trim(sp) == 'C2H6') then
+    if (T < 90._wp) then
+      vapor = 1333._wp*10._wp**(10.01_wp - 1085._wp/(T-0.561_wp))
+    else if (T > 90._wp) then
+      vapor = 1333._wp*10._wp**(5.9366_wp-1086.17_wp/T+3.83464_wp*log10(1000._wp/T))
+    end if
+    return
+  else if (trim(sp) == 'C3H8') then
+!  based on Tickner & Losing 1951 data
+    vapor = 1333._wp*10._wp**(8.16173_wp-1176._wp/T)
+    return
+  else if (trim(sp) == 'C4H2') then
+!  from Moses 1992
+    vapor = 1333._wp*10._wp**(5.3817_wp-3300.5_wp/T + 16.63415_wp*log10(1000._wp/T))
+    return
+  else if (trim(sp) == 'C4H6') then
+!  from Moses 1992
+!       write(*,*) ' CALCULATE C4H10 VP, T = ',T
+!       write(*,*) ' CALCULATE C4H10 VP, ARG = ',8.446_wp-1461.2_wp/T
+    vapor = 1333._wp*10._wp**(8.032581_wp-1441.42_wp/T)
+    return
+  else if (trim(sp) == 'C4H10') then
+!  from Moses 1992
+    vapor = 1333._wp*10._wp**(8.446_wp-1461.2_wp/T)
+    return
+  else if (trim(sp) == 'C6H6') then
+    vapor = 10._wp*exp(26._wp-7640._wp/(T+30._wp))
+    return
+  else if (trim(sp) == 'C7H8') then
+    vapor = 10._wp*exp(26._wp-7640._wp/(T+30._wp))
+    return
+  else if (trim(sp) == 'C8H10') then
+    vapor = 10._wp*exp(26._wp-7640._wp/(T+30._wp))
+    return
+  else if (trim(sp) == 'RING') then
+    vapor = 10._wp*exp(26._wp-7640._wp/(T+30._wp))
+    return
 
-    IF(TRIM(NAME) == 'C2H2') THEN
-!  based on Tickner & Losing 1951 data
-       VAPOR = 1.333_RP*10._RP**(9.25_RP-1201.75_RP/T)
-       RETURN
-    ELSE IF(TRIM(NAME) == 'C2H4') THEN
-       IF (T < 104._RP) THEN
-       VAPOR = 1333._RP*10._RP**(8.724_RP - 901.6_RP/(T-2.555_RP))
-       ELSE IF ((T >= 104._RP) .AND. (T < 120._RP)) THEN
-       VAPOR = 1333._RP*10._RP**(50.79_RP - 1703._RP/T - 17.141_RP*LOG10(T))
-       ELSE IF (T >= 120._RP) THEN
-       VAPOR = 1333._RP*10._RP**(6.74756_RP-585._RP/(T-18.16_RP))
-       END IF
-       RETURN
-    ELSE IF(TRIM(NAME) == 'C2H6') THEN
-       IF (T < 90._RP) THEN
-       VAPOR = 1333._RP*10._RP**(10.01_RP - 1085._RP/(T-0.561_RP))
-       ELSE IF (T > 90.) THEN
-       VAPOR = 1333._RP*10._RP**(5.9366_RP-1086.17_RP/T+3.83464_RP*LOG10(1000._RP/T))
-       END IF
-       RETURN
-    ELSE IF(TRIM(NAME) == 'C3H8') THEN
-!  based on Tickner & Losing 1951 data
-       VAPOR = 1333._RP*10._RP**(8.16173_RP-1176._RP/T)
-       RETURN
-    ELSE IF(TRIM(NAME) == 'C4H2') THEN
-!  from Moses 1992
-       VAPOR = 1333._RP*10._RP**(5.3817_RP-3300.5_RP/T + 16.63415_RP*LOG10(1000._RP/T))
-       RETURN
-    ELSE IF(TRIM(NAME) == 'C4H6') THEN
-!  from Moses 1992
-!       WRITE(*,*) ' CALCULATE C4H10 VP, T = ',T
-!       WRITE(*,*) ' CALCULATE C4H10 VP, ARG = ',8.446_RP-1461.2_RP/T
-       VAPOR = 1333._RP*10._RP**(8.032581_RP-1441.42_RP/T)
-       RETURN
-    ELSE IF(TRIM(NAME) == 'C4H10') THEN
-!  from Moses 1992
-       VAPOR = 1333._RP*10._RP**(8.446_RP-1461.2_RP/T)
-       RETURN
-    ELSE IF(TRIM(NAME) == 'C6H6') THEN
-       VAPOR = 10._RP*EXP(26._RP-7640._RP/(T+30._RP))
-       RETURN
-    ELSE IF(TRIM(NAME) == 'C7H8') THEN
-       VAPOR = 10._RP*EXP(26._RP-7640._RP/(T+30._RP))
-       RETURN
-    ELSE IF(TRIM(NAME) == 'C8H10') THEN
-       VAPOR = 10._RP*EXP(26._RP-7640._RP/(T+30._RP))
-       RETURN
-    ELSE IF(TRIM(NAME) == 'RING') THEN
-       VAPOR = 10._RP*EXP(26._RP-7640._RP/(T+30._RP))
-       RETURN
-    ELSE IF(TRIM(NAME) == 'H2O') THEN
-!  from Moses 1992
-!       VAPOR = 1333._RP*10._RP**(9.184_RP-0.2185*10999.398_RP/T)
-       VAPOR = 1333.22368_RP*10._RP**(-2445.5646_RP/T+8.2312_RP*LOG10(T)-0.01677006_RP*T+1.20514E-5_RP*(T**2)-6.757169_RP)
-       RETURN
-    ELSE IF(TRIM(NAME) == 'CO2') THEN
-!  from Moses 1992
-       VAPOR = 1333._RP*EXP(2.13807649E+01_RP-2.57064700E+03_RP/T-7.78129489E+04_RP/T**2  &
-            +4.32506256E+06_RP/T**3-1.20671368E+08_RP/T**4+1.34966306E+09_RP/T**5)
-       RETURN
-    ELSE IF(TRIM(NAME) == 'HCN') THEN
-       VAPOR = 10._RP**(12.54747_RP-(1893.068_RP/(T+0.309_RP)))
-       RETURN
-    ELSE IF(TRIM(NAME) == 'HNC') THEN
-       VAPOR = 10._RP**(12.54747_RP-(1893.068_RP/(T+0.309_RP)))
-       RETURN
-    ELSE IF(TRIM(NAME) == 'HC3N') THEN
-       VAPOR =10._RP**(13.305_RP-(2210._RP/(T)))
-       RETURN
-    ELSE IF(TRIM(NAME) == 'HC5N') THEN
-       VAPOR = 10._RP**(13.305_RP-(2210._RP/(T)))  ! assumed same as HC3N
-       RETURN
-    ELSE IF(TRIM(NAME) == 'CH3CN') THEN
-       VAPOR = 10._RP**(10.52111_RP-(1492.375_RP/(T-24.208_RP)))
-       RETURN
-    ELSE IF(TRIM(NAME) == 'C3H3N') THEN
-       VAPOR = 10._RP**(8.9178_RP-(706.474_RP/(T-109.392_RP)))
-       RETURN
-    ELSE IF(TRIM(NAME) == 'C4H3N') THEN
-       VAPOR = 10._RP**(8.9178_RP-(706.474_RP/(T-109.392_RP)))  !  assumed same as C3H3N
-       RETURN
-    ELSE IF(TRIM(NAME) == 'C5H5N') THEN
-       VAPOR = 10._RP**(8.9178_RP-(706.474_RP/(T-109.392_RP)))  !  assumed same as C3H3N
-       RETURN
-    ELSE IF(TRIM(NAME) == 'C2N2') THEN
-       VAPOR = 10._RP**(12.53784_RP-(1566.647_RP/(T-10.461_RP)))
-       RETURN
-    ELSE IF(TRIM(NAME) == 'C4N2') THEN
-       VAPOR = 10._RP**(14.73702_RP-(3722.003_RP/(T+3.036_RP)))
-       RETURN
-    ELSE
-       VAPOR = 1.0E30_RP
-    END IF
-  END FUNCTION VAPOR
+  else if (trim(sp) == 'HCN') then
+    vapor = 10._wp**(12.54747_wp-(1893.068_wp/(T+0.309_wp)))
+    return
+  else if (trim(sp) == 'HNC') then
+    vapor = 10._wp**(12.54747_wp-(1893.068_wp/(T+0.309_wp)))
+    return
+  else if (trim(sp) == 'HC3N') then
+    vapor =10._wp**(13.305_wp-(2210._wp/(T)))
+    return
+  else if (trim(sp) == 'HC5N') then
+    ! assumed same as HC3N
+    vapor = 10._wp**(13.305_wp-(2210._wp/(T)))
+    return
+  else if (trim(sp) == 'CH3CN') then
+    vapor = 10._wp**(10.52111_wp-(1492.375_wp/(T-24.208_wp)))
+    return
+  else if (trim(sp) == 'C3H3N') then
+    vapor = 10._wp**(8.9178_wp-(706.474_wp/(T-109.392_wp)))
+    return
+  else if (trim(sp) == 'C4H3N') then
+    ! assumed same as C3H3N
+    vapor = 10._wp**(8.9178_wp-(706.474_wp/(T-109.392_wp)))
+    return
+  else if (trim(sp) == 'C5H5N') then
+    ! assumed same as C3H3N
+    vapor = 10._wp**(8.9178_wp-(706.474_wp/(T-109.392_wp)))
+    return
+  else if (trim(sp) == 'C2N2') then
+    vapor = 10._wp**(12.53784_wp-(1566.647_wp/(T-10.461_wp)))
+    return
+  else if (trim(sp) == 'C4N2') then
+    vapor = 10._wp**(14.73702_wp-(3722.003_wp/(T+3.036_wp)))
+    return
+  else
+    vapor = 1.0E30_wp    ! 1E24 bar, i.e. no condensation
+  end if
+end function vapor

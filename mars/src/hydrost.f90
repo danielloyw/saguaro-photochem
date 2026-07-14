@@ -1,6 +1,6 @@
 SUBROUTINE HYDROST
 
-  USE PRECISION
+  use types, only: wp => dp
   USE CONSTANTS
   USE GLOBAL_VARIABLES
 
@@ -15,25 +15,25 @@ SUBROUTINE HYDROST
   REAL(RP), ALLOCATABLE, DIMENSION(:) :: y, pnew, xnew
 !  CHARACTER(len=1) :: iret
 
-  ALLOCATE(y(nlev),pnew(nlev),xnew(nlev))
+  ALLOCATE(y(n_z),pnew(n_z),xnew(n_z))
 
   !
   !  .. Recompute pressure
   !
 
-  DO nz = 1, nlev
+  DO nz = 1, n_z
      y(nz) = RPLANET/rz(nz) - one
-     prs(nz) = rkb*tn(nz)*den(nz,0)
+     prs(nz) = kB*tn(nz)*den(nz,0)
   END DO
 
-  pnew(1) = rkb*tn(1)*den(1,0)
-  DO nz = 2, nlev
-     fac = (GM*amu/rkb/RPLANET)*(y(nz)-y(nz-1))*(mass(nz)/tn(nz)+mass(nz-1)/tn(nz-1))/two !GM/kT/R*dy*m
+  pnew(1) = kB*tn(1)*den(1,0)
+  DO nz = 2, n_z
+     fac = (GM*amu/kB/RPLANET)*(y(nz)-y(nz-1))*(mass(nz)/tn(nz)+mass(nz-1)/tn(nz-1))/two !GM/kT/R*dy*m
      pnew(nz) = pnew(nz-1)*EXP(fac)
   END DO
 
-!  DO nz = 1, nlev
-!     IF(abs(pnew(nz)-prs(nz))/prs(nz) > 1.E-3_RP) THEN
+!  DO nz = 1, n_z
+!     if (abs(pnew(nz)-prs(nz))/prs(nz) > 1.E-3_RP) THEN
 !        WRITE(*,"(' HYDROST: nz, prs, pnew ',I6,2ES12.5)") nz, prs(nz), pnew(nz)
 !        STOP
 !     END IF
@@ -49,20 +49,20 @@ SUBROUTINE HYDROST
 !  tn = xnew
 !  xnew = PMAP(te, prs, pnew)
 !  te = xnew
-  DO nm = 1, nsp
-     xnew = PMAP(xmol(:,nm), prs, pnew)
-     xmol(1:nlev,nm) = xnew(1:nlev)
+  DO nm = 1, n_sp
+     xnew = PMAP(vmr(:,nm), prs, pnew)
+     vmr(1:n_z,nm) = xnew(1:n_z)
   END DO
 
-  DO nz = 1, nlev
-     xmol(nz,1) = one-SUM(xmol(nz,2:nsp))
+  DO nz = 1, n_z
+     vmr(nz,1) = one-SUM(vmr(nz,2:n_sp))
   END DO
 
 
-  prs(1:nlev) = pnew(1:nlev)
-  den(1:nlev,0) = prs(1:nlev)/rkb/tn(1:nlev)
-  DO nm = 1, nsp
-     den(1:nlev,nm) = xmol(1:nlev,nm)*den(1:nlev,0)
+  prs(1:n_z) = pnew(1:n_z)
+  den(1:n_z,0) = prs(1:n_z)/kB/tn(1:n_z)
+  DO nm = 1, n_sp
+     den(1:n_z,nm) = vmr(1:n_z,nm)*den(1:n_z,0)
   END DO
   
 
@@ -73,9 +73,9 @@ SUBROUTINE HYDROST
 CONTAINS
 
   FUNCTION PMAP(ytab,ptab,prs) ! interpolates ytab values at ptab pressures to new prs pressures
-    USE PRECISION
+    use types, only: wp => dp
     USE CONSTANTS
-    USE SUBS, ONLY : LOCATE
+    USE utils, ONLY : LOCATE
     REAL(RP), INTENT(IN), DIMENSION(:) :: ytab, ptab, prs
     REAL(RP), DIMENSION(SIZE(prs)) :: PMAP
     REAL(RP), ALLOCATABLE, DIMENSION(:) :: plog
@@ -86,12 +86,12 @@ CONTAINS
     plog = LOG(ptab)
     DO n = 1, SIZE(prs)
        pn = LOG(prs(n))
-       IF(prs(n) >= ptab(1)) THEN
+       if (prs(n) >= ptab(1)) THEN
           PMAP(n) = ytab(1)
-       ELSE IF(prs(n) <= ptab(nlev)) THEN
-          PMAP(n) = ytab(nlev)
+       ELSE if (prs(n) <= ptab(n_z)) THEN
+          PMAP(n) = ytab(n_z)
        ELSE
-          i1 = LOCATE(plog,pn)
+          i1 = LOCATE(pn,plog)
           i2 = i1 + 1
           rr = (pn-plog(i1))/(plog(i2)-plog(i1))
           PMAP(n) = ytab(i1) + rr*(ytab(i2)-ytab(i1))
