@@ -829,7 +829,7 @@ subroutine write_output
         ! per altitude
         write(fid_species, '(14A15)') (heads(i_h), i_h=1, 14)
         do i_z = 1, n_z
-          write(fid_species, '(F15.1, 13(4X, ES11.3))') &
+          write(fid_species, '(F9.1, 13(4X, ES11.3))') &
             cm_to_km * z(i_z), den(i_z,i_sp), den(i_z,i_sp) / den(i_z, 0), &
             pr_c(i_z,i_sp), ls_c(i_z,i_sp), pr_p(i_z,i_sp), ls_p(i_z,i_sp), &
             pr_e(i_z,i_sp), ls_e(i_z,i_sp), pr(i_z,i_sp), ls(i_z,i_sp), &
