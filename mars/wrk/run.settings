@@ -1,1 +1,12 @@
-  100   100
+# Recalculate photolysis rates for each diffusion loop?
+off
+# Error tolerance for convergence in diffusion loop
+1.0E-10
+# Recalculate photolysis rates for each chemistry loop?
+off
+# Error tolerance for convergence in chemistry loop
+1.0E-10
+# Print intermediate chemistry loops?
+on
+# Number of iterations of diffusion loop before recalculating photolysis and photoelectrons
+100
