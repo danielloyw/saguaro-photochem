@@ -323,8 +323,8 @@ elif p == 3: # Plot single species
     smolec = input('Enter species > ').strip()
     
     # check if species exists
-    nmolec = sgr.molecules('../runs/'+run_name+'/input/nmolecules.dat') 
-    imolec = sgr.molecules('../runs/'+run_name+'/input/imolecules.dat') 
+    nmolec = sgr.molecules('../runs/'+run_name+'/input/nmolecules.settings') 
+    imolec = sgr.molecules('../runs/'+run_name+'/input/imolecules.settings') 
     molec = pd.concat([nmolec,imolec], ignore_index=True)
     if (molec['Species'] == smolec).any():
         print('Finding and plotting reactions for ' + smolec + '...')
@@ -335,7 +335,7 @@ elif p == 3: # Plot single species
     
     # Plot summary page
     species_summary = sgr.summary('../runs/' + run_name + '/output/molecules/'
-                                  + smolec + '.OUT')
+                                  + smolec + '.out')
     alt = species_summary['Altitude'] # convert cm to km
     
     plot_sets = [plot_variables(variables=['Density'], 
@@ -351,7 +351,7 @@ elif p == 3: # Plot single species
     data = species_summary.loc[:,['Density', 'Mixing Ratio', 
                                   'Production (Net)', 'Loss (Net)']]
     
-    source, sink = split_up_down(species_summary.loc[:,'cvg_flx'])
+    source, sink = split_up_down(species_summary.loc[:,'div_flx'])
     data['del(flux)'] = source
     data['-del(flux)'] = sink
     flux_up, flux_down = split_up_down(species_summary.loc[:,'Flux'])

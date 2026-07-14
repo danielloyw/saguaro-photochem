@@ -120,7 +120,6 @@ def summary(filename):
     den = []
     mol = []
     flx = []
-    pr_ext = []
     pr_ph = []
     ls_ph = []
     pr_pe = []
@@ -130,13 +129,13 @@ def summary(filename):
     pr_net = []
     ls_net = []
     ls_con = []
-    cvg_flx = []
+    div_flx = []
     bal = []
     
     with open(filename, 'r') as f:
         
         # skip lines with column values and header labels
-        for i in range(0,14):
+        for i in range(0,12):
             f.readline()
         
         # read in altitude profiles
@@ -145,30 +144,27 @@ def summary(filename):
             alt.append(float(line[0]))
             den.append(float(line[1]))
             mol.append(float(line[2]))
-            flx.append(float(line[3]))
-            pr_ext.append(float(line[4]))
+            pr_chem.append(float(line[3]))
+            ls_chem.append(float(line[4]))
             pr_ph.append(float(line[5]))
             ls_ph.append(float(line[6]))
             pr_pe.append(float(line[7]))
             ls_pe.append(float(line[8]))
-            pr_chem.append(float(line[9]))
-            ls_chem.append(float(line[10]))
-            pr_net.append(float(line[11]))
-            ls_net.append(float(line[12]))
-            ls_con.append(float(line[13]))
-            cvg_flx.append(float(line[14]))
-            bal.append(float(line[15]))
-    
+            pr_net.append(float(line[9]))
+            ls_net.append(float(line[10]))
+            flx.append(float(line[11]))
+            div_flx.append(float(line[12]))
+            bal.append(float(line[13]))
+
     return pd.DataFrame({'Altitude':alt, 'Density':den, 'Mixing Ratio':mol, 
-                         'Flux':flx, 'Production-External':pr_ext, 
+                         'Flux':flx, 
+                         'Production (Chemistry)':pr_chem, 
+                         'Loss (Chemistry)':ls_chem, 
                          'Production (Photo)':pr_ph, 'Loss (Photo)':ls_ph, 
                          'Production (Electron)':pr_pe, 
                          'Loss (Electron)':ls_pe, 
-                         'Production (Chemistry)':pr_chem, 
-                         'Loss (Chemistry)':ls_chem, 
                          'Production (Net)':pr_net, 'Loss (Net)':ls_net, 
-                         'Loss (Condensation)':ls_con, 'cvg_flx':cvg_flx, 
-                         'Balance':bal})
+                         'div_flx':div_flx, 'Balance':bal})
 
 
 # Read nmolecules.dat and imolecules.dat
