@@ -187,7 +187,7 @@ subroutine solve_chem
       ! --- Test convergence --------------------------------------------------
       if ((iter > iter_max) .or. (maxval(abs(F_con)) < tol) &
         .or. (maxval(abs(delN)) < tol)) then
-        ! write(*,'(" CHEM NEWTON ended after iteration ", I0)') iter
+        !write(*,'(" CHEM NEWTON ended after iteration ", I0)') iter-1
         exit
       end if
 
@@ -460,7 +460,7 @@ subroutine solve_diff
     ! --- Test convergence ----------------------------------------------------
     if ((iter > iter_max) .or. (maxval(abs(F_con)) < tol_den) &
       .or. (maxval(abs(delN)) < tol_bal)) then
-      ! write(*,'(" DIFF NEWTON ended after iteration ", I0)') iter
+      ! write(*,'(" DIFF NEWTON ended after iteration ", I0)') iter-1
       exit
     end if
 
