@@ -25,6 +25,51 @@ A list of journal [references](#references) is available at the end of this READ
 
 # Model Inputs
 
+# Running the Model
+
+The model can be run by running the script file `/wrk/run_saguaro-mars`:
+
+`./run_saguaro-mars <run-name> <diff-step-size> <diff-max-steps> <chem-step-size> <chem-max-steps>` 
+
+| Variable           | Description                                                 |
+| :----------------: | :-----------------------------------------------------------|
+| `<run-name>`       | User-defined name for the run                               |
+| `<diff-step-size>` | Size of time steps for each iteration of the diffusion loop |
+| `<diff-max-steps>` | Maximum iterations for the diffusion loop                   |
+| `<chem-step-size>` | Size of time steps for each iteration of the chemistry loop |
+| `<chem-max-steps>` | Maximum iterations for the chemistry loop                   |
+
+The initial atmosphere can be set through `/wrk/atm1D.in`.
+
+## Run Settings
+
+Settings for the model run can be set through `/wrk/run_saguaro-mars` and the `/wrk/*.settings` files. Settings files and equilibrium atmospheres corresponding to standard scenarios are provided in `/wrk/settings/`, and can be activated by uncommenting the appropriate lines in `run_saguaro-mars`. 
+
+### `nmolecules.settings`
+This file contains the settings for how neutrals are treated in the model. The number in the first line indicates the total number of neutrals in the model. 
+
+| Column                      | Description                        |
+| :------------------------- | :--------------------------------- | 
+| `Species`                   | The chemical species               |
+| `istat`                     | How species is treated in model. <br>0: Held constant <br>1: Calculate only chemistry <br>2: Calculates both chemistry and diffusion |
+| `mmw`                       | Mean molecular weight in amu       |
+| `H`, `C`, `14N`, `15N`, `O` | Number of H, C, <sup>14</sup>N, <sup>15</sup>N, and O atoms for each molecule of species |
+| `Diff. Parameters`          | Parameters for calculating diffusion coefficient. <br>0: Hard sphere approximation <br>1: Mason+Morrero (1970)<sup>[17]</sup> Eq. 136 <br>2: Mason+Morrero (1970)<sup>[17]</sup> Eq. 135 |
+| `Lower Bndry`               | Lower boundary condition type and value. <br>1: Diffusive Equilibrium <br>2: Fixed Velocity (Positive upwards, in cm s<sup>-1</sup>) <br>3: Fixed Mole Fraction <br>4: Fixed Flux (Positive upwards, in cm<sup>-2</sup> s<sup>-1</sup>) |
+| `Upper Bndry`               | Upper boundary condition type and value. <br>1: Diffusive Equilibrium <br>2: Fixed Velocity (in multiples of Jeans velocity) <br>3: Fixed Velocity (Positive upwards, in cm s<sup>-1</sup>) <br>4: Fixed Flux (Positive upwards, in cm<sup>-2</sup> s<sup>-1</sup>) |
+
+### `imolecules.settings`
+This file contains the settings for how ions are treated in the model. The number in the first line indicates the total number of ions in the model. 
+
+### `solar.settings`
+This file contains the settings for how neutrals are treated in the model. The number in the first line indicates the total number of neutrals in the model. 
+
+### `run.settings`
+This file contains the settings for how neutrals are treated in the model. The number in the first line indicates the total number of neutrals in the model. 
+
+### `output.settings`
+This file contains the settings for which output files are to be generated at the conclusion of each run.
+
 # Model Outputs
 
 Output data files produced by _Saguaro_ are located in the `/runs/<run-name>/output/` directory, with `<run-name>` being the name of the run set by the user when commencing the model run. These files use ASCII encoding, and can be opened by any text editor. Typically, each file begins with a header containing numbers describing the data structure. Each variable is described by a block with the variable name as header, and data entries (usually the variable as a function of altitude) within each block are broken into lines of 10. 
@@ -35,7 +80,7 @@ Output data files produced by _Saguaro_ are located in the `/runs/<run-name>/out
 ### General
 
 | Filename         | Description                                                                                                                         |
-| :---------       | :---------------------------------------------------------------------------------------------------------------------------------- |
+| :--------------: | :---------------------------------------------------------------------------------------------------------------------------------- |
 | `atm1D.out`      | Altitude profiles for key variables in the model, including the altitude grid, gravity, neutral and electron temperatures, pressure, mean molecular weight, eddy diffusion coefficient, and densities for each species. Same structure as `atm1D.in`. |
 | `atm1D.csv`      | Same as `atm1D.out`, except in comma-separated format, and mixing ratios for each species are provided instead of their densities.  |
 | `diff.csv`       | Diffusion coefficients and scale heights for each species with altitude. The eddy diffusion coeffient (which applies to all species) is also provided. Units: cm<sup>2</sup> s<sup>-1</sup>. |
@@ -46,7 +91,7 @@ Output data files produced by _Saguaro_ are located in the `/runs/<run-name>/out
 ### Reaction Rates
 
 | Filename         | Description                                                                                                                         |
-| :---------       | :---------------------------------------------------------------------------------------------------------------------------------- |
+| :--------------: | :---------------------------------------------------------------------------------------------------------------------------------- |
 | `ratecoeff.out`  | Reaction coefficients for each chemical reaction with altitude. Units: s<sup>-1</sup> for unimolecular reactions and cm<sup>3</sup> s<sup>-1</sup> for bimolecular reactions. |
 | `chemrates.out`  | Reaction rates for each chemical reaction with altitude. Units: cm<sup>-3</sup> s<sup>-1</sup>.                                     |
 | `colrates.out`   | Table of column-integrated rates (cm<sup>-2</sup> s<sup>-1</sup>) for each chemical reaction, sorted from highest to lowest. The columns of the table correspond to: (1) reaction index, (2) column-integrated rate down to opaque layer (not applicable to Mars), (3) column-integrate rate below opaque layer (N/A, so = 0), (4) total column-integrated rate, and (5) reaction.|
@@ -60,7 +105,7 @@ Output data files produced by _Saguaro_ are located in the `/runs/<run-name>/out
 Additonal information about each calculated species in the model is available in `/molecules/<species-name>.out`, where `<species-name>` represents the described species. The file begins with column-integrated rates and fluxes controlling the abundance of the species, with balance being the sum of all these terms. Units are cm<sup>-2</sup> s<sup>-1</sup> for all these quantities. All fluxes are upward, so positive fluxes imply a surface source at the bottom and escape at the top. 
 
 These quantities are then followed by a table breakdown of the altitude profiles of the abundance, production and loss for the species:
-| Column           | Units                          | Description                                                                           |
+| Column           | Units                          | Description                                                               |
 | :--------------: | :----------------------------: | :------------------------------------------------------------------------ | 
 | `Alt`            | km                             | Altitude                                                                  |
 | `Density`        | cm<sup>-3</sup>                | Number density                                                            |
@@ -97,13 +142,13 @@ Reads in variables describing general atmospheric structure and number densities
 #### Parameters
 
 | Name           | Type    | Required | Default | Description                           |
-| :---------     | :----   | :------: | :-----: | :------------------------------------ |
+| :---------:     | :----:   | :------: | :-----: | :------------------------------------ |
 | `filename`     | `str`   | Yes      | N/A     | Path of `atm1D.in` / `atm1D.out`.     |
 
 #### Returns (Value Structure)
 
 | Key            | Type               | Description                                     |
-| :------------- | :----------------- | :---------------------------------------------- |
+| :-------------: | :-----------------: | :---------------------------------------------- |
 | `n_alt`        | `int`              | Number of altitude bins.                        |
 | `n_mol`        | `int`              | Number of species.                              |
 | `Species`      | `str list`         | List of species.                                |
@@ -118,13 +163,13 @@ Reads in parameters for modeling neutrals (`/input/nmolecules.dat`) and ions (`/
 #### Parameters
 
 | Name           | Type    | Required | Default | Description                                      |
-| :---------     | :----   | :------: | :-----: | :----------------------------------------------- |
+| :---------:     | :----:   | :------: | :-----: | :----------------------------------------------- |
 | `filename`     | `str`   | Yes      | N/A     | Path of `nmolecules.dat` / `imolecules.dat`.     |
 
 #### Returns (Value Structure)
 
 | Key            | Type               | Description                                                |
-| :------------- | :----------------- | :--------------------------------------------------------- |
+| :-------------: | :-----------------: | :--------------------------------------------------------- |
 | `Species`      | `pandas DataFrame` | Table of species and how they are calculated in the model. |
 
 ---
@@ -136,13 +181,13 @@ Reads in reaction rates for chemical (`chemrates.out`), photo (`photorates.out`)
 #### Parameters
 
 | Name           | Type    | Required | Default | Description                           |
-| :---------     | :----   | :------: | :-----: | :------------------------------------ |
+| :---------:     | :----:   | :------: | :-----: | :------------------------------------ |
 | `filename`     | `str`   | Yes      | N/A     | Path of `chemrates.out` / `photorates.out` / `elerates.out` / `ratecoeff.out`. |
 
 #### Returns (Value Structure)
 
 | Key            | Type               | Description                                     |
-| :------------- | :----------------- | :---------------------------------------------- |
+| :-------------: | :-----------------: | :---------------------------------------------- |
 | `Altitude`     | `float array`      | List of altitudes.                              |
 | `Reaction`     | `pandas DataFrame` | List of reactions.                              |
 | `Rates`        | `float array`      | Array of reaction rates / coefficients, with dimensions (altitude, reaction).            |
@@ -156,13 +201,13 @@ Reads in electron fluxes from `eflux.out`.
 #### Parameters
 
 | Name           | Type    | Required | Default | Description                           |
-| :---------     | :----   | :------: | :-----: | :------------------------------------ |
+| :---------:     | :----:   | :------: | :-----: | :------------------------------------ |
 | `filename`     | `str`   | Yes      | N/A     | Path of `eflux.out`.                  |
 
 #### Returns (Value Structure)
 
 | Key            | Type               | Description                                     |
-| :------------- | :----------------- | :---------------------------------------------- |
+| :-------------: | :-----------------: | :---------------------------------------------- |
 | `Altitude`     | `float array`      | List of altitudes.                              |
 | `Energy`       | `float array`      | List of energies.                               |
 | `Flux`         | `float array`      | Array of electron fluxes, with dimensions (altitude, energy). |
@@ -176,13 +221,13 @@ Reads in variables associated with specific species (`*.out` files in `/output/m
 #### Parameters
 
 | Name           | Type    | Required | Default | Description                           |
-| :---------     | :----   | :------: | :-----: | :------------------------------------ |
+| :---------:     | :----:   | :------: | :-----: | :------------------------------------ |
 | `filename`     | `str`   | Yes      | N/A     | Path of input file.                   |
 
 #### Returns (Value Structure)
 
 | Key            | Type               | Description                                     |
-| :------------- | :----------------- | :---------------------------------------------- |
+| :-------------: | :-----------------: | :---------------------------------------------- |
 | `Profiles`     | `pandas DataFrame` | Altitude profiles of variables associated with specified species. Columns are variables while rows are altitudes. |
 
 
@@ -240,3 +285,5 @@ With `saguaro_plot.py`, users can choose among 4 different sets of quantities to
 <sup>[15]</sup> Stone S., et al. (2020). _Hydrogen escape from Mars is driven by seasonal and dust storm transport of water_. Science. https://doi.org/10.1126/science.aba5229.
 
 <sup>[16]</sup> Lo D., et al. (2024). _Evaluating atmospheric and surface drivers for O<sub>2</sub> variations at Gale crater as observed by MSL SAM_. The Planetary Science Journal. https://doi.org/10.3847/PSJ/ad251b.
+
+<sup>[17]</sup> Mason, E. and Marrero, T. (1970). _The diffusion of atoms and molecules_ Advances in Atomic and Molecular Physics. https://doi.org/10.1016/S0065-2199(08)60205-5.
