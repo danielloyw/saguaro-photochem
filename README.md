@@ -42,8 +42,6 @@ Output data files produced by _Saguaro_ are located in the `/runs/<run-name>/out
 | `solar_flux.out` | Solar flux as a function of wavelength and altitude. Units: photons cm<sup>-2</sup> s<sup>-1</sup> nm<sup>-1</sup>.                 |
 | `eflux.out`      | Electron fluxes as a function of energy and altitude. Units: electrons cm<sup>-2</sup> s<sup>-1</sup> eV<sup>-1</sup>.              |
 | `balance.out`    | Overview of convergence for model species, with information about column number density (cm<sup>-2</sup>), production and loss rates (cm<sup>-2</sup> s<sup>-1</sup>), and fluxes at top and bottom (cm<sup>-2</sup> s<sup>-1</sup>). Balance (cm<sup>-2</sup> s<sup>-1</sup>) is the residue of the various terms controlling the abundance of each species, and the stability time constant (s) is the balance divided by the column number density. |
-| `mcolrates.out`  | Same as `balance.out` without some columns.                                                                                         |
-
 
 ### Reaction Rates
 
@@ -62,24 +60,23 @@ Output data files produced by _Saguaro_ are located in the `/runs/<run-name>/out
 Additonal information about each calculated species in the model is available in `/molecules/<species-name>.out`, where `<species-name>` represents the described species. The file begins with column-integrated rates and fluxes controlling the abundance of the species, with balance being the sum of all these terms. Units are cm<sup>-2</sup> s<sup>-1</sup> for all these quantities. All fluxes are upward, so positive fluxes imply a surface source at the bottom and escape at the top. 
 
 These quantities are then followed by a table breakdown of the altitude profiles of the abundance, production and loss for the species:
-| Column   | Units                            | Description                                                                           |
-| :------- | :------------------------------: | :------------------------------------------------------------------------------------ | 
-| `alt`      | km                             | Altitude                                                                              |
-| `den`      | cm<sup>-3</sup>                | Number density                                                                        |
-| `mole`     | -                              | Mixing ratio                                                                          |
-| `flux`     | cm<sup>-2</sup> s<sup>-1</sup> | Flux (positive is upwards)                                                            |
-| `ext prd`  | cm<sup>-3</sup> s<sup>-1</sup> | Production from other processes                                                       |
-| `pr_ph`    | cm<sup>-3</sup> s<sup>-1</sup> | Production from photo reactions                                                       |
-| `ls_ph`    | cm<sup>-3</sup> s<sup>-1</sup> | Loss from photo reactions                                                             |
-| `pr_pe`    | cm<sup>-3</sup> s<sup>-1</sup> | Production from electron reactions                                                    |
-| `ls_pe`    | cm<sup>-3</sup> s<sup>-1</sup> | Loss from electron reactions                                                          |
-| `pr_chem`  | cm<sup>-3</sup> s<sup>-1</sup> | Production from chemical reactions                                                    |
-| `ls_chem`  | cm<sup>-3</sup> s<sup>-1</sup> | Loss from chemical reactions                                                          |
-| `net prod` | cm<sup>-3</sup> s<sup>-1</sup> | Net production (`ext prd` + `pr_ph` + `pr_pe` + `pr_chem`)                            |
-| `net loss` | cm<sup>-3</sup> s<sup>-1</sup> | Net loss (`ls_ph` + `ls_pe` + `ls_chem`)                                              |
-| `condense` | cm<sup>-3</sup> s<sup>-1</sup> | Loss from condensation                                                                |
-| `-div_flx` | cm<sup>-3</sup> s<sup>-1</sup> | Source rate                                                                           |
-| `balance`  | cm<sup>-3</sup> s<sup>-1</sup> | Balance of terms at each altitude (`net prod` - `net loss` - `condense` - `-div_flx`) |
+| Column           | Units                          | Description                                                                           |
+| :--------------: | :----------------------------: | :------------------------------------------------------------------------ | 
+| `Alt`            | km                             | Altitude                                                                  |
+| `Density`        | cm<sup>-3</sup>                | Number density                                                            |
+| `VMR`            | -                              | Mixing ratio                                                              |
+| `Prod (Chem)`    | cm<sup>-3</sup> s<sup>-1</sup> | Production from chemical reactions                                        |
+| `Loss (Chem)`    | cm<sup>-3</sup> s<sup>-1</sup> | Loss from chemical reactions                                              |
+| `Prod (Photo)`   | cm<sup>-3</sup> s<sup>-1</sup> | Production from photo reactions                                           |
+| `Loss (Photo)`   | cm<sup>-3</sup> s<sup>-1</sup> | Loss from photo reactions                                                 |
+| `Prod (Electron)`| cm<sup>-3</sup> s<sup>-1</sup> | Production from electron reactions                                        |
+| `Loss (Electron)`| cm<sup>-3</sup> s<sup>-1</sup> | Loss from electron reactions                                              |
+| `Net Prod`       | cm<sup>-3</sup> s<sup>-1</sup> | Net production                                                            |
+| `Net Loss`       | cm<sup>-3</sup> s<sup>-1</sup> | Net loss                                                                  |
+| `Flux`           | cm<sup>-2</sup> s<sup>-1</sup> | Flux (positive is upwards)                                                |
+| `div(flux)`      | cm<sup>-3</sup> s<sup>-1</sup> | Source rate                                                               |
+| `Balance`        | cm<sup>-3</sup> s<sup>-1</sup> | Balance of terms at each altitude (`Net Prod` - `Net Loss` - `div(flux)`) |
+
 
 
 ## Reading Output Files
