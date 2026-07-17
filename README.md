@@ -22,9 +22,6 @@ _Saguaro-Mars_ was adapted from the original Titan implementation with revised a
 
 A list of journal [references](#references) is available at the end of this README. 
 
-
-# Model Inputs
-
 # Running the Model
 
 The model can be run by running the script file `/wrk/run_saguaro-mars`:
@@ -49,7 +46,7 @@ Settings for the model run can be set through `/wrk/run_saguaro-mars` and the `/
 This file contains the settings for how neutrals are treated in the model. The number in the first line indicates the total number of neutrals in the model. 
 
 | Column                      | Description                        |
-| :------------------------- | :--------------------------------- | 
+| :-------------------------- | :--------------------------------- | 
 | `Species`                   | The chemical species               |
 | `istat`                     | How species is treated in model. <br>0: Held constant <br>1: Calculate only chemistry <br>2: Calculates both chemistry and diffusion |
 | `mmw`                       | Mean molecular weight in amu       |
@@ -61,11 +58,21 @@ This file contains the settings for how neutrals are treated in the model. The n
 ### `imolecules.settings`
 This file contains the settings for how ions are treated in the model. The number in the first line indicates the total number of ions in the model. 
 
+| Column                      | Description                        |
+| :-------------------------- | :--------------------------------- | 
+| `Species`                   | The chemical species               |
+| `istat`                     | How species is treated in model. <br>0: Held constant <br>1: Calculate only chemistry <br>2: Calculates both chemistry and diffusion |
+| `chg`                       | Charge of ion species              |
+| `mmw`                       | Mean molecular weight in amu       |
+| `H`, `C`, `14N`, `15N`, `O` | Number of H, C, <sup>14</sup>N, <sup>15</sup>N, and O atoms that makes up each ion |
+| `Lower Bndry`               | Lower boundary condition type and value. <br>1: Diffusive Equilibrium <br>2: Fixed Velocity (Positive upwards, in cm s<sup>-1</sup>) <br>3: Fixed Mole Fraction <br>4: Fixed Flux (Positive upwards, in cm<sup>-2</sup> s<sup>-1</sup>) |
+| `Upper Bndry`               | Upper boundary condition type and value. <br>1: Diffusive Equilibrium <br>2: Fixed Velocity (in multiples of Jeans velocity) <br>3: Fixed Velocity (Positive upwards, in cm s<sup>-1</sup>) <br>4: Fixed Flux (Positive upwards, in cm<sup>-2</sup> s<sup>-1</sup>) |
+
 ### `solar.settings`
-This file contains the settings for how neutrals are treated in the model. The number in the first line indicates the total number of neutrals in the model. 
+This file moderates the solar flux used for photo reactions in the model through the solar zenith angle (SZA) and an averaging factor over the diurnal cycle. Solar irradiance spectra corresponding to particular solar activity levels and Mars seasons are available in `data\photons\` and selected in `run_saguaro-mars`. 
 
 ### `run.settings`
-This file contains the settings for how neutrals are treated in the model. The number in the first line indicates the total number of neutrals in the model. 
+This file contains the settings for the chemistry and diffusion loops in the model run. 
 
 ### `output.settings`
 This file contains the settings for which output files are to be generated at the conclusion of each run.
